@@ -2106,10 +2106,6 @@ const migrateConfig = {
     if (state.settings && state.settings.showWorkspace === undefined) {
       state.settings.showWorkspace = true
     }
-
-    if (state.settings && state.settings.exportMenuOptions.notes === undefined) {
-      state.settings.exportMenuOptions.notes = true
-    }
     return state
   }
 }

@@ -333,6 +333,13 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic,
                 window.message.error(t('chat.save.topic.knowledge.error.save_failed'))
               }
             }
+          },
+          {
+            label: t('notes.save'),
+            key: 'notes',
+            onClick: async () => {
+              exportTopicToNotes(topic)
+            }
           }
         ]
       },
@@ -400,13 +407,6 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic,
             onClick: async () => {
               const markdown = await topicToMarkdown(topic)
               exportMarkdownToSiyuan(topic.name, markdown)
-            }
-          },
-          exportMenuOptions.notes && {
-            label: t('chat.topics.export.notes'),
-            key: 'notes',
-            onClick: async () => {
-              exportTopicToNotes(topic)
             }
           }
         ].filter(Boolean) as ItemType<MenuItemType>[]

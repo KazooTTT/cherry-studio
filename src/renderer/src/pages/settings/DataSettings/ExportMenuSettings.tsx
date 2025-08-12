@@ -93,12 +93,6 @@ const ExportMenuOptions: FC = () => {
           onChange={(checked) => handleToggleOption('plain_text', checked)}
         />
       </SettingRow>
-      <SettingDivider />
-
-      <SettingRow>
-        <SettingRowTitle>{t('settings.data.export_menu.notes')}</SettingRowTitle>
-        <Switch checked={exportMenuOptions.notes} onChange={(checked) => handleToggleOption('notes', checked)} />
-      </SettingRow>
     </SettingGroup>
   )
 }

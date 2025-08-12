@@ -6,6 +6,7 @@ import Scrollbar from '@renderer/components/Scrollbar'
 import { useSettings } from '@renderer/hooks/useSettings'
 import NotesNavbar from '@renderer/pages/notes/NotesNavbar'
 import FileManager from '@renderer/services/FileManager'
+import { NotesService } from '@renderer/services/NotesService'
 import { estimateTextTokens } from '@renderer/services/TokenService'
 import { NotesTreeNode } from '@renderer/types/note'
 import { Button, Empty, Spin } from 'antd'
@@ -15,7 +16,6 @@ import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import NotesSidebar from './NotesSidebar'
-import { NotesService } from './utils/NotesService'
 
 const logger = loggerService.withContext('NotesPage')
 
@@ -71,7 +71,6 @@ const NotesPage: FC = () => {
     [activeNodeId, currentContent, findNodeById, notesTree]
   )
 
-  // 内容变更时保存笔记
   const handleMarkdownChange = (newMarkdown: string) => {
     setCurrentContent(newMarkdown)
     saveCurrentNote(newMarkdown)

@@ -26,8 +26,8 @@ import {
   exportMarkdownToSiyuan,
   exportMarkdownToYuque,
   exportMessageAsMarkdown,
-  exportMessageToNotes,
   exportMessageToNotion,
+  exportTopicToNotes,
   messageToMarkdown
 } from '@renderer/utils/export'
 // import { withMessageThought } from '@renderer/utils/formats'
@@ -258,6 +258,13 @@ const MessageMenubar: FC<Props> = (props) => {
             onClick: () => {
               SaveToKnowledgePopup.showForMessage(message)
             }
+          },
+          {
+            label: t('notes.save'),
+            key: 'clipboard',
+            onClick: async () => {
+              exportTopicToNotes(topic)
+            }
           }
         ]
       },
@@ -353,15 +360,6 @@ const MessageMenubar: FC<Props> = (props) => {
               const title = await getMessageTitle(message)
               const markdown = messageToMarkdown(message)
               exportMarkdownToSiyuan(title, markdown)
-            }
-          },
-          exportMenuOptions.notes && {
-            label: t('chat.topics.export.notes'),
-            key: 'notes',
-            onClick: async () => {
-              const title = await getMessageTitle(message)
-              const markdown = messageToMarkdown(message)
-              exportMessageToNotes(title, markdown)
             }
           }
         ].filter(Boolean)

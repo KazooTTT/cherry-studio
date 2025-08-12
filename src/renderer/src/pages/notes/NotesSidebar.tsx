@@ -186,6 +186,8 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     return flattenNodes(notesTree)
   }, [notesTree, isShowStarred])
 
+  // TODO 通过拖动上传文件
+
   // 实现右键菜单
   const getMenuItems = useCallback(
     (node: NotesTreeNode) => {
