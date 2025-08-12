@@ -1523,6 +1523,7 @@
     "folder": "文件夹",
     "new_folder": "新建文件夾",
     "new_note": "新建筆記",
+    "only_markdown": "僅支援 Markdown 格式",
     "rename": "重命名",
     "save": "儲存到筆記",
     "show_starred": "顯示收藏的筆記",
@@ -1531,7 +1532,9 @@
     "title": "筆記",
     "unstar": "取消收藏",
     "untitled_folder": "新資料夾",
-    "untitled_note": "無標題筆記"
+    "untitled_note": "無標題筆記",
+    "upload_failed": "筆記上傳失敗",
+    "upload_success": "筆記上傳成功"
   },
   "notification": {
     "assistant": "助手回應",

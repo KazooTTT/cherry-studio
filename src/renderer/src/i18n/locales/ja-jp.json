@@ -1523,6 +1523,7 @@
     "folder": "フォルダー",
     "new_folder": "新しいフォルダーを作成する",
     "new_note": "新規ノート作成",
+    "only_markdown": "Markdown ファイルのみをアップロードできます",
     "rename": "名前の変更",
     "save": "メモに保存する",
     "show_starred": "お気に入りのノートを表示する",
@@ -1531,7 +1532,9 @@
     "title": "ノート",
     "unstar": "お気に入りを解除する",
     "untitled_folder": "新ファイル夹",
-    "untitled_note": "無題のメモ"
+    "untitled_note": "無題のメモ",
+    "upload_failed": "ノートのアップロードに失敗しました",
+    "upload_success": "ノートのアップロードが成功しました"
   },
   "notification": {
     "assistant": "助手回應",

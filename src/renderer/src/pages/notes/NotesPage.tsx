@@ -259,6 +259,37 @@ const NotesPage: FC = () => {
     }
   }
 
+  const handleUploadFiles = async (files: File[]) => {
+    try {
+      setIsLoading(true)
+      const markdownFiles = Array.from(files).filter((file) => file.name.toLowerCase().endsWith('.md'))
+
+      if (markdownFiles.length === 0) {
+        window.message.warning(t('notes.only_markdown'))
+        return
+      }
+
+      for (const file of markdownFiles) {
+        try {
+          await NotesService.uploadNote(file)
+        } catch (error) {
+          logger.error(`Failed to upload note file ${file.name}:`, error as Error)
+          window.message.error(t('notes.upload_failed', { name: file.name }))
+        }
+      }
+
+      // 上传完成后刷新笔记树
+      const updatedTree = await NotesService.getNotesTree()
+      setNotesTree(updatedTree)
+      window.message.success(t('notes.upload_success', { count: markdownFiles.length }))
+    } catch (error) {
+      logger.error('Failed to handle file uploads:', error as Error)
+      window.message.error(t('notes.upload_failed'))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <Container id="notes-page">
       <NotesNavbar />
@@ -275,6 +306,7 @@ const NotesPage: FC = () => {
             onToggleExpanded={handleToggleExpanded}
             onToggleStar={handleToggleStar}
             onMoveNode={handleMoveNode}
+            onUploadFiles={handleUploadFiles}
           />
         )}
         <EditorWrapper>

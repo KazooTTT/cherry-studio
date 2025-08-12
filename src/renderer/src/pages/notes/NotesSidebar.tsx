@@ -32,6 +32,7 @@ interface NotesSidebarProps {
   onToggleExpanded: (nodeId: string) => void
   onToggleStar: (nodeId: string) => void
   onMoveNode: (nodeId: string, targetParentId?: string) => void
+  onUploadFiles: (files: File[]) => void
   activeNodeId?: string
   notesTree: NotesTreeNode[]
 }
@@ -47,6 +48,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   onToggleExpanded,
   onToggleStar,
   onMoveNode,
+  onUploadFiles,
   activeNodeId,
   notesTree
 }) => {
@@ -57,6 +59,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null)
   const [dragOverNodeId, setDragOverNodeId] = useState<string | null>(null)
   const [isShowStarred, setIsShowStarred] = useState(false)
+  const [isDragOverSidebar, setIsDragOverSidebar] = useState(false)
 
   const handleCreateFolder = useCallback(() => {
     onCreateFolder(t('notes.untitled_folder'))
@@ -185,8 +188,6 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
 
     return flattenNodes(notesTree)
   }, [notesTree, isShowStarred])
-
-  // TODO 通过拖动上传文件
 
   // 实现右键菜单
   const getMenuItems = useCallback(
@@ -336,8 +337,34 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     ]
   )
 
+  const handleDropFiles = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      setIsDragOverSidebar(false)
+
+      const files = Array.from(e.dataTransfer.files)
+
+      if (files.length > 0) {
+        onUploadFiles(files)
+      }
+    },
+    [onUploadFiles]
+  )
+
   return (
-    <SidebarContainer>
+    <SidebarContainer
+      onDragOver={(e) => {
+        e.preventDefault()
+        if (!draggedNodeId) {
+          setIsDragOverSidebar(true)
+        }
+      }}
+      onDragLeave={() => setIsDragOverSidebar(false)}
+      onDrop={(e) => {
+        if (!draggedNodeId) {
+          handleDropFiles(e)
+        }
+      }}>
       <SidebarHeader>
         <HeaderActions>
           {!isShowStarred && (
@@ -376,6 +403,8 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
           <TreeContent>{filteredTree.map((node) => renderTreeNode(node))}</TreeContent>
         </StyledScrollbar>
       </NotesTreeContainer>
+
+      {isDragOverSidebar && <DragOverIndicator />}
     </SidebarContainer>
   )
 }
@@ -387,6 +416,7 @@ const SidebarContainer = styled.div`
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
+  position: relative;
 `
 
 const SidebarHeader = styled.div`
@@ -515,6 +545,18 @@ const ActionButton = styled.div`
     background-color: var(--color-background-soft);
     color: var(--color-text);
   }
+`
+
+const DragOverIndicator = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 123, 255, 0.1);
+  border: 2px dashed rgba(0, 123, 255, 0.6);
+  border-radius: 4px;
+  pointer-events: none;
 `
 
 export default NotesSidebar

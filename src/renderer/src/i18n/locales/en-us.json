@@ -1523,6 +1523,7 @@
     "folder": "folder",
     "new_folder": "New Folder",
     "new_note": "Create a new note",
+    "only_markdown": "Only Markdown files are supported",
     "rename": "Rename",
     "save": "Save to Notes",
     "show_starred": "Show favorite notes",
@@ -1531,7 +1532,9 @@
     "title": "notes",
     "unstar": "Unfavorite",
     "untitled_folder": "New Folder",
-    "untitled_note": "Untitled Note"
+    "untitled_note": "Untitled Note",
+    "upload_failed": "Note upload failed",
+    "upload_success": "Note uploaded success"
   },
   "notification": {
     "assistant": "Assistant Response",

@@ -265,6 +265,58 @@ export class NotesService {
   }
 
   /**
+   * 上传笔记
+   */
+  static async uploadNote(file: File): Promise<NotesTreeNode> {
+    try {
+      const fileName = file.name.toLowerCase()
+      if (!fileName.endsWith(MARKDOWN_EXT)) {
+        return Promise.reject(new Error('Only markdown files are allowed'))
+      }
+
+      const noteId = uuidv4()
+      const filesPath = store.getState().runtime.filesPath
+      const content = await file.text()
+      const fileMetadata: FileMetadata = {
+        id: noteId,
+        name: noteId + MARKDOWN_EXT,
+        origin_name: file.name,
+        path: `${filesPath}/${noteId}${MARKDOWN_EXT}`,
+        size: content.length,
+        ext: MARKDOWN_EXT,
+        type: FileTypes.TEXT,
+        created_at: new Date().toISOString(),
+        count: 1
+      }
+
+      await window.api.file.writeWithId(fileMetadata.id + fileMetadata.ext, content)
+      await FileManager.addFile(fileMetadata)
+
+      // 创建树节点
+      const note: NotesTreeNode = {
+        id: noteId,
+        name: file.name,
+        type: 'file',
+        treePath: `/${file.name}`,
+        fileId: noteId,
+        createdAt: fileMetadata.created_at,
+        updatedAt: fileMetadata.created_at
+      }
+
+      // 将节点添加到根目录
+      const tree = await this.getNotesTree()
+      tree.push(note)
+      await this.saveNotesTree(tree)
+
+      logger.info(`上传了笔记文件: ${file.name}`)
+      return note
+    } catch (error) {
+      logger.error('上传笔记文件失败:', error as Error)
+      throw error
+    }
+  }
+
+  /**
    * 重命名节点
    */
   static async renameNode(nodeId: string, newName: string): Promise<void> {

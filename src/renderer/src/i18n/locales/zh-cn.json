@@ -1523,6 +1523,7 @@
     "folder": "文件夹",
     "new_folder": "新建文件夹",
     "new_note": "新建笔记",
+    "only_markdown": "仅支持 Markdown 格式",
     "rename": "重命名",
     "save": "保存到笔记",
     "show_starred": "显示收藏的笔记",
@@ -1531,7 +1532,9 @@
     "title": "笔记",
     "unstar": "取消收藏",
     "untitled_folder": "新文件夹",
-    "untitled_note": "无标题笔记"
+    "untitled_note": "无标题笔记",
+    "upload_failed" : "笔记上传失败",
+    "upload_success": "笔记上传成功"
   },
   "notification": {
     "assistant": "助手响应",
