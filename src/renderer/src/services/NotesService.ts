@@ -80,7 +80,6 @@ export class NotesService {
 
   /**
    * 更新树中的文件名称
-   * @returns 是否有名称更新
    */
   private static updateFileNames(tree: NotesTreeNode[], metadataMap: Map<string, any>): boolean {
     let hasChanges = false
@@ -105,7 +104,6 @@ export class NotesService {
 
   /**
    * 删除树中已删除的文件节点
-   * @returns 是否有删除操作
    */
   private static removeDeletedFiles(tree: NotesTreeNode[], deletedFileIds: string[]): boolean {
     let hasChanges = false
@@ -405,6 +403,33 @@ export class NotesService {
     this.insertNodeIntoTree(tree, node, newParentId)
 
     await this.saveNotesTree(tree)
+  }
+
+  /**
+   * 判断节点是否为另一个节点的父节点
+   */
+  static isParentNode(tree: NotesTreeNode[], parentId: string, childId: string): boolean {
+    const childNode = this.findNodeInTree(tree, childId)
+    if (!childNode) {
+      return false
+    }
+
+    const parentNode = this.findNodeInTree(tree, parentId)
+    if (!parentNode || parentNode.type !== 'folder' || !parentNode.children) {
+      return false
+    }
+
+    if (parentNode.children.some((child) => child.id === childId)) {
+      return true
+    }
+
+    for (const child of parentNode.children) {
+      if (this.isParentNode(tree, child.id, childId)) {
+        return true
+      }
+    }
+
+    return false
   }
 
   /**

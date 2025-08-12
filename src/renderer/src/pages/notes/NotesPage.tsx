@@ -197,12 +197,15 @@ const NotesPage: FC = () => {
   // 删除节点
   const handleDeleteNode = async (nodeId: string) => {
     try {
+      const isActiveNodeOrParent =
+        activeNodeId && (nodeId === activeNodeId || NotesService.isParentNode(notesTree, nodeId, activeNodeId))
+
       await NotesService.deleteNode(nodeId)
       const updatedTree = await NotesService.getNotesTree()
       setNotesTree(updatedTree)
 
       // 如果删除的是当前活动节点，清空编辑器
-      if (nodeId === activeNodeId) {
+      if (isActiveNodeOrParent) {
         setActiveNodeId(undefined)
         setCurrentContent('')
         if (editorRef.current) {
@@ -259,6 +262,7 @@ const NotesPage: FC = () => {
     }
   }
 
+  // 处理文件上传
   const handleUploadFiles = async (files: File[]) => {
     try {
       setIsLoading(true)
