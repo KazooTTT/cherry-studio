@@ -159,7 +159,6 @@ export class NotesService {
 
   /**
    * 创建新笔记文件
-   * 只允许创建Markdown格式的文件，以noteId.md的格式存储
    */
   static async createNote(name: string, content: string = '', parentId?: string): Promise<NotesTreeNode> {
     const noteId = uuidv4()
@@ -403,6 +402,86 @@ export class NotesService {
     this.insertNodeIntoTree(tree, node, newParentId)
 
     await this.saveNotesTree(tree)
+  }
+
+  /**
+   * 对节点进行排序
+   */
+  static async sortNodes(
+    sourceNodeId: string,
+    targetNodeId: string,
+    position: 'before' | 'after' | 'inside'
+  ): Promise<boolean> {
+    try {
+      const tree = await this.getNotesTree()
+
+      // 找到源节点和目标节点
+      const sourceNode = this.findNodeInTree(tree, sourceNodeId)
+      const targetNode = this.findNodeInTree(tree, targetNodeId)
+
+      if (!sourceNode || !targetNode) {
+        logger.error(`Sort nodes failed: node not found (source: ${sourceNodeId}, target: ${targetNodeId})`)
+        return false
+      }
+
+      // 不允许文件夹被放入文件中
+      if (position === 'inside' && targetNode.type === 'file' && sourceNode.type === 'folder') {
+        logger.error('Sort nodes failed: cannot move a folder inside a file')
+        return false
+      }
+
+      // 不允许将节点移动到自身内部
+      if (position === 'inside' && this.isParentNode(tree, sourceNodeId, targetNodeId)) {
+        logger.error('Sort nodes failed: cannot move a node inside itself or its descendants')
+        return false
+      }
+
+      // 首先从原位置移除节点
+      this.removeNodeFromTree(tree, sourceNodeId)
+
+      // 根据位置进行放置
+      if (position === 'inside' && targetNode.type === 'folder') {
+        if (!targetNode.children) {
+          targetNode.children = []
+        }
+        targetNode.children.push(sourceNode)
+        targetNode.expanded = true
+
+        // 更新节点路径（如果是文件类型）
+        if (sourceNode.type === 'file') {
+          sourceNode.treePath = this.getNodePath(sourceNode.name, targetNode.id)
+        }
+      } else {
+        // 放在目标节点前面或后面
+        const targetParent = this.findParentNode(tree, targetNodeId)
+        const targetList = targetParent ? targetParent.children! : tree
+        const targetIndex = targetList.findIndex((node) => node.id === targetNodeId)
+
+        if (targetIndex === -1) {
+          logger.error('Sort nodes failed: target position not found')
+          return false
+        }
+
+        // 根据position确定插入位置
+        const insertIndex = position === 'before' ? targetIndex : targetIndex + 1
+        targetList.splice(insertIndex, 0, sourceNode)
+
+        // 更新节点路径（如果是文件类型）
+        if (sourceNode.type === 'file') {
+          sourceNode.treePath = this.getNodePath(sourceNode.name, targetParent?.id)
+        }
+      }
+
+      // 更新修改时间
+      sourceNode.updatedAt = new Date().toISOString()
+
+      // 保存树结构
+      await this.saveNotesTree(tree)
+      return true
+    } catch (error) {
+      logger.error('Sort nodes failed:', error as Error)
+      return false
+    }
   }
 
   /**

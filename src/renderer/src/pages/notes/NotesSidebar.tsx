@@ -19,7 +19,7 @@ import {
   StarOff,
   Trash2
 } from 'lucide-react'
-import { FC, useCallback, useMemo, useState } from 'react'
+import { FC, useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
@@ -31,7 +31,7 @@ interface NotesSidebarProps {
   onRenameNode: (nodeId: string, newName: string) => void
   onToggleExpanded: (nodeId: string) => void
   onToggleStar: (nodeId: string) => void
-  onMoveNode: (nodeId: string, targetParentId?: string) => void
+  onSortNodes: (sourceNodeId: string, targetNodeId: string, position: 'before' | 'after' | 'inside') => void
   onUploadFiles: (files: File[]) => void
   activeNodeId?: string
   notesTree: NotesTreeNode[]
@@ -47,7 +47,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   onRenameNode,
   onToggleExpanded,
   onToggleStar,
-  onMoveNode,
+  onSortNodes,
   onUploadFiles,
   activeNodeId,
   notesTree
@@ -58,8 +58,10 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   const [editingName, setEditingName] = useState('')
   const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null)
   const [dragOverNodeId, setDragOverNodeId] = useState<string | null>(null)
+  const [dragPosition, setDragPosition] = useState<'before' | 'inside' | 'after'>('inside')
   const [isShowStarred, setIsShowStarred] = useState(false)
   const [isDragOverSidebar, setIsDragOverSidebar] = useState(false)
+  const dragNodeRef = useRef<HTMLDivElement | null>(null)
 
   const handleCreateFolder = useCallback(() => {
     onCreateFolder(t('notes.untitled_folder'))
@@ -130,16 +132,61 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     setDraggedNodeId(node.id)
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', node.id)
+
+    // 保存拖拽节点的引用
+    dragNodeRef.current = e.currentTarget as HTMLDivElement
+
+    if (e.currentTarget.parentElement) {
+      const rect = e.currentTarget.getBoundingClientRect()
+      const ghostElement = e.currentTarget.cloneNode(true) as HTMLElement
+      ghostElement.style.width = `${rect.width}px`
+      ghostElement.style.opacity = '0.7'
+      ghostElement.style.position = 'absolute'
+      ghostElement.style.top = '-1000px'
+      document.body.appendChild(ghostElement)
+      e.dataTransfer.setDragImage(ghostElement, 10, 10)
+
+      // 在下一帧移除ghost元素
+      setTimeout(() => {
+        document.body.removeChild(ghostElement)
+      }, 0)
+    }
   }, [])
 
-  const handleDragOver = useCallback((e: React.DragEvent, node: NotesTreeNode) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-    setDragOverNodeId(node.id)
-  }, [])
+  const handleDragOver = useCallback(
+    (e: React.DragEvent, node: NotesTreeNode) => {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'move'
+
+      if (draggedNodeId === node.id) {
+        return // 不允许拖放到自己
+      }
+
+      setDragOverNodeId(node.id)
+
+      // 计算拖放位置（顶部、中间、底部）
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+      const mouseY = e.clientY
+      const thresholdTop = rect.top + rect.height * 0.3
+      const thresholdBottom = rect.bottom - rect.height * 0.3
+
+      if (mouseY < thresholdTop) {
+        // 顶部区域 - 放在节点前
+        setDragPosition('before')
+      } else if (mouseY > thresholdBottom) {
+        // 底部区域 - 放在节点后
+        setDragPosition('after')
+      } else {
+        // 中间区域 - 放入节点内部
+        setDragPosition(node.type === 'folder' ? 'inside' : 'after')
+      }
+    },
+    [draggedNodeId]
+  )
 
   const handleDragLeave = useCallback(() => {
     setDragOverNodeId(null)
+    setDragPosition('inside')
   }, [])
 
   const handleDrop = useCallback(
@@ -148,19 +195,20 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
       const draggedId = e.dataTransfer.getData('text/plain')
 
       if (draggedId && draggedId !== targetNode.id) {
-        const targetParentId = targetNode.type === 'folder' ? targetNode.id : undefined
-        onMoveNode(draggedId, targetParentId)
+        onSortNodes(draggedId, targetNode.id, dragPosition)
       }
 
       setDraggedNodeId(null)
       setDragOverNodeId(null)
+      setDragPosition('inside')
     },
-    [onMoveNode]
+    [onSortNodes, dragPosition]
   )
 
   const handleDragEnd = useCallback(() => {
     setDraggedNodeId(null)
     setDragOverNodeId(null)
+    setDragPosition('inside')
   }, [])
 
   // 切换收藏视图
@@ -247,6 +295,9 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
       const hasChildren = node.children && node.children.length > 0
       const isDragging = draggedNodeId === node.id
       const isDragOver = dragOverNodeId === node.id
+      const isDragBefore = isDragOver && dragPosition === 'before'
+      const isDragInside = isDragOver && dragPosition === 'inside'
+      const isDragAfter = isDragOver && dragPosition === 'after'
 
       return (
         <div key={node.id}>
@@ -257,6 +308,9 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
                 depth={depth}
                 isDragging={isDragging}
                 isDragOver={isDragOver}
+                isDragBefore={isDragBefore}
+                isDragInside={isDragInside}
+                isDragAfter={isDragAfter}
                 draggable={!isEditing}
                 onDragStart={(e) => handleDragStart(e, node)}
                 onDragOver={(e) => handleDragOver(e, node)}
@@ -323,6 +377,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
       editingName,
       draggedNodeId,
       dragOverNodeId,
+      dragPosition,
       onSelectNode,
       onToggleExpanded,
       handleFinishEdit,
@@ -445,7 +500,15 @@ const TreeContent = styled.div`
   padding: 8px;
 `
 
-const TreeNodeContainer = styled.div<{ active: boolean; depth: number; isDragging?: boolean; isDragOver?: boolean }>`
+const TreeNodeContainer = styled.div<{
+  active: boolean
+  depth: number
+  isDragging?: boolean
+  isDragOver?: boolean
+  isDragBefore?: boolean
+  isDragInside?: boolean
+  isDragAfter?: boolean
+}>`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -454,18 +517,19 @@ const TreeNodeContainer = styled.div<{ active: boolean; depth: number; isDraggin
   cursor: pointer;
   margin-bottom: 2px;
   background-color: ${(props) => {
-    if (props.isDragOver) return 'var(--color-primary-background)'
+    if (props.isDragInside) return 'var(--color-primary-background)'
     if (props.active) return 'var(--color-background-soft)'
     return 'transparent'
   }};
   border: 1px solid
     ${(props) => {
-      if (props.isDragOver) return 'var(--color-primary)'
+      if (props.isDragInside) return 'var(--color-primary)'
       if (props.active) return 'var(--color-border)'
       return 'transparent'
     }};
   opacity: ${(props) => (props.isDragging ? 0.5 : 1)};
   transition: all 0.2s ease;
+  position: relative;
 
   &:hover {
     background-color: var(--color-background-soft);
@@ -474,6 +538,37 @@ const TreeNodeContainer = styled.div<{ active: boolean; depth: number; isDraggin
       opacity: 1;
     }
   }
+
+  /* 添加拖拽指示线 */
+  ${(props) =>
+    props.isDragBefore &&
+    `
+    &::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--color-primary);
+      border-radius: 1px;
+    }
+  `}
+
+  ${(props) =>
+    props.isDragAfter &&
+    `
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--color-primary);
+      border-radius: 1px;
+    }
+  `}
 `
 
 const TreeNodeContent = styled.div`

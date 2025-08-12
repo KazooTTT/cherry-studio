@@ -239,17 +239,6 @@ const NotesPage: FC = () => {
     }
   }
 
-  // 移动节点
-  const handleMoveNode = async (nodeId: string, targetParentId?: string) => {
-    try {
-      await NotesService.moveNode(nodeId, targetParentId)
-      const updatedTree = await NotesService.getNotesTree()
-      setNotesTree(updatedTree)
-    } catch (error) {
-      logger.error('Failed to move node:', error as Error)
-    }
-  }
-
   // 切换收藏状态
   const handleToggleStar = async (nodeId: string) => {
     try {
@@ -294,6 +283,26 @@ const NotesPage: FC = () => {
     }
   }
 
+  // 处理节点排序
+  const handleSortNodes = async (
+    sourceNodeId: string,
+    targetNodeId: string,
+    position: 'before' | 'after' | 'inside'
+  ) => {
+    try {
+      const success = await NotesService.sortNodes(sourceNodeId, targetNodeId, position)
+      if (success) {
+        logger.debug(`Sorted node ${sourceNodeId} ${position} node ${targetNodeId}`)
+        const updatedTree = await NotesService.getNotesTree()
+        setNotesTree(updatedTree)
+      } else {
+        logger.error(`Failed to sort node ${sourceNodeId} ${position} node ${targetNodeId}`)
+      }
+    } catch (error) {
+      logger.error('Failed to sort nodes:', error as Error)
+    }
+  }
+
   return (
     <Container id="notes-page">
       <NotesNavbar />
@@ -309,7 +318,7 @@ const NotesPage: FC = () => {
             onRenameNode={handleRenameNode}
             onToggleExpanded={handleToggleExpanded}
             onToggleStar={handleToggleStar}
-            onMoveNode={handleMoveNode}
+            onSortNodes={handleSortNodes}
             onUploadFiles={handleUploadFiles}
           />
         )}
