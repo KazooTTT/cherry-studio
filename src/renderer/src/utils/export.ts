@@ -915,7 +915,7 @@ export const exportMessageToNotes = async (title: string, content: string): Prom
       content: i18n.t('message.error.notes.export'),
       key: 'notes-export-error'
     })
-    return null
+    throw error
   }
 }
 
@@ -941,6 +941,6 @@ export const exportTopicToNotes = async (topic: Topic): Promise<NotesTreeNode | 
       content: i18n.t('message.error.notes.export'),
       key: 'notes-export-error'
     })
-    return null
+    throw error
   }
 }

@@ -162,17 +162,11 @@ export async function createNote(name: string, content: string = '', parentId?: 
   const noteId = uuidv4()
   const filesPath = store.getState().runtime.filesPath
 
-  // 确保文件名是markdown格式
-  let displayName = name
-  if (!displayName.toLowerCase().endsWith(MARKDOWN_EXT)) {
-    displayName += MARKDOWN_EXT
-  }
-
   try {
     const fileMetadata: FileMetadata = {
       id: noteId,
       name: noteId + MARKDOWN_EXT,
-      origin_name: displayName,
+      origin_name: name,
       path: `${filesPath}/${noteId}${MARKDOWN_EXT}`,
       size: content.length,
       ext: MARKDOWN_EXT,
@@ -187,9 +181,9 @@ export async function createNote(name: string, content: string = '', parentId?: 
     // 创建树节点
     const note: NotesTreeNode = {
       id: noteId,
-      name: displayName,
+      name: name,
       type: 'file',
-      treePath: getNodePath(displayName, parentId),
+      treePath: getNodePath(name, parentId),
       fileId: noteId,
       createdAt: fileMetadata.created_at,
       updatedAt: fileMetadata.created_at
@@ -379,33 +373,9 @@ export async function toggleStarred(nodeId: string): Promise<void> {
 }
 
 /**
- * 移动节点到新的父节点
+ * 移动节点
  */
-export async function moveNode(nodeId: string, newParentId?: string): Promise<void> {
-  const tree = await getNotesTree()
-  const node = findNodeInTree(tree, nodeId)
-
-  if (!node) {
-    throw new Error('Node not found')
-  }
-
-  removeNodeFromTree(tree, nodeId)
-
-  // 如果是文件类型，需要更新treePath
-  if (node.type === 'file') {
-    node.treePath = getNodePath(node.name, newParentId)
-  }
-  node.updatedAt = new Date().toISOString()
-
-  insertNodeIntoTree(tree, node, newParentId)
-
-  await saveNotesTree(tree)
-}
-
-/**
- * 对节点进行排序
- */
-export async function sortNodes(
+export async function moveNode(
   sourceNodeId: string,
   targetNodeId: string,
   position: 'before' | 'after' | 'inside'

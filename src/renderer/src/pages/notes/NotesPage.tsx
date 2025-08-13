@@ -12,8 +12,8 @@ import {
   deleteNode,
   getNotesTree,
   isParentNode,
+  moveNode,
   renameNode,
-  sortNodes,
   toggleNodeExpanded,
   toggleStarred,
   updateNote,
@@ -163,16 +163,9 @@ const NotesPage: FC = () => {
   // 创建笔记
   const handleCreateNote = async (name: string, parentId?: string) => {
     try {
-      let noteName = name
-      if (!noteName.toLowerCase().endsWith('.md')) {
-        noteName += '.md'
-      }
-
-      const newNote = await createNote(noteName, '', parentId)
+      const newNote = await createNote(name, '', parentId)
       const updatedTree = await getNotesTree()
       setNotesTree(updatedTree)
-
-      // 自动选择新创建的笔记
       setActiveNodeId(newNote.id)
     } catch (error) {
       logger.error('Failed to create note:', error as Error)
@@ -302,7 +295,7 @@ const NotesPage: FC = () => {
     position: 'before' | 'after' | 'inside'
   ) => {
     try {
-      const success = await sortNodes(sourceNodeId, targetNodeId, position)
+      const success = await moveNode(sourceNodeId, targetNodeId, position)
       if (success) {
         logger.debug(`Sorted node ${sourceNodeId} ${position} node ${targetNodeId}`)
         const updatedTree = await getNotesTree()
