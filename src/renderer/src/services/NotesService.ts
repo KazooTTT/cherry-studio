@@ -7,7 +7,7 @@ import { NotesTreeNode } from '@renderer/types/note'
 import { v4 as uuidv4 } from 'uuid'
 
 const MARKDOWN_EXT = '.md'
-const NOTES_STORAGE_KEY = 'notes-tree-structure'
+const NOTES_TREE_ID = 'notes-tree-structure'
 
 const logger = loggerService.withContext('NotesService')
 
@@ -16,8 +16,8 @@ const logger = loggerService.withContext('NotesService')
  */
 export async function getNotesTree(): Promise<NotesTreeNode[]> {
   try {
-    const storedTree = localStorage.getItem(NOTES_STORAGE_KEY)
-    const tree: NotesTreeNode[] = storedTree ? JSON.parse(storedTree) : []
+    const record = await db.notes_tree.get(NOTES_TREE_ID)
+    const tree: NotesTreeNode[] = record?.tree || []
 
     await syncFile(tree)
     logger.debug('Notes tree loaded:', tree)
@@ -126,7 +126,7 @@ function removeDeletedFiles(tree: NotesTreeNode[], deletedFileIds: string[]): bo
  */
 export async function saveNotesTree(tree: NotesTreeNode[]): Promise<void> {
   try {
-    localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(tree))
+    await db.notes_tree.put({ id: NOTES_TREE_ID, tree })
   } catch (error) {
     logger.error('Failed to save notes tree:', error as Error)
   }
@@ -524,24 +524,40 @@ function getNodePath(name: string, parentId?: string): string {
 /**
  * 递归构建节点路径
  */
-function buildNodePath(nodeId: string): string {
-  // 从当前存储的树中查找节点
-  const storedTree = localStorage.getItem(NOTES_STORAGE_KEY)
-  const tree: NotesTreeNode[] = storedTree ? JSON.parse(storedTree) : []
+function buildNodePath(nodeId: string): Promise<string> {
+  return new Promise((resolve) => {
+    db.notes_tree
+      .get(NOTES_TREE_ID)
+      .then((record) => {
+        const tree: NotesTreeNode[] = record?.tree || []
 
-  const node = findNodeInTree(tree, nodeId)
-  if (!node) {
-    return `/${nodeId}`
-  }
+        const node = findNodeInTree(tree, nodeId)
+        if (!node) {
+          resolve(`/${nodeId}`)
+          return
+        }
 
-  // 递归查找父节点路径
-  const parentNode = findParentNode(tree, nodeId)
-  if (!parentNode) {
-    return `/${node.name}`
-  }
+        // 递归查找父节点路径
+        const parentNode = findParentNode(tree, nodeId)
+        if (!parentNode) {
+          resolve(`/${node.name}`)
+          return
+        }
 
-  const parentPath = buildNodePath(parentNode.id)
-  return `${parentPath}/${node.name}`
+        buildNodePath(parentNode.id)
+          .then((parentPath) => {
+            resolve(`${parentPath}/${node.name}`)
+          })
+          .catch((error) => {
+            logger.error('Failed to build node path:', error as Error)
+            resolve(`/${nodeId}`)
+          })
+      })
+      .catch((error) => {
+        logger.error('Failed to build node path:', error as Error)
+        resolve(`/${nodeId}`)
+      })
+  })
 }
 
 /**

@@ -3,7 +3,7 @@ import { Client } from '@notionhq/client'
 import i18n from '@renderer/i18n'
 import { getProviderLabel } from '@renderer/i18n/label'
 import { getMessageTitle } from '@renderer/services/MessagesService'
-import { createNote } from '@renderer/services/NotesService' // 引入 notion-helper 的 appendBlocks 函数
+import { createNote } from '@renderer/services/NotesService'
 import store from '@renderer/store'
 import { setExportState } from '@renderer/store/runtime'
 import type { Topic } from '@renderer/types'
