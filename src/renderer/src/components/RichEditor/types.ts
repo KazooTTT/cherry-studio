@@ -3,6 +3,8 @@ export interface RichEditorProps {
   initialContent?: string
   /** Placeholder text when editor is empty */
   placeholder?: string
+  /** Enable in-editor content search UI */
+  enableContentSearch?: boolean
   /** Callback when content changes (plain text) */
   onContentChange?: (content: string) => void
   /** Callback when HTML content changes */
@@ -15,6 +17,8 @@ export interface RichEditorProps {
   onPaste?: (event: ClipboardEvent) => string
   /** Whether the editor is editable */
   editable?: boolean
+  /** Whether to show the table of contents component */
+  showTableOfContents?: boolean
   /** Custom CSS class name */
   className?: string
   /** Whether to show the toolbar */

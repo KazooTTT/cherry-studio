@@ -316,14 +316,8 @@ export async function renameNode(nodeId: string, newName: string): Promise<void>
     throw new Error('Node not found')
   }
 
-  // 为文件类型自动添加.md后缀
-  let finalName = newName
-  if (node.type === 'file' && !finalName.toLowerCase().endsWith(MARKDOWN_EXT)) {
-    finalName += MARKDOWN_EXT
-  }
-
   // 更新节点名称
-  node.name = finalName
+  node.name = newName
   node.updatedAt = new Date().toISOString()
 
   // 如果是文件类型，还需要更新文件记录
@@ -334,7 +328,7 @@ export async function renameNode(nodeId: string, newName: string): Promise<void>
       if (fileMetadata) {
         // 更新文件的原始名称（显示名称）
         await db.files.update(node.fileId, {
-          origin_name: finalName
+          origin_name: newName
         })
       }
     } catch (error) {

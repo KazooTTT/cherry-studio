@@ -1,4 +1,5 @@
 import { loggerService } from '@logger'
+import { EditIcon } from '@renderer/components/Icons'
 import { HSpaceBetweenStack } from '@renderer/components/Layout'
 import RichEditor from '@renderer/components/RichEditor'
 import { RichEditorRef } from '@renderer/components/RichEditor/types'
@@ -22,7 +23,7 @@ import {
 import { estimateTextTokens } from '@renderer/services/TokenService'
 import { NotesTreeNode } from '@renderer/types/note'
 import { Button, Empty, Spin } from 'antd'
-import { Edit, Save } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -354,7 +355,7 @@ const NotesPage: FC = () => {
                       <Button
                         type="primary"
                         size="small"
-                        icon={showPreview ? <Edit size={14} /> : <Save size={14} />}
+                        icon={showPreview ? <EditIcon size={14} /> : <Eye size={14} />}
                         onClick={() => {
                           const currentScrollTop = editorRef.current?.getScrollTop?.() || 0
                           if (showPreview) {
@@ -362,11 +363,10 @@ const NotesPage: FC = () => {
                             requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
                           } else {
                             setShowPreview(true)
-                            window.message.success(t('common.saved'))
                             requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
                           }
                         }}>
-                        {showPreview ? t('common.edit') : t('common.save')}
+                        {showPreview ? t('common.edit') : t('common.preview')}
                       </Button>
                     </HSpaceBetweenStack>
                   </BottomPanel>
@@ -375,7 +375,9 @@ const NotesPage: FC = () => {
             </EditorContainer>
           ) : (
             <MainContent>
-              <Empty description={t('notes.empty')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              <EmptyContainer>
+                <Empty description={t('notes.empty')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              </EmptyContainer>
             </MainContent>
           )}
         </EditorWrapper>
@@ -396,6 +398,14 @@ const LoadingContainer = styled.div`
   align-items: center;
   width: 100%;
   height: 100%;
+`
+
+const EmptyContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
 `
 
 const ContentContainer = styled.div`

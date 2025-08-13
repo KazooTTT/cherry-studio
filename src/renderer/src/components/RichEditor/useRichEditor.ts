@@ -16,11 +16,16 @@ import type { Editor } from '@tiptap/core'
 import { TaskItem, TaskList } from '@tiptap/extension-list'
 import { migrateMathStrings } from '@tiptap/extension-mathematics'
 import Mention from '@tiptap/extension-mention'
+import {
+  getHierarchicalIndexes,
+  type TableOfContentDataItem,
+  TableOfContents
+} from '@tiptap/extension-table-of-contents'
 import Typography from '@tiptap/extension-typography'
 import { useEditor, useEditorState } from '@tiptap/react'
 import { StarterKit } from '@tiptap/starter-kit'
 import { t } from 'i18next'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { commandSuggestion } from './command'
 import { CodeBlockShiki } from './extensions/code-block-shiki/code-block-shiki'
@@ -49,6 +54,8 @@ export interface UseRichEditorOptions {
   placeholder?: string
   /** Whether the editor is editable */
   editable?: boolean
+  /** Whether to enable table of contents functionality */
+  enableTableOfContents?: boolean
   /** Show table action menu (row/column) with concrete actions and position */
   onShowTableActionMenu?: (payload: {
     type: 'row' | 'column'
@@ -56,6 +63,7 @@ export interface UseRichEditorOptions {
     position: { x: number; y: number }
     actions: { id: string; label: string; action: () => void }[]
   }) => void
+  scrollParent?: () => HTMLElement | null
 }
 
 export interface UseRichEditorReturn {
@@ -73,6 +81,8 @@ export interface UseRichEditorReturn {
   disabled: boolean
   /** Current formatting state from TipTap editor */
   formattingState: FormattingState
+  /** Table of contents items */
+  tableOfContentsItems: TableOfContentDataItem[]
 
   /** Set markdown content */
   setMarkdown: (content: string) => void
@@ -106,22 +116,94 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     previewLength = 50,
     placeholder = '',
     editable = true,
-    onShowTableActionMenu
+    onShowTableActionMenu,
+    scrollParent
   } = options
 
   const [markdown, setMarkdownState] = useState<string>(initialContent)
 
+  const html = useMemo(() => {
+    if (!markdown) return ''
+    return markdownToSafeHtml(markdown)
+  }, [markdown])
+
+  const previewText = useMemo(() => {
+    if (!markdown) return ''
+    return markdownToPreviewText(markdown, previewLength)
+  }, [markdown, previewLength])
+
+  const isMarkdown = useMemo(() => {
+    return isMarkdownContent(markdown)
+  }, [markdown])
+
   // Get theme and language mapping from CodeStyleProvider
   const { activeShikiTheme, languageMap } = useCodeStyle()
+
+  const [tableOfContentsItems, setTableOfContentsItems] = useState<TableOfContentDataItem[]>([])
+  const lastActiveHeadingIdRef = useRef<string | null>(null)
+  const lastDocSizeRef = useRef<number>(0)
 
   // TipTap editor extensions
   const extensions = useMemo(
     () => [
       StarterKit.configure({
         heading: {
-          levels: [1, 2, 3]
+          levels: [1, 2, 3, 4, 5, 6]
         },
         codeBlock: false
+      }),
+      TableOfContents.configure({
+        getIndex: getHierarchicalIndexes,
+        onUpdate(content) {
+          const resolveParent = (): HTMLElement | null => {
+            if (!scrollParent) return null
+            return typeof scrollParent === 'function' ? (scrollParent as () => HTMLElement)() : scrollParent
+          }
+
+          const parent = resolveParent()
+          if (!parent) return
+          const parentTop = parent.getBoundingClientRect().top
+
+          const docSize = content.length
+
+          let closestIndex = -1
+          let minDelta = Number.POSITIVE_INFINITY
+          for (let i = 0; i < content.length; i++) {
+            const rect = content[i].dom.getBoundingClientRect()
+            const delta = rect.top - parentTop
+            if (delta >= -4 && delta < minDelta) {
+              minDelta = delta
+              closestIndex = i
+            }
+          }
+          if (closestIndex === -1) {
+            // If all are above the viewport, pick the last one above
+            for (let i = 0; i < content.length; i++) {
+              const rect = content[i].dom.getBoundingClientRect()
+              if (rect.top < parentTop) closestIndex = i
+            }
+            if (closestIndex === -1) closestIndex = 0
+          }
+
+          const activeId = content[closestIndex]?.id ?? null
+
+          // If doc size and active id are unchanged, avoid setState to prevent rerenders
+          if (lastDocSizeRef.current === docSize && lastActiveHeadingIdRef.current === activeId) {
+            return
+          }
+
+          lastDocSizeRef.current = docSize
+          lastActiveHeadingIdRef.current = activeId
+
+          const normalized = content.map((item, idx) => {
+            const rect = item.dom.getBoundingClientRect()
+            const isScrolledOver = rect.top < parentTop
+            return { ...item, isActive: idx === closestIndex, isScrolledOver }
+          })
+
+          setTableOfContentsItems(normalized)
+        },
+        scrollParent: (scrollParent as any) ?? window
       }),
       CodeBlockShiki.configure({
         theme: activeShikiTheme,
@@ -202,20 +284,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [placeholder, activeShikiTheme, languageMap]
   )
-
-  const html = useMemo(() => {
-    if (!markdown) return ''
-    return markdownToSafeHtml(markdown)
-  }, [markdown])
-
-  const previewText = useMemo(() => {
-    if (!markdown) return ''
-    return markdownToPreviewText(markdown, previewLength)
-  }, [markdown, previewLength])
-
-  const isMarkdown = useMemo(() => {
-    return isMarkdownContent(markdown)
-  }, [markdown])
 
   const editor = useEditor({
     shouldRerenderOnTransaction: true,
@@ -527,6 +595,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     isMarkdown,
     disabled: !editable,
     formattingState,
+    tableOfContentsItems,
 
     // Actions
     setMarkdown,

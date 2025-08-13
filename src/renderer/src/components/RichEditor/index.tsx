@@ -1,10 +1,13 @@
+import { ContentSearch, type ContentSearchRef } from '@renderer/components/ContentSearch'
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import { EditorContent } from '@tiptap/react'
 import { t } from 'i18next'
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Trash2 } from 'lucide-react'
 import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { useHotkeys } from 'react-hotkeys-hook'
 
 import { MdiDragHandle } from '../Icons/SVGIcon'
+import Scrollbar from '../Scrollbar'
 import {
   getAllCommands,
   getToolbarCommands,
@@ -16,6 +19,7 @@ import {
 } from './command'
 import { ActionMenu, type ActionMenuItem } from './components/ActionMenu'
 import { EditorContent as StyledEditorContent, RichEditorWrapper } from './styles'
+import { ToC } from './TableOfContent'
 import { Toolbar } from './toolbar'
 import type { FormattingCommand, RichEditorProps, RichEditorRef } from './types'
 import { useRichEditor } from './useRichEditor'
@@ -34,39 +38,82 @@ const RichEditor = ({
   minHeight,
   maxHeight,
   initialCommands,
-  onCommandsReady
+  onCommandsReady,
+  showTableOfContents = false,
+  enableContentSearch = false
   // toolbarItems: _toolbarItems // TODO: Implement custom toolbar items
 }: RichEditorProps & { ref?: React.RefObject<RichEditorRef | null> }) => {
   // Use the rich editor hook for complete editor management
-  const { editor, markdown, html, formattingState, setMarkdown, setHtml, clear, getPreviewText } = useRichEditor({
-    initialContent,
-    onChange: onMarkdownChange,
-    onHtmlChange,
-    onContentChange,
-    onBlur,
-    placeholder,
-    editable,
-    onShowTableActionMenu: ({ position, actions }) => {
-      const iconMap: Record<string, React.ReactNode> = {
-        insertRowBefore: <ArrowUp size={16} />,
-        insertColumnBefore: <ArrowLeft size={16} />,
-        insertRowAfter: <ArrowDown size={16} />,
-        insertColumnAfter: <ArrowRight size={16} />,
-        deleteRow: <Trash2 size={16} />,
-        deleteColumn: <Trash2 size={16} />
-      }
+  const { editor, markdown, html, formattingState, tableOfContentsItems, setMarkdown, setHtml, clear, getPreviewText } =
+    useRichEditor({
+      initialContent,
+      onChange: onMarkdownChange,
+      onHtmlChange,
+      onContentChange,
+      onBlur,
+      placeholder,
+      editable,
+      scrollParent: () => scrollContainerRef.current,
+      onShowTableActionMenu: ({ position, actions }) => {
+        const iconMap: Record<string, React.ReactNode> = {
+          insertRowBefore: <ArrowUp size={16} />,
+          insertColumnBefore: <ArrowLeft size={16} />,
+          insertRowAfter: <ArrowDown size={16} />,
+          insertColumnAfter: <ArrowRight size={16} />,
+          deleteRow: <Trash2 size={16} />,
+          deleteColumn: <Trash2 size={16} />
+        }
 
-      const items: ActionMenuItem[] = actions.map((a, idx) => ({
-        key: String(idx),
-        label: a.label,
-        icon: iconMap[a.id],
-        onClick: a.action
-      }))
-      setTableActionMenu({ show: true, position, items })
-    }
-  })
+        const items: ActionMenuItem[] = actions.map((a, idx) => ({
+          key: String(idx),
+          label: a.label,
+          icon: iconMap[a.id],
+          onClick: a.action
+        }))
+        setTableActionMenu({ show: true, position, items })
+      }
+    })
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
+  const contentSearchRef = useRef<ContentSearchRef>(null)
+
+  const onKeyDownEditor = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (!enableContentSearch) return
+      const isModF = (event.metaKey || event.ctrlKey) && (event.key === 'f' || event.key === 'F')
+      if (isModF) {
+        event.preventDefault()
+        const selectedText = window.getSelection()?.toString().trim()
+        contentSearchRef.current?.enable(selectedText)
+        return
+      }
+      if (event.key === 'Escape') {
+        contentSearchRef.current?.disable()
+      }
+    },
+    [enableContentSearch]
+  )
+
+  useHotkeys(
+    'mod+f',
+    (event) => {
+      if (!enableContentSearch) return
+      event.preventDefault()
+      const selectedText = window.getSelection()?.toString().trim()
+      contentSearchRef.current?.enable(selectedText)
+    },
+    { enableOnContentEditable: true, preventDefault: true, enabled: enableContentSearch },
+    [enableContentSearch]
+  )
+  useHotkeys(
+    'esc',
+    () => {
+      if (!enableContentSearch) return
+      contentSearchRef.current?.disable()
+    },
+    { enableOnContentEditable: true, enabled: enableContentSearch },
+    [enableContentSearch]
+  )
 
   // Table action menu state
   const [tableActionMenu, setTableActionMenu] = useState<{
@@ -281,14 +328,37 @@ const RichEditor = ({
   )
 
   return (
-    <RichEditorWrapper className={`rich-editor-wrapper ${className}`} $minHeight={minHeight} $maxHeight={maxHeight}>
+    <RichEditorWrapper
+      className={`rich-editor-wrapper ${className}`}
+      $minHeight={minHeight}
+      $maxHeight={maxHeight}
+      onKeyDown={onKeyDownEditor}>
       {showToolbar && <Toolbar editor={editor} formattingState={formattingState} onCommand={handleCommand} />}
-      <StyledEditorContent ref={scrollContainerRef}>
-        <DragHandle editor={editor}>
-          <MdiDragHandle />
-        </DragHandle>
-        <EditorContent editor={editor} />
-      </StyledEditorContent>
+      <Scrollbar ref={scrollContainerRef} style={{ flex: 1 }}>
+        <StyledEditorContent>
+          <DragHandle editor={editor}>
+            <MdiDragHandle />
+          </DragHandle>
+          <EditorContent editor={editor} />
+        </StyledEditorContent>
+      </Scrollbar>
+      {enableContentSearch && (
+        <ContentSearch
+          ref={contentSearchRef}
+          searchTarget={scrollContainerRef as React.RefObject<HTMLElement>}
+          filter={{
+            acceptNode(node) {
+              const inEditor = (node as Node).parentElement?.closest('.ProseMirror')
+              return inEditor ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
+            }
+          }}
+          includeUser={false}
+          onIncludeUserChange={() => {}}
+          showUserToggle={false}
+          positionMode="absolute"
+        />
+      )}
+      {showTableOfContents && <ToC items={tableOfContentsItems} editor={editor} />}
       <ActionMenu
         show={tableActionMenu.show}
         position={tableActionMenu.position}

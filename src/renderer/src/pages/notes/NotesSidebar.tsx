@@ -1,4 +1,5 @@
 import { loggerService } from '@logger'
+import { DeleteIcon } from '@renderer/components/Icons'
 import SaveToKnowledgePopup from '@renderer/components/Popups/SaveToKnowledgePopup'
 import Scrollbar from '@renderer/components/Scrollbar'
 import { useKnowledgeBases } from '@renderer/hooks/useKnowledge'
@@ -16,8 +17,7 @@ import {
   FolderOpen,
   FolderPlus,
   Star,
-  StarOff,
-  Trash2
+  StarOff
 } from 'lucide-react'
 import { FC, useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -279,7 +279,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
           label: t('notes.delete'),
           danger: true,
           key: 'delete',
-          icon: <Trash2 size={14} />,
+          icon: <DeleteIcon size={14} className="lucide-custom" />,
           onClick: () => {
             handleDeleteNode(node)
           }
