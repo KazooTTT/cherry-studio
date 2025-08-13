@@ -5,7 +5,7 @@ import { useFullscreen } from '@renderer/hooks/useFullscreen'
 import { useShowWorkspace } from '@renderer/hooks/useStore'
 import { Tooltip } from 'antd'
 import { PanelLeftClose, PanelRightClose } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
@@ -13,16 +13,10 @@ const NotesNavbar = () => {
   const { t } = useTranslation()
   const { showWorkspace, toggleShowWorkspace } = useShowWorkspace()
   const isFullscreen = useFullscreen()
-  const [sidebarHideCooldown, setSidebarHideCooldown] = useState(false)
 
   const handleToggleShowWorkspace = useCallback(() => {
-    if (showWorkspace) {
-      toggleShowWorkspace()
-      setSidebarHideCooldown(true)
-    } else {
-      toggleShowWorkspace()
-    }
-  }, [showWorkspace, toggleShowWorkspace])
+    toggleShowWorkspace()
+  }, [toggleShowWorkspace])
 
   return (
     <Navbar className="notes-navbar">
@@ -37,21 +31,11 @@ const NotesNavbar = () => {
       )}
       <NavbarRight style={{ justifyContent: 'space-between', flex: 1 }} className="notes-navbar-right">
         <HStack alignItems="center">
-          {!showWorkspace && !sidebarHideCooldown && (
+          {!showWorkspace && (
             <Tooltip title={t('navbar.show_sidebar')} mouseEnterDelay={0.8}>
               <NavbarIcon
                 onClick={handleToggleShowWorkspace}
                 style={{ marginRight: 8, marginLeft: isMac && !isFullscreen ? 4 : -12 }}>
-                <PanelRightClose size={18} />
-              </NavbarIcon>
-            </Tooltip>
-          )}
-          {!showWorkspace && sidebarHideCooldown && (
-            <Tooltip title={t('navbar.show_sidebar')} mouseEnterDelay={0.8}>
-              <NavbarIcon
-                onClick={handleToggleShowWorkspace}
-                style={{ marginRight: 8, marginLeft: isMac && !isFullscreen ? 4 : -12 }}
-                onMouseOut={() => setSidebarHideCooldown(false)}>
                 <PanelRightClose size={18} />
               </NavbarIcon>
             </Tooltip>

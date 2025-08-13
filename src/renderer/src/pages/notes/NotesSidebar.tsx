@@ -92,11 +92,14 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
 
   const handleDeleteNode = useCallback(
     (node: NotesTreeNode) => {
-      const confirmKey = node.type === 'folder' ? 'delete_folder_confirm' : 'delete_note_confirm'
+      const confirmText =
+        node.type === 'folder'
+          ? t('delete_folder_confirm', { name: node.name })
+          : t('delete_note_confirm', { name: node.name })
 
       window.modal.confirm({
         title: t('notes.delete'),
-        content: t(`notes.${confirmKey}`, { name: node.name }),
+        content: confirmText,
         centered: true,
         okButtonProps: { danger: true },
         onOk: () => {

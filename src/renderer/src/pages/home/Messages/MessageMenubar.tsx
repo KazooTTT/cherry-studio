@@ -26,8 +26,8 @@ import {
   exportMarkdownToSiyuan,
   exportMarkdownToYuque,
   exportMessageAsMarkdown,
+  exportMessageToNotes,
   exportMessageToNotion,
-  exportTopicToNotes,
   messageToMarkdown
 } from '@renderer/utils/export'
 // import { withMessageThought } from '@renderer/utils/formats'
@@ -263,7 +263,9 @@ const MessageMenubar: FC<Props> = (props) => {
             label: t('notes.save'),
             key: 'clipboard',
             onClick: async () => {
-              exportTopicToNotes(topic)
+              const title = await getMessageTitle(message)
+              const markdown = messageToMarkdown(message)
+              exportMessageToNotes(title, markdown)
             }
           }
         ]
