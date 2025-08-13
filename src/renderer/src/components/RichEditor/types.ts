@@ -3,6 +3,8 @@ export interface RichEditorProps {
   initialContent?: string
   /** Placeholder text when editor is empty */
   placeholder?: string
+  /** Enable in-editor content search UI */
+  enableContentSearch?: boolean
   /** Callback when content changes (plain text) */
   onContentChange?: (content: string) => void
   /** Callback when HTML content changes */

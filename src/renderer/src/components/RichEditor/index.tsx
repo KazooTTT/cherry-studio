@@ -1,8 +1,10 @@
+import { ContentSearch, type ContentSearchRef } from '@renderer/components/ContentSearch'
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import { EditorContent } from '@tiptap/react'
 import { t } from 'i18next'
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Trash2 } from 'lucide-react'
 import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { useHotkeys } from 'react-hotkeys-hook'
 
 import { MdiDragHandle } from '../Icons/SVGIcon'
 import Scrollbar from '../Scrollbar'
@@ -37,7 +39,8 @@ const RichEditor = ({
   maxHeight,
   initialCommands,
   onCommandsReady,
-  showTableOfContents = false
+  showTableOfContents = false,
+  enableContentSearch = false
   // toolbarItems: _toolbarItems // TODO: Implement custom toolbar items
 }: RichEditorProps & { ref?: React.RefObject<RichEditorRef | null> }) => {
   // Use the rich editor hook for complete editor management
@@ -72,6 +75,45 @@ const RichEditor = ({
     })
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
+  const contentSearchRef = useRef<ContentSearchRef>(null)
+
+  const onKeyDownEditor = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (!enableContentSearch) return
+      const isModF = (event.metaKey || event.ctrlKey) && (event.key === 'f' || event.key === 'F')
+      if (isModF) {
+        event.preventDefault()
+        const selectedText = window.getSelection()?.toString().trim()
+        contentSearchRef.current?.enable(selectedText)
+        return
+      }
+      if (event.key === 'Escape') {
+        contentSearchRef.current?.disable()
+      }
+    },
+    [enableContentSearch]
+  )
+
+  useHotkeys(
+    'mod+f',
+    (event) => {
+      if (!enableContentSearch) return
+      event.preventDefault()
+      const selectedText = window.getSelection()?.toString().trim()
+      contentSearchRef.current?.enable(selectedText)
+    },
+    { enableOnContentEditable: true, preventDefault: true, enabled: enableContentSearch },
+    [enableContentSearch]
+  )
+  useHotkeys(
+    'esc',
+    () => {
+      if (!enableContentSearch) return
+      contentSearchRef.current?.disable()
+    },
+    { enableOnContentEditable: true, enabled: enableContentSearch },
+    [enableContentSearch]
+  )
 
   // Table action menu state
   const [tableActionMenu, setTableActionMenu] = useState<{
@@ -286,7 +328,11 @@ const RichEditor = ({
   )
 
   return (
-    <RichEditorWrapper className={`rich-editor-wrapper ${className}`} $minHeight={minHeight} $maxHeight={maxHeight}>
+    <RichEditorWrapper
+      className={`rich-editor-wrapper ${className}`}
+      $minHeight={minHeight}
+      $maxHeight={maxHeight}
+      onKeyDown={onKeyDownEditor}>
       {showToolbar && <Toolbar editor={editor} formattingState={formattingState} onCommand={handleCommand} />}
       <Scrollbar ref={scrollContainerRef} style={{ flex: 1 }}>
         <StyledEditorContent>
@@ -296,6 +342,22 @@ const RichEditor = ({
           <EditorContent editor={editor} />
         </StyledEditorContent>
       </Scrollbar>
+      {enableContentSearch && (
+        <ContentSearch
+          ref={contentSearchRef}
+          searchTarget={scrollContainerRef as React.RefObject<HTMLElement>}
+          filter={{
+            acceptNode(node) {
+              const inEditor = (node as Node).parentElement?.closest('.ProseMirror')
+              return inEditor ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
+            }
+          }}
+          includeUser={false}
+          onIncludeUserChange={() => {}}
+          showUserToggle={false}
+          positionMode="absolute"
+        />
+      )}
       {showTableOfContents && <ToC items={tableOfContentsItems} editor={editor} />}
       <ActionMenu
         show={tableActionMenu.show}

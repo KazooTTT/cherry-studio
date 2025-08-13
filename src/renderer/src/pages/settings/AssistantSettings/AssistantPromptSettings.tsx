@@ -147,7 +147,8 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
             onCommandsReady={handleCommandsReady}
             showToolbar={!showPreview}
             editable={!showPreview}
-            showTableOfContents={true}
+            showTableOfContents={false}
+            enableContentSearch={false}
             className="prompt-rich-editor"
           />
         </RichEditorContainer>
