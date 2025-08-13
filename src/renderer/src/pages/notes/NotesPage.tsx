@@ -346,6 +346,8 @@ const NotesPage: FC = () => {
                       onCommandsReady={handleCommandsReady}
                       showToolbar={!showPreview}
                       editable={!showPreview}
+                      showTableOfContents
+                      enableContentSearch
                       className="notes-rich-editor"
                     />
                   </RichEditorContainer>
