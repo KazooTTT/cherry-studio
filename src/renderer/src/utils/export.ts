@@ -2,8 +2,8 @@ import { loggerService } from '@logger'
 import { Client } from '@notionhq/client'
 import i18n from '@renderer/i18n'
 import { getProviderLabel } from '@renderer/i18n/label'
-import { NotesService } from '@renderer/services/NotesService'
 import { getMessageTitle } from '@renderer/services/MessagesService'
+import { createNote } from '@renderer/services/NotesService' // 引入 notion-helper 的 appendBlocks 函数
 import store from '@renderer/store'
 import { setExportState } from '@renderer/store/runtime'
 import type { Topic } from '@renderer/types'
@@ -14,7 +14,7 @@ import { convertMathFormula, markdownToPlainText } from '@renderer/utils/markdow
 import { getCitationContent, getMainTextContent, getThinkingContent } from '@renderer/utils/messageUtils/find'
 import { markdownToBlocks } from '@tryfabric/martian'
 import dayjs from 'dayjs'
-import { appendBlocks } from 'notion-helper' // 引入 notion-helper 的 appendBlocks 函数
+import { appendBlocks } from 'notion-helper'
 
 const logger = loggerService.withContext('Utils:export')
 
@@ -901,7 +901,7 @@ async function createSiyuanDoc(
  */
 export const exportMessageToNotes = async (title: string, content: string): Promise<NotesTreeNode | null> => {
   try {
-    const note = await NotesService.createNote(title, content)
+    const note = await createNote(title, content)
 
     window.message.success({
       content: i18n.t('message.success.notes.export'),
@@ -927,7 +927,7 @@ export const exportMessageToNotes = async (title: string, content: string): Prom
 export const exportTopicToNotes = async (topic: Topic): Promise<NotesTreeNode | null> => {
   try {
     const content = await topicToMarkdown(topic)
-    const note = await NotesService.createNote(topic.name, content)
+    const note = await createNote(topic.name, content)
 
     window.message.success({
       content: i18n.t('message.success.notes.export'),

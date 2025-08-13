@@ -6,7 +6,19 @@ import Scrollbar from '@renderer/components/Scrollbar'
 import { useSettings } from '@renderer/hooks/useSettings'
 import NotesNavbar from '@renderer/pages/notes/NotesNavbar'
 import FileManager from '@renderer/services/FileManager'
-import { NotesService } from '@renderer/services/NotesService'
+import {
+  createFolder,
+  createNote,
+  deleteNode,
+  getNotesTree,
+  isParentNode,
+  renameNode,
+  sortNodes,
+  toggleNodeExpanded,
+  toggleStarred,
+  updateNote,
+  uploadNote
+} from '@renderer/services/NotesService'
 import { estimateTextTokens } from '@renderer/services/TokenService'
 import { NotesTreeNode } from '@renderer/types/note'
 import { Button, Empty, Spin } from 'antd'
@@ -62,7 +74,7 @@ const NotesPage: FC = () => {
       try {
         const activeNode = findNodeById(notesTree, activeNodeId)
         if (activeNode && activeNode.type === 'file') {
-          await NotesService.updateNote(activeNode, content)
+          await updateNote(activeNode, content)
         }
       } catch (error) {
         logger.error('Failed to save note:', error as Error)
@@ -87,7 +99,7 @@ const NotesPage: FC = () => {
   useEffect(() => {
     const loadNotesTree = async () => {
       try {
-        const tree = await NotesService.getNotesTree()
+        const tree = await getNotesTree()
         logger.debug('Loaded notes tree:', tree)
         setNotesTree(tree)
       } catch (error) {
@@ -140,8 +152,8 @@ const NotesPage: FC = () => {
   // 创建文件夹
   const handleCreateFolder = async (name: string, parentId?: string) => {
     try {
-      await NotesService.createFolder(name, parentId)
-      const updatedTree = await NotesService.getNotesTree()
+      await createFolder(name, parentId)
+      const updatedTree = await getNotesTree()
       setNotesTree(updatedTree)
     } catch (error) {
       logger.error('Failed to create folder:', error as Error)
@@ -156,8 +168,8 @@ const NotesPage: FC = () => {
         noteName += '.md'
       }
 
-      const newNote = await NotesService.createNote(noteName, '', parentId)
-      const updatedTree = await NotesService.getNotesTree()
+      const newNote = await createNote(noteName, '', parentId)
+      const updatedTree = await getNotesTree()
       setNotesTree(updatedTree)
 
       // 自动选择新创建的笔记
@@ -198,10 +210,10 @@ const NotesPage: FC = () => {
   const handleDeleteNode = async (nodeId: string) => {
     try {
       const isActiveNodeOrParent =
-        activeNodeId && (nodeId === activeNodeId || NotesService.isParentNode(notesTree, nodeId, activeNodeId))
+        activeNodeId && (nodeId === activeNodeId || isParentNode(notesTree, nodeId, activeNodeId))
 
-      await NotesService.deleteNode(nodeId)
-      const updatedTree = await NotesService.getNotesTree()
+      await deleteNode(nodeId)
+      const updatedTree = await getNotesTree()
       setNotesTree(updatedTree)
 
       // 如果删除的是当前活动节点，清空编辑器
@@ -220,8 +232,8 @@ const NotesPage: FC = () => {
   // 重命名节点
   const handleRenameNode = async (nodeId: string, newName: string) => {
     try {
-      await NotesService.renameNode(nodeId, newName)
-      const updatedTree = await NotesService.getNotesTree()
+      await renameNode(nodeId, newName)
+      const updatedTree = await getNotesTree()
       setNotesTree(updatedTree)
     } catch (error) {
       logger.error('Failed to rename node:', error as Error)
@@ -231,8 +243,8 @@ const NotesPage: FC = () => {
   // 切换展开状态
   const handleToggleExpanded = async (nodeId: string) => {
     try {
-      await NotesService.toggleNodeExpanded(nodeId)
-      const updatedTree = await NotesService.getNotesTree()
+      await toggleNodeExpanded(nodeId)
+      const updatedTree = await getNotesTree()
       setNotesTree(updatedTree)
     } catch (error) {
       logger.error('Failed to toggle expanded:', error as Error)
@@ -242,8 +254,8 @@ const NotesPage: FC = () => {
   // 切换收藏状态
   const handleToggleStar = async (nodeId: string) => {
     try {
-      await NotesService.toggleStarred(nodeId)
-      const updatedTree = await NotesService.getNotesTree()
+      await toggleStarred(nodeId)
+      const updatedTree = await getNotesTree()
       setNotesTree(updatedTree)
     } catch (error) {
       window.message.error(t('notes.starred_failed'))
@@ -264,7 +276,7 @@ const NotesPage: FC = () => {
 
       for (const file of markdownFiles) {
         try {
-          await NotesService.uploadNote(file)
+          await uploadNote(file)
         } catch (error) {
           logger.error(`Failed to upload note file ${file.name}:`, error as Error)
           window.message.error(t('notes.upload_failed', { name: file.name }))
@@ -272,7 +284,7 @@ const NotesPage: FC = () => {
       }
 
       // 上传完成后刷新笔记树
-      const updatedTree = await NotesService.getNotesTree()
+      const updatedTree = await getNotesTree()
       setNotesTree(updatedTree)
       window.message.success(t('notes.upload_success', { count: markdownFiles.length }))
     } catch (error) {
@@ -290,10 +302,10 @@ const NotesPage: FC = () => {
     position: 'before' | 'after' | 'inside'
   ) => {
     try {
-      const success = await NotesService.sortNodes(sourceNodeId, targetNodeId, position)
+      const success = await sortNodes(sourceNodeId, targetNodeId, position)
       if (success) {
         logger.debug(`Sorted node ${sourceNodeId} ${position} node ${targetNodeId}`)
-        const updatedTree = await NotesService.getNotesTree()
+        const updatedTree = await getNotesTree()
         setNotesTree(updatedTree)
       } else {
         logger.error(`Failed to sort node ${sourceNodeId} ${position} node ${targetNodeId}`)
