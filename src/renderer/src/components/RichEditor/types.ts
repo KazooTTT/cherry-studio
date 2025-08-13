@@ -15,6 +15,8 @@ export interface RichEditorProps {
   onPaste?: (event: ClipboardEvent) => string
   /** Whether the editor is editable */
   editable?: boolean
+  /** Whether to show the table of contents component */
+  showTableOfContents?: boolean
   /** Custom CSS class name */
   className?: string
   /** Whether to show the toolbar */

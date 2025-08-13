@@ -5,6 +5,7 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Trash2 } from 'lucide-react'
 import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 import { MdiDragHandle } from '../Icons/SVGIcon'
+import Scrollbar from '../Scrollbar'
 import {
   getAllCommands,
   getToolbarCommands,
@@ -16,6 +17,7 @@ import {
 } from './command'
 import { ActionMenu, type ActionMenuItem } from './components/ActionMenu'
 import { EditorContent as StyledEditorContent, RichEditorWrapper } from './styles'
+import { ToC } from './TableOfContent'
 import { Toolbar } from './toolbar'
 import type { FormattingCommand, RichEditorProps, RichEditorRef } from './types'
 import { useRichEditor } from './useRichEditor'
@@ -34,37 +36,40 @@ const RichEditor = ({
   minHeight,
   maxHeight,
   initialCommands,
-  onCommandsReady
+  onCommandsReady,
+  showTableOfContents = false
   // toolbarItems: _toolbarItems // TODO: Implement custom toolbar items
 }: RichEditorProps & { ref?: React.RefObject<RichEditorRef | null> }) => {
   // Use the rich editor hook for complete editor management
-  const { editor, markdown, html, formattingState, setMarkdown, setHtml, clear, getPreviewText } = useRichEditor({
-    initialContent,
-    onChange: onMarkdownChange,
-    onHtmlChange,
-    onContentChange,
-    onBlur,
-    placeholder,
-    editable,
-    onShowTableActionMenu: ({ position, actions }) => {
-      const iconMap: Record<string, React.ReactNode> = {
-        insertRowBefore: <ArrowUp size={16} />,
-        insertColumnBefore: <ArrowLeft size={16} />,
-        insertRowAfter: <ArrowDown size={16} />,
-        insertColumnAfter: <ArrowRight size={16} />,
-        deleteRow: <Trash2 size={16} />,
-        deleteColumn: <Trash2 size={16} />
-      }
+  const { editor, markdown, html, formattingState, tableOfContentsItems, setMarkdown, setHtml, clear, getPreviewText } =
+    useRichEditor({
+      initialContent,
+      onChange: onMarkdownChange,
+      onHtmlChange,
+      onContentChange,
+      onBlur,
+      placeholder,
+      editable,
+      scrollParent: () => scrollContainerRef.current,
+      onShowTableActionMenu: ({ position, actions }) => {
+        const iconMap: Record<string, React.ReactNode> = {
+          insertRowBefore: <ArrowUp size={16} />,
+          insertColumnBefore: <ArrowLeft size={16} />,
+          insertRowAfter: <ArrowDown size={16} />,
+          insertColumnAfter: <ArrowRight size={16} />,
+          deleteRow: <Trash2 size={16} />,
+          deleteColumn: <Trash2 size={16} />
+        }
 
-      const items: ActionMenuItem[] = actions.map((a, idx) => ({
-        key: String(idx),
-        label: a.label,
-        icon: iconMap[a.id],
-        onClick: a.action
-      }))
-      setTableActionMenu({ show: true, position, items })
-    }
-  })
+        const items: ActionMenuItem[] = actions.map((a, idx) => ({
+          key: String(idx),
+          label: a.label,
+          icon: iconMap[a.id],
+          onClick: a.action
+        }))
+        setTableActionMenu({ show: true, position, items })
+      }
+    })
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
 
@@ -283,12 +288,15 @@ const RichEditor = ({
   return (
     <RichEditorWrapper className={`rich-editor-wrapper ${className}`} $minHeight={minHeight} $maxHeight={maxHeight}>
       {showToolbar && <Toolbar editor={editor} formattingState={formattingState} onCommand={handleCommand} />}
-      <StyledEditorContent ref={scrollContainerRef}>
-        <DragHandle editor={editor}>
-          <MdiDragHandle />
-        </DragHandle>
-        <EditorContent editor={editor} />
-      </StyledEditorContent>
+      <Scrollbar ref={scrollContainerRef} style={{ flex: 1 }}>
+        <StyledEditorContent>
+          <DragHandle editor={editor}>
+            <MdiDragHandle />
+          </DragHandle>
+          <EditorContent editor={editor} />
+        </StyledEditorContent>
+      </Scrollbar>
+      {showTableOfContents && <ToC items={tableOfContentsItems} editor={editor} />}
       <ActionMenu
         show={tableActionMenu.show}
         position={tableActionMenu.position}
