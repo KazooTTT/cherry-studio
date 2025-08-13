@@ -15,13 +15,14 @@ import {
   isParentNode,
   moveNode,
   renameNode,
+  sortAllLevels,
   toggleNodeExpanded,
   toggleStarred,
   updateNote,
   uploadNote
 } from '@renderer/services/NotesService'
 import { estimateTextTokens } from '@renderer/services/TokenService'
-import { NotesTreeNode } from '@renderer/types/note'
+import { NotesSortType, NotesTreeNode } from '@renderer/types/note'
 import { Button, Empty, Spin } from 'antd'
 import { Eye } from 'lucide-react'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
@@ -289,8 +290,8 @@ const NotesPage: FC = () => {
     }
   }
 
-  // 处理节点排序
-  const handleSortNodes = async (
+  // 处理节点移动
+  const handleMoveNode = async (
     sourceNodeId: string,
     targetNodeId: string,
     position: 'before' | 'after' | 'inside'
@@ -298,14 +299,27 @@ const NotesPage: FC = () => {
     try {
       const success = await moveNode(sourceNodeId, targetNodeId, position)
       if (success) {
-        logger.debug(`Sorted node ${sourceNodeId} ${position} node ${targetNodeId}`)
+        logger.debug(`Move node ${sourceNodeId} ${position} node ${targetNodeId}`)
         const updatedTree = await getNotesTree()
         setNotesTree(updatedTree)
       } else {
-        logger.error(`Failed to sort node ${sourceNodeId} ${position} node ${targetNodeId}`)
+        logger.error(`Failed to move node ${sourceNodeId} ${position} node ${targetNodeId}`)
       }
     } catch (error) {
-      logger.error('Failed to sort nodes:', error as Error)
+      logger.error('Failed to move nodes:', error as Error)
+    }
+  }
+
+  // 处理节点排序
+  const handleSortNodes = async (sortType: NotesSortType) => {
+    try {
+      logger.info(`Sorting notes with type: ${sortType}`)
+      await sortAllLevels(sortType)
+      const updatedTree = await getNotesTree()
+      setNotesTree(updatedTree)
+    } catch (error) {
+      logger.error('Failed to sort notes:', error as Error)
+      throw error
     }
   }
 
@@ -324,6 +338,7 @@ const NotesPage: FC = () => {
             onRenameNode={handleRenameNode}
             onToggleExpanded={handleToggleExpanded}
             onToggleStar={handleToggleStar}
+            onMoveNode={handleMoveNode}
             onSortNodes={handleSortNodes}
             onUploadFiles={handleUploadFiles}
           />

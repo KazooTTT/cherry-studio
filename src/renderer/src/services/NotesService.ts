@@ -3,7 +3,7 @@ import db from '@renderer/databases'
 import FileManager from '@renderer/services/FileManager'
 import store from '@renderer/store'
 import { FileMetadata, FileTypes } from '@renderer/types'
-import { NotesTreeNode } from '@renderer/types/note'
+import { NotesSortType, NotesTreeNode } from '@renderer/types/note'
 import { v4 as uuidv4 } from 'uuid'
 
 const MARKDOWN_EXT = '.md'
@@ -614,6 +614,126 @@ async function deleteNodeRecursively(node: NotesTreeNode): Promise<void> {
   } else if (node.type === 'folder' && node.children) {
     for (const child of node.children) {
       await deleteNodeRecursively(child)
+    }
+  }
+}
+
+/**
+ * 对笔记树的同一层级节点进行排序
+ */
+export async function sortNotes(sortType: NotesSortType, folderId?: string): Promise<void> {
+  try {
+    const tree = await getNotesTree()
+
+    // 确定要排序的节点列表
+    let nodesToSort: NotesTreeNode[] = tree
+    if (folderId) {
+      const folderNode = findNodeInTree(tree, folderId)
+      if (!folderNode || folderNode.type !== 'folder' || !folderNode.children) {
+        logger.error(`Failed to sort notes: folder node not found or invalid - ${folderId}`)
+        return
+      }
+      nodesToSort = folderNode.children
+    }
+
+    // 执行排序
+    sortNodesArray(nodesToSort, sortType)
+
+    // 保存更改后的树结构
+    await saveNotesTree(tree)
+    logger.info(`Sorted notes successfully: ${sortType} ${folderId ? `in folder ${folderId}` : 'at root level'}`)
+  } catch (error) {
+    logger.error('Failed to sort notes:', error as Error)
+    throw error
+  }
+}
+
+/**
+ * 对节点数组进行排序
+ */
+function sortNodesArray(nodes: NotesTreeNode[], sortType: NotesSortType): void {
+  // 首先分离文件夹和文件
+  const folders: NotesTreeNode[] = nodes.filter((node) => node.type === 'folder')
+  const files: NotesTreeNode[] = nodes.filter((node) => node.type === 'file')
+
+  // 根据排序类型对文件夹和文件分别进行排序
+  const sortFunction = getSortFunction(sortType)
+  folders.sort(sortFunction)
+  files.sort(sortFunction)
+
+  // 清空原数组并重新填入排序后的节点
+  nodes.length = 0
+  nodes.push(...folders, ...files)
+}
+
+/**
+ * 根据排序类型获取相应的排序函数
+ */
+function getSortFunction(sortType: NotesSortType): (a: NotesTreeNode, b: NotesTreeNode) => number {
+  switch (sortType) {
+    case 'sort_a2z':
+      return (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' })
+
+    case 'sort_z2a':
+      return (a, b) => b.name.localeCompare(a.name, undefined, { sensitivity: 'accent' })
+
+    case 'sort_updated_desc':
+      return (a, b) => {
+        const timeA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0
+        const timeB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0
+        return timeB - timeA
+      }
+
+    case 'sort_updated_asc':
+      return (a, b) => {
+        const timeA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0
+        const timeB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0
+        return timeA - timeB
+      }
+
+    case 'sort_created_desc':
+      return (a, b) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        return timeB - timeA
+      }
+
+    case 'sort_created_asc':
+      return (a, b) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        return timeA - timeB
+      }
+
+    default:
+      return (a, b) => a.name.localeCompare(b.name)
+  }
+}
+
+/**
+ * 递归排序笔记树中的所有层级
+ */
+export async function sortAllLevels(sortType: NotesSortType): Promise<void> {
+  try {
+    const tree = await getNotesTree()
+    sortNodesArray(tree, sortType)
+    recursiveSortNodes(tree, sortType)
+    await saveNotesTree(tree)
+    logger.info(`Sorted all levels of notes successfully: ${sortType}`)
+  } catch (error) {
+    logger.error('Failed to sort all levels of notes:', error as Error)
+    throw error
+  }
+}
+
+/**
+ * 递归对节点中的子节点进行排序
+ */
+function recursiveSortNodes(nodes: NotesTreeNode[], sortType: NotesSortType): void {
+  for (const node of nodes) {
+    if (node.type === 'folder' && node.children && node.children.length > 0) {
+      sortNodesArray(node.children, sortType)
+      recursiveSortNodes(node.children, sortType)
     }
   }
 }

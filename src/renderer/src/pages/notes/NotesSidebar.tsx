@@ -1,12 +1,14 @@
+import { CheckOutlined } from '@ant-design/icons'
 import { loggerService } from '@logger'
 import { DeleteIcon } from '@renderer/components/Icons'
 import SaveToKnowledgePopup from '@renderer/components/Popups/SaveToKnowledgePopup'
 import Scrollbar from '@renderer/components/Scrollbar'
 import { useKnowledgeBases } from '@renderer/hooks/useKnowledge'
-import { NotesTreeNode } from '@renderer/types/note'
+import { NotesSortType, NotesTreeNode } from '@renderer/types/note'
 import { Dropdown, Input, MenuProps, Tooltip } from 'antd'
 import {
   ArrowLeft,
+  ArrowUpNarrowWide,
   ChevronDown,
   ChevronRight,
   Edit3,
@@ -31,7 +33,8 @@ interface NotesSidebarProps {
   onRenameNode: (nodeId: string, newName: string) => void
   onToggleExpanded: (nodeId: string) => void
   onToggleStar: (nodeId: string) => void
-  onSortNodes: (sourceNodeId: string, targetNodeId: string, position: 'before' | 'after' | 'inside') => void
+  onMoveNode: (sourceNodeId: string, targetNodeId: string, position: 'before' | 'after' | 'inside') => void
+  onSortNodes: (sortType: NotesSortType) => void
   onUploadFiles: (files: File[]) => void
   activeNodeId?: string
   notesTree: NotesTreeNode[]
@@ -47,6 +50,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   onRenameNode,
   onToggleExpanded,
   onToggleStar,
+  onMoveNode,
   onSortNodes,
   onUploadFiles,
   activeNodeId,
@@ -61,6 +65,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   const [dragPosition, setDragPosition] = useState<'before' | 'inside' | 'after'>('inside')
   const [isShowStarred, setIsShowStarred] = useState(false)
   const [isDragOverSidebar, setIsDragOverSidebar] = useState(false)
+  const [sortType, setSortType] = useState<NotesSortType>('sort_a2z')
   const dragNodeRef = useRef<HTMLDivElement | null>(null)
 
   const handleCreateFolder = useCallback(() => {
@@ -70,6 +75,14 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   const handleCreateNote = useCallback(() => {
     onCreateNote(t('notes.untitled_note'))
   }, [onCreateNote, t])
+
+  const handleSelectSortType = useCallback(
+    (selectedSortType: NotesSortType) => {
+      setSortType(selectedSortType)
+      onSortNodes(selectedSortType)
+    },
+    [onSortNodes]
+  )
 
   const handleStartEdit = useCallback((node: NotesTreeNode) => {
     setEditingNodeId(node.id)
@@ -136,7 +149,6 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', node.id)
 
-    // 保存拖拽节点的引用
     dragNodeRef.current = e.currentTarget as HTMLDivElement
 
     if (e.currentTarget.parentElement) {
@@ -148,8 +160,6 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
       ghostElement.style.top = '-1000px'
       document.body.appendChild(ghostElement)
       e.dataTransfer.setDragImage(ghostElement, 10, 10)
-
-      // 在下一帧移除ghost元素
       setTimeout(() => {
         document.body.removeChild(ghostElement)
       }, 0)
@@ -162,25 +172,21 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
       e.dataTransfer.dropEffect = 'move'
 
       if (draggedNodeId === node.id) {
-        return // 不允许拖放到自己
+        return
       }
 
       setDragOverNodeId(node.id)
 
-      // 计算拖放位置（顶部、中间、底部）
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
       const mouseY = e.clientY
       const thresholdTop = rect.top + rect.height * 0.3
       const thresholdBottom = rect.bottom - rect.height * 0.3
 
       if (mouseY < thresholdTop) {
-        // 顶部区域 - 放在节点前
         setDragPosition('before')
       } else if (mouseY > thresholdBottom) {
-        // 底部区域 - 放在节点后
         setDragPosition('after')
       } else {
-        // 中间区域 - 放入节点内部
         setDragPosition(node.type === 'folder' ? 'inside' : 'after')
       }
     },
@@ -198,14 +204,14 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
       const draggedId = e.dataTransfer.getData('text/plain')
 
       if (draggedId && draggedId !== targetNode.id) {
-        onSortNodes(draggedId, targetNode.id, dragPosition)
+        onMoveNode(draggedId, targetNode.id, dragPosition)
       }
 
       setDraggedNodeId(null)
       setDragOverNodeId(null)
       setDragPosition('inside')
     },
-    [onSortNodes, dragPosition]
+    [onMoveNode, dragPosition]
   )
 
   const handleDragEnd = useCallback(() => {
@@ -214,12 +220,10 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     setDragPosition('inside')
   }, [])
 
-  // 切换收藏视图
   const handleToggleStarredView = useCallback(() => {
     setIsShowStarred(!isShowStarred)
   }, [isShowStarred])
 
-  // 筛选收藏的笔记
   const filteredTree = useMemo(() => {
     if (!isShowStarred) return notesTree
     const flattenNodes = (nodes: NotesTreeNode[]): NotesTreeNode[] => {
@@ -229,7 +233,6 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
         if (node.type === 'file' && node.is_starred) {
           result.push(node)
         }
-
         if (node.children && node.children.length > 0) {
           result = [...result, ...flattenNodes(node.children)]
         }
@@ -240,7 +243,6 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     return flattenNodes(notesTree)
   }, [notesTree, isShowStarred])
 
-  // 实现右键菜单
   const getMenuItems = useCallback(
     (node: NotesTreeNode) => {
       const baseMenuItems: MenuProps['items'] = [
@@ -409,6 +411,34 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     [onUploadFiles]
   )
 
+  const sortMenuItems: Required<MenuProps>['items'] = [
+    { label: t('notes.sort_a2z'), key: 'sort_a2z' },
+    { label: t('notes.sort_z2a'), key: 'sort_z2a' },
+    { type: 'divider' },
+    { label: t('notes.sort_updated_desc'), key: 'sort_updated_desc' },
+    { label: t('notes.sort_updated_asc'), key: 'sort_updated_asc' },
+    { type: 'divider' },
+    { label: t('notes.sort_created_desc'), key: 'sort_created_desc' },
+    { label: t('notes.sort_created_asc'), key: 'sort_created_asc' }
+  ]
+
+  const sortMenuWithCheck = sortMenuItems
+    .map((item) => {
+      if (item) {
+        return {
+          ...item,
+          icon: sortType === item.key ? <CheckOutlined /> : undefined,
+          key: item.key
+        }
+      }
+      return null
+    })
+    .filter(Boolean) as MenuProps['items']
+
+  const handleSortMenuClick: MenuProps['onClick'] = (e) => {
+    handleSelectSortType(e.key as NotesSortType)
+  }
+
   return (
     <SidebarContainer
       onDragOver={(e) => {
@@ -423,7 +453,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
           handleDropFiles(e)
         }
       }}>
-      <SidebarHeader>
+      <SidebarHeader isStarView={isShowStarred}>
         <HeaderActions>
           {!isShowStarred && (
             <>
@@ -438,6 +468,19 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
                   <FilePlus size={18} />
                 </ActionButton>
               </Tooltip>
+
+              <Dropdown
+                menu={{
+                  items: sortMenuWithCheck,
+                  onClick: handleSortMenuClick
+                }}
+                trigger={['click']}>
+                <Tooltip title={t('agents.sorting.title')} mouseEnterDelay={0.8}>
+                  <ActionButton>
+                    <ArrowUpNarrowWide size={18} />
+                  </ActionButton>
+                </Tooltip>
+              </Dropdown>
 
               <Tooltip title={t('notes.show_starred')} mouseEnterDelay={0.8}>
                 <ActionButton onClick={handleToggleStarredView}>
@@ -477,11 +520,11 @@ const SidebarContainer = styled.div`
   position: relative;
 `
 
-const SidebarHeader = styled.div`
+const SidebarHeader = styled.div<{ isStarView?: boolean }>`
   padding: 8px 12px;
   border-bottom: 1px solid var(--color-border);
   display: flex;
-  justify-content: flex-end;
+  justify-content: ${(props) => (props.isStarView ? 'flex-end' : 'center')};
 `
 
 const HeaderActions = styled.div`
