@@ -10,9 +10,8 @@ import { estimateTextTokens } from '@renderer/services/TokenService'
 import { Assistant, AssistantSettings } from '@renderer/types'
 import { getLeadingEmoji } from '@renderer/utils'
 import { Button, Input, Popover } from 'antd'
-import { throttle } from 'lodash'
 import { Edit, HelpCircle, Save } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
@@ -29,15 +28,14 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
   const [emoji, setEmoji] = useState(getLeadingEmoji(assistant.name) || assistant.emoji)
   const [name, setName] = useState(assistant.name.replace(getLeadingEmoji(assistant.name) || '', '').trim())
   const [prompt, setPrompt] = useState(assistant.prompt)
-  const draftPrompt = useRef(prompt)
+  const [showPreview, setShowPreview] = useState(assistant.prompt.length > 0)
   const [tokenCount, setTokenCount] = useState(0)
   const { t } = useTranslation()
-  const [showPreview, setShowPreview] = useState(prompt.length > 0)
   const editorRef = useRef<RichEditorRef>(null)
 
   useEffect(() => {
     const updateTokenCount = async () => {
-      const count = await estimateTextTokens(draftPrompt.current)
+      const count = await estimateTextTokens(prompt)
       setTokenCount(count)
     }
     updateTokenCount()
@@ -48,17 +46,13 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
     modelName: assistant.model?.name
   })
 
-  const onUpdate = useMemo(
-    () =>
-      throttle(() => {
-        const commited = draftPrompt.current
-        setPrompt(commited)
-        const _assistant = { ...assistant, name: name.trim(), emoji, prompt }
-        updateAssistant(_assistant)
-        window.message.success(t('common.saved'))
-      }, 500),
-    [assistant, name, emoji, prompt, updateAssistant, t]
-  )
+  const onUpdate = () => {
+    const text = editorRef.current?.getMarkdown() || ''
+    setPrompt(text)
+    const _assistant = { ...assistant, name: name.trim(), emoji, prompt: text }
+    updateAssistant(_assistant)
+    window.message.success(t('common.saved'))
+  }
 
   const handleEmojiSelect = (selectedEmoji: string) => {
     setEmoji(selectedEmoji)
@@ -79,10 +73,6 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
     disabledCommands.forEach((commandId) => {
       commandAPI.unregisterCommand(commandId)
     })
-  }
-
-  const handleMarkdownChange = (newMarkdown: string) => {
-    draftPrompt.current = newMarkdown
   }
 
   return (
@@ -142,8 +132,7 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
           <RichEditor
             key={showPreview ? 'preview' : 'edit'}
             ref={editorRef}
-            initialContent={processedPrompt || prompt}
-            onMarkdownChange={handleMarkdownChange}
+            initialContent={showPreview ? processedPrompt : prompt}
             onCommandsReady={handleCommandsReady}
             showToolbar={!showPreview}
             editable={!showPreview}
@@ -165,8 +154,10 @@ const AssistantPromptSettings: React.FC<Props> = ({ assistant, updateAssistant }
               requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
             } else {
               onUpdate()
-              setShowPreview(true)
-              requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
+              requestAnimationFrame(() => {
+                setShowPreview(true)
+                requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
+              })
             }
           }}>
           {showPreview ? t('common.edit') : t('common.save')}
