@@ -13,7 +13,31 @@ export interface TaskListOptions {
 }
 
 // Create markdown-it instance with task list plugin
-const md = new MarkdownIt('commonmark')
+const md = new MarkdownIt({
+  html: true, // Enable HTML tags in source
+  xhtmlOut: true, // Use '>' for single tags (<br> instead of <br />)
+  breaks: false, // Convert '\n' in paragraphs into <br>
+  linkify: false, // Autoconvert URL-like text to links
+  typographer: false // Enable smartypants and other sweet transforms
+})
+
+// Override the code_block and code_inline renderers to prevent HTML encoding
+md.renderer.rules.code_block = function (tokens, idx) {
+  const token = tokens[idx]
+  const langName = token.info ? ` class="language-${token.info.trim()}"` : ''
+  return `<pre><code${langName}>${token.content}</code></pre>`
+}
+
+md.renderer.rules.code_inline = function (tokens, idx) {
+  const token = tokens[idx]
+  return `<code>${token.content}</code>`
+}
+
+md.renderer.rules.fence = function (tokens, idx) {
+  const token = tokens[idx]
+  const langName = token.info ? ` class="language-${token.info.trim()}"` : ''
+  return `<pre><code${langName}>${token.content}</code></pre>`
+}
 
 // Custom task list plugin for markdown-it
 function taskListPlugin(md: MarkdownIt, options: TaskListOptions = {}) {

@@ -57,7 +57,7 @@ describe('markdownConverter', () => {
     })
 
     it('should convert heading and img to Markdown', () => {
-      const html = '<h1>Hello</h1>\n<p><img src="https://example.com/image.png" alt="alt text"></p>\n'
+      const html = '<h1>Hello</h1>\n<p><img src="https://example.com/image.png" alt="alt text" /></p>\n'
       const result = htmlToMarkdown(html)
       expect(result).toBe('# Hello\n\n![alt text](https://example.com/image.png)')
     })
@@ -66,6 +66,25 @@ describe('markdownConverter', () => {
       const html = '<h1>Hello</h1>\n<p>Hello</p>\n'
       const result = htmlToMarkdown(html)
       expect(result).toBe('# Hello\n\nHello')
+    })
+
+    it('should convert code block to Markdown', () => {
+      const html = '<pre><code>console.log("Hello, world!");</code></pre>'
+      const result = htmlToMarkdown(html)
+      expect(result).toBe('```\nconsole.log("Hello, world!");\n```')
+    })
+
+    it('should convert code block with language to Markdown', () => {
+      const html = '<pre><code class="language-javascript">console.log("Hello, world!");</code></pre>'
+      const result = htmlToMarkdown(html)
+      expect(result).toBe('```javascript\nconsole.log("Hello, world!");\n```')
+    })
+
+    it('should convert table to Markdown', () => {
+      const html =
+        '<table><tbody><tr><th ><p>f</p></th><th ><p></p></th><th ><p></p></th></tr><tr><td ><p></p></td><td ><p>f</p></td><td ><p></p></td></tr><tr><td ><p></p></td><td ><p></p></td><td ><p>f</p></td></tr></tbody></table><p></p>'
+      const result = htmlToMarkdown(html)
+      expect(result).toBe('| f   |     |     |\n| --- | --- | --- |\n|     | f   |     |\n|     |     | f   |')
     })
   })
 
@@ -166,6 +185,26 @@ describe('markdownConverter', () => {
       const markdown = '# Hello\n\nHello'
       const result = markdownToHtml(markdown)
       expect(result).toBe('<h1>Hello</h1>\n<p>Hello</p>\n')
+    })
+
+    it('should convert code block to HTML', () => {
+      const markdown = '```\nconsole.log("Hello, world!");\n```'
+      const result = markdownToHtml(markdown)
+      expect(result).toBe('<pre><code>console.log("Hello, world!");\n</code></pre>')
+    })
+
+    it('should convert code block with language to HTML', () => {
+      const markdown = '```javascript\nconsole.log("Hello, world!");\n```'
+      const result = markdownToHtml(markdown)
+      expect(result).toBe('<pre><code class="language-javascript">console.log("Hello, world!");\n</code></pre>')
+    })
+
+    it('should convert table to HTML', () => {
+      const markdown = '| f   |     |     |\n| --- | --- | --- |\n|     | f   |     |\n|     |     | f   |'
+      const result = markdownToHtml(markdown)
+      expect(result).toBe(
+        '<table>\n<thead>\n<tr>\n<th>f</th>\n<th></th>\n<th></th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td></td>\n<td>f</td>\n<td></td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n<td>f</td>\n</tr>\n</tbody>\n</table>\n'
+      )
     })
   })
 
