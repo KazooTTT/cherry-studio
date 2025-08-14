@@ -18,6 +18,7 @@ import {
   Folder,
   FolderOpen,
   FolderPlus,
+  Search,
   Star,
   StarOff
 } from 'lucide-react'
@@ -64,6 +65,8 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   const [dragOverNodeId, setDragOverNodeId] = useState<string | null>(null)
   const [dragPosition, setDragPosition] = useState<'before' | 'inside' | 'after'>('inside')
   const [isShowStarred, setIsShowStarred] = useState(false)
+  const [isShowSearch, setIsShowSearch] = useState(false)
+  const [searchKeyword, setSearchKeyword] = useState('')
   const [isDragOverSidebar, setIsDragOverSidebar] = useState(false)
   const [sortType, setSortType] = useState<NotesSortType>('sort_a2z')
   const dragNodeRef = useRef<HTMLDivElement | null>(null)
@@ -224,14 +227,24 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     setIsShowStarred(!isShowStarred)
   }, [isShowStarred])
 
+  const handleToggleSearchView = useCallback(() => {
+    setIsShowSearch(!isShowSearch)
+  }, [isShowSearch])
+
   const filteredTree = useMemo(() => {
-    if (!isShowStarred) return notesTree
+    if (!isShowStarred && !isShowSearch) return notesTree
     const flattenNodes = (nodes: NotesTreeNode[]): NotesTreeNode[] => {
       let result: NotesTreeNode[] = []
 
       for (const node of nodes) {
-        if (node.type === 'file' && node.is_starred) {
-          result.push(node)
+        if (isShowSearch && searchKeyword) {
+          if (node.type === 'file' && node.name.toLowerCase().includes(searchKeyword.toLowerCase())) {
+            result.push(node)
+          }
+        } else if (isShowStarred) {
+          if (node.type === 'file' && node.is_starred) {
+            result.push(node)
+          }
         }
         if (node.children && node.children.length > 0) {
           result = [...result, ...flattenNodes(node.children)]
@@ -241,7 +254,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     }
 
     return flattenNodes(notesTree)
-  }, [notesTree, isShowStarred])
+  }, [notesTree, isShowStarred, isShowSearch, searchKeyword])
 
   const getMenuItems = useCallback(
     (node: NotesTreeNode) => {
@@ -453,9 +466,9 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
           handleDropFiles(e)
         }
       }}>
-      <SidebarHeader isStarView={isShowStarred}>
+      <SidebarHeader isStarView={isShowStarred} isSearchView={isShowSearch}>
         <HeaderActions>
-          {!isShowStarred && (
+          {!isShowStarred && !isShowSearch && (
             <>
               <Tooltip title={t('notes.new_folder')} mouseEnterDelay={0.8}>
                 <ActionButton onClick={handleCreateFolder}>
@@ -487,6 +500,12 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
                   <Star size={18} />
                 </ActionButton>
               </Tooltip>
+
+              <Tooltip title={t('common.search')} mouseEnterDelay={0.8}>
+                <ActionButton onClick={handleToggleSearchView}>
+                  <Search size={18} />
+                </ActionButton>
+              </Tooltip>
             </>
           )}
           {isShowStarred && (
@@ -495,6 +514,23 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
                 <ArrowLeft size={18} />
               </ActionButton>
             </Tooltip>
+          )}
+          {isShowSearch && (
+            <>
+              <Tooltip title={t('common.back')} mouseEnterDelay={0.8}>
+                <ActionButton onClick={handleToggleSearchView}>
+                  <ArrowLeft size={18} />
+                </ActionButton>
+              </Tooltip>
+              <SearchInput
+                placeholder={t('knowledge.search_placeholder')}
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                allowClear
+                size="small"
+                autoFocus
+              />
+            </>
           )}
         </HeaderActions>
       </SidebarHeader>
@@ -520,11 +556,22 @@ const SidebarContainer = styled.div`
   position: relative;
 `
 
-const SidebarHeader = styled.div<{ isStarView?: boolean }>`
+const SidebarHeader = styled.div<{ isStarView?: boolean; isSearchView?: boolean }>`
   padding: 8px 12px;
   border-bottom: 1px solid var(--color-border);
   display: flex;
-  justify-content: ${(props) => (props.isStarView ? 'flex-end' : 'center')};
+  justify-content: ${(props) => (props.isStarView || props.isSearchView ? 'flex-start' : 'center')};
+`
+
+const SearchInput = styled(Input)`
+  flex: 1;
+  margin-left: 8px;
+  max-width: 180px;
+
+  .ant-input {
+    font-size: 13px;
+    border-radius: 4px;
+  }
 `
 
 const HeaderActions = styled.div`
