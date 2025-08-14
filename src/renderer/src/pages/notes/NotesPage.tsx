@@ -21,7 +21,6 @@ import {
   updateNote,
   uploadNote
 } from '@renderer/services/NotesService'
-import { estimateTextTokens } from '@renderer/services/TokenService'
 import { NotesSortType, NotesTreeNode } from '@renderer/types/note'
 import { Button, Empty, Spin } from 'antd'
 import { Eye } from 'lucide-react'
@@ -44,14 +43,13 @@ const NotesPage: FC = () => {
   const [showPreview, setShowPreview] = useState(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  // 估算 token 数量
   useEffect(() => {
-    const updateTokenCount = async () => {
+    const updateCharCount = () => {
       const textContent = editorRef.current?.getContent() || currentContent
-      const count = await estimateTextTokens(textContent)
-      setTokenCount(count)
+      const plainText = textContent.replace(/<[^>]*>/g, '')
+      setTokenCount(plainText.length)
     }
-    updateTokenCount()
+    updateCharCount()
   }, [currentContent])
 
   // 查找树节点 by ID
@@ -368,7 +366,7 @@ const NotesPage: FC = () => {
                   </RichEditorContainer>
                   <BottomPanel>
                     <HSpaceBetweenStack width="100%" justifyContent="space-between" alignItems="center">
-                      <TokenCount>Tokens: {tokenCount}</TokenCount>
+                      <TokenCount>Characters: {tokenCount}</TokenCount>
                       <Button
                         type="primary"
                         size="small"
