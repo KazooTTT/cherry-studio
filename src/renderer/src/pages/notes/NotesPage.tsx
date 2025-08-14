@@ -3,8 +3,8 @@ import { EditIcon } from '@renderer/components/Icons'
 import { HSpaceBetweenStack } from '@renderer/components/Layout'
 import RichEditor from '@renderer/components/RichEditor'
 import { RichEditorRef } from '@renderer/components/RichEditor/types'
-import Scrollbar from '@renderer/components/Scrollbar'
 import { useSettings } from '@renderer/hooks/useSettings'
+import HeaderNavbar from '@renderer/pages/notes/HeaderNavbar'
 import NotesNavbar from '@renderer/pages/notes/NotesNavbar'
 import FileManager from '@renderer/services/FileManager'
 import {
@@ -343,6 +343,9 @@ const NotesPage: FC = () => {
           />
         )}
         <EditorWrapper>
+          <HeaderNavbarContainer>
+            <HeaderNavbar />
+          </HeaderNavbarContainer>
           {activeNodeId ? (
             <EditorContainer>
               {isLoading ? (
@@ -392,11 +395,7 @@ const NotesPage: FC = () => {
               )}
             </EditorContainer>
           ) : (
-            <MainContent>
-              <EmptyContainer>
-                <Empty description={t('notes.empty')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-              </EmptyContainer>
-            </MainContent>
+            <Empty description={t('notes.empty')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
           )}
         </EditorWrapper>
       </ContentContainer>
@@ -418,14 +417,6 @@ const LoadingContainer = styled.div`
   height: 100%;
 `
 
-const EmptyContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  width: 100%;
-`
-
 const ContentContainer = styled.div`
   display: flex;
   flex: 1;
@@ -438,6 +429,18 @@ const EditorWrapper = styled.div`
   display: flex;
   position: relative;
   overflow: hidden;
+  flex-direction: column;
+`
+
+const HeaderNavbarContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0 16px;
+  height: 40px;
+  border-bottom: 1px solid var(--color-border);
+  justify-content: flex-start;
+  width: 100%;
 `
 
 const EditorContainer = styled.div`
@@ -488,14 +491,6 @@ const TokenCount = styled.div`
   color: var(--color-text-3);
   user-select: none;
   line-height: 1;
-`
-
-const MainContent = styled(Scrollbar)`
-  padding: 15px 20px;
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  padding-bottom: 50px;
 `
 
 export default NotesPage

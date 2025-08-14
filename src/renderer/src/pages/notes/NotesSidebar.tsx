@@ -547,7 +547,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
 }
 
 const SidebarContainer = styled.div`
-  width: 280px;
+  width: 250px;
   height: 100vh;
   background-color: var(--color-background);
   border-right: 1px solid var(--color-border);
