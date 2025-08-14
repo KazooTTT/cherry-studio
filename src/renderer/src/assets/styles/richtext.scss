@@ -372,6 +372,12 @@
       margin-top: 0.25em;
       margin-bottom: 0.25em;
     }
+
+    // Reduce spacing for nested lists
+    ul,
+    ol {
+      margin: 0.5rem 0.5rem 0.5rem 0.2rem;
+    }
   }
 
   ul {
