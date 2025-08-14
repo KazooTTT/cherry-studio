@@ -85,7 +85,8 @@ const NotesPage: FC = () => {
     [activeNodeId, currentContent, findNodeById, notesTree]
   )
 
-  const handleMarkdownChange = (newMarkdown: string) => {
+  const onSave = () => {
+    const newMarkdown = editorRef.current?.getMarkdown() || ''
     setCurrentContent(newMarkdown)
     saveCurrentNote(newMarkdown)
   }
@@ -357,7 +358,6 @@ const NotesPage: FC = () => {
                       key={`${activeNodeId}-${showPreview ? 'preview' : 'edit'}`}
                       ref={editorRef}
                       initialContent={currentContent}
-                      onMarkdownChange={handleMarkdownChange}
                       onCommandsReady={handleCommandsReady}
                       showToolbar={!showPreview}
                       editable={!showPreview}
@@ -379,8 +379,11 @@ const NotesPage: FC = () => {
                             setShowPreview(false)
                             requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
                           } else {
-                            setShowPreview(true)
-                            requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
+                            onSave()
+                            requestAnimationFrame(() => {
+                              setShowPreview(true)
+                              requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
+                            })
                           }
                         }}>
                         {showPreview ? t('common.edit') : t('common.preview')}
