@@ -92,8 +92,9 @@ const RichEditor = ({
             }
           },
           onRemove: () => {
-            if (editor) {
-              editor.chain().focus().unsetLink().run()
+            if (editor && linkRange) {
+              // Select the link first, then remove it
+              editor.chain().focus().setTextSelection({ from: linkRange.from, to: linkRange.to }).unsetLink().run()
             }
           }
         })

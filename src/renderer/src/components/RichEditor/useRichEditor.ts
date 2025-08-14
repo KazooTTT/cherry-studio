@@ -354,6 +354,12 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
           return true
         }
         return false
+      },
+      attributes: {
+        // Allow text selection even when not editable
+        style: editable
+          ? ''
+          : 'user-select: text; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text;'
       }
     },
     onUpdate: ({ editor }) => {

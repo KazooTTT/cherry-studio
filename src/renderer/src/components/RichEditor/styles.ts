@@ -119,9 +119,25 @@ export const EditorContent = styled.div`
   .ProseMirror {
     position: relative;
 
+    /* Allow text selection when not editable */
+    &:not([contenteditable='true']) {
+      user-select: text;
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      cursor: text;
+
+      /* Ensure all child elements allow text selection */
+      * {
+        user-select: text;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+      }
+    }
+
     /* Enhanced link styles */
     .rich-editor-link {
-      color: var(--color-primary);
       text-decoration: underline;
       text-decoration-thickness: 1px;
       text-underline-offset: 2px;
@@ -129,9 +145,8 @@ export const EditorContent = styled.div`
       transition: all 0.2s ease;
 
       &:hover {
-        color: var(--color-primary);
         text-decoration-thickness: 2px;
-        background-color: var(--color-primary-soft);
+        background-color: var(--color-hover);
         padding: 1px 2px;
         margin: -1px -2px;
         border-radius: 3px;
