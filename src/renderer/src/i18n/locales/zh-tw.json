@@ -1978,6 +1978,12 @@
       "urlPlaceholder": "貼上圖片連結地址",
       "urlRequired": "請輸入圖片連結地址"
     },
+    "link": {
+      "remove": "移除鏈接",
+      "text": "鏈接標題",
+      "textPlaceholder": "請輸入鏈接標題",
+      "url": "鏈接地址"
+    },
     "math": {
       "placeholder": "輸入 LaTeX 公式"
     },

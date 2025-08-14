@@ -30,6 +30,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { commandSuggestion } from './command'
 import { CodeBlockShiki } from './extensions/code-block-shiki/code-block-shiki'
 import { EnhancedImage } from './extensions/enhanced-image'
+import { EnhancedLink } from './extensions/enhanced-link'
 import { EnhancedMath } from './extensions/enhanced-math'
 import { Placeholder } from './extensions/placeholder'
 
@@ -62,6 +63,15 @@ export interface UseRichEditorOptions {
     index: number
     position: { x: number; y: number }
     actions: { id: string; label: string; action: () => void }[]
+  }) => void
+  /** Show link editor on hover */
+  onShowLinkEditor?: (payload: {
+    link: { href: string; text: string; title?: string }
+    position: { x: number; y: number }
+    element: HTMLElement
+    linkRange?: { from: number; to: number }
+    onSave: (href: string, text: string, title?: string) => void
+    onRemove: () => void
   }) => void
   scrollParent?: () => HTMLElement | null
 }
@@ -117,6 +127,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     placeholder = '',
     editable = true,
     onShowTableActionMenu,
+    onShowLinkEditor,
     scrollParent
   } = options
 
@@ -144,6 +155,36 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
   const lastDocSizeRef = useRef<number>(0)
   const lastContentHashRef = useRef<string>('')
 
+  // Link hover handlers
+  const handleLinkHover = useCallback(
+    (
+      attrs: { href: string; text: string; title?: string },
+      position: DOMRect,
+      element: HTMLElement,
+      linkRange?: { from: number; to: number }
+    ) => {
+      if (!onShowLinkEditor || !editable) return
+
+      const linkPosition = { x: position.left, y: position.top }
+
+      onShowLinkEditor({
+        link: attrs,
+        position: linkPosition,
+        element,
+        linkRange,
+        onSave: () => {
+          // This will be handled by accessing the editor from the component
+        },
+        onRemove: () => {
+          // This will be handled by accessing the editor from the component
+        }
+      })
+    },
+    [onShowLinkEditor, editable]
+  )
+
+  const handleLinkHoverEnd = useCallback(() => {}, [])
+
   // TipTap editor extensions
   const extensions = useMemo(
     () => [
@@ -151,7 +192,13 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         heading: {
           levels: [1, 2, 3, 4, 5, 6]
         },
-        codeBlock: false
+        codeBlock: false,
+        link: false
+      }),
+      EnhancedLink.configure({
+        onLinkHover: handleLinkHover,
+        onLinkHoverEnd: handleLinkHoverEnd,
+        editable: editable
       }),
       TableOfContents.configure({
         getIndex: getHierarchicalIndexes,
@@ -288,7 +335,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       })
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [placeholder, activeShikiTheme, languageMap]
+    [placeholder, activeShikiTheme, languageMap, handleLinkHover, handleLinkHoverEnd]
   )
 
   const editor = useEditor({
@@ -307,6 +354,12 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
           return true
         }
         return false
+      },
+      attributes: {
+        // Allow text selection even when not editable
+        style: editable
+          ? ''
+          : 'user-select: text; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text;'
       }
     },
     onUpdate: ({ editor }) => {

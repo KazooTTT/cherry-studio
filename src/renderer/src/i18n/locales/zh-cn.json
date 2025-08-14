@@ -1978,6 +1978,12 @@
       "urlPlaceholder": "粘贴图片链接地址",
       "urlRequired": "请输入图片链接地址"
     },
+    "link": {
+      "remove": "移除链接",
+      "text": "链接标题",
+      "textPlaceholder": "请输入链接标题",
+      "url": "链接地址"
+    },
     "math": {
       "placeholder": "输入 LaTeX 公式"
     },

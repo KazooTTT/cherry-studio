@@ -118,6 +118,40 @@ export const EditorContent = styled.div`
   /* Ensure the ProseMirror editor content doesn't override drag handle positioning */
   .ProseMirror {
     position: relative;
+
+    /* Allow text selection when not editable */
+    &:not([contenteditable='true']) {
+      user-select: text;
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      cursor: text;
+
+      /* Ensure all child elements allow text selection */
+      * {
+        user-select: text;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+      }
+    }
+
+    /* Enhanced link styles */
+    .rich-editor-link {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        text-decoration-thickness: 2px;
+        background-color: var(--color-hover);
+        padding: 1px 2px;
+        margin: -1px -2px;
+        border-radius: 3px;
+      }
+    }
   }
 `
 
