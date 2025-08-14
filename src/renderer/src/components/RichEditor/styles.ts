@@ -118,6 +118,25 @@ export const EditorContent = styled.div`
   /* Ensure the ProseMirror editor content doesn't override drag handle positioning */
   .ProseMirror {
     position: relative;
+
+    /* Enhanced link styles */
+    .rich-editor-link {
+      color: var(--color-primary);
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: var(--color-primary);
+        text-decoration-thickness: 2px;
+        background-color: var(--color-primary-soft);
+        padding: 1px 2px;
+        margin: -1px -2px;
+        border-radius: 3px;
+      }
+    }
   }
 `
 

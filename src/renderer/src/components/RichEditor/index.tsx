@@ -18,6 +18,7 @@ import {
   unregisterToolbarCommand
 } from './command'
 import { ActionMenu, type ActionMenuItem } from './components/ActionMenu'
+import LinkEditor from './components/LinkEditor'
 import { EditorContent as StyledEditorContent, RichEditorWrapper } from './styles'
 import { ToC } from './TableOfContent'
 import { Toolbar } from './toolbar'
@@ -71,6 +72,31 @@ const RichEditor = ({
           onClick: a.action
         }))
         setTableActionMenu({ show: true, position, items })
+      },
+      onShowLinkEditor: ({ link, position, linkRange }) => {
+        setLinkEditor({
+          show: true,
+          position,
+          link,
+          onSave: (href: string, text: string) => {
+            if (editor && linkRange) {
+              // Use the pre-calculated range for much better performance
+              editor
+                .chain()
+                .focus()
+                .setTextSelection({ from: linkRange.from, to: linkRange.to })
+                .insertContent(text)
+                .setTextSelection({ from: linkRange.from, to: linkRange.from + text.length })
+                .setLink({ href })
+                .run()
+            }
+          },
+          onRemove: () => {
+            if (editor) {
+              editor.chain().focus().unsetLink().run()
+            }
+          }
+        })
       }
     })
 
@@ -126,6 +152,21 @@ const RichEditor = ({
     items: []
   })
 
+  // Link editor state
+  const [linkEditor, setLinkEditor] = useState<{
+    show: boolean
+    position: { x: number; y: number }
+    link: { href: string; text: string }
+    onSave: (href: string, text: string) => void
+    onRemove: () => void
+  }>({
+    show: false,
+    position: { x: 0, y: 0 },
+    link: { href: '', text: '' },
+    onSave: () => {},
+    onRemove: () => {}
+  })
+
   // Register initial commands on mount
   useEffect(() => {
     if (initialCommands) {
@@ -160,6 +201,16 @@ const RichEditor = ({
       show: false,
       position: { x: 0, y: 0 },
       items: []
+    })
+  }
+
+  const closeLinkEditor = () => {
+    setLinkEditor({
+      show: false,
+      position: { x: 0, y: 0 },
+      link: { href: '', text: '' },
+      onSave: () => {},
+      onRemove: () => {}
     })
   }
 
@@ -364,6 +415,20 @@ const RichEditor = ({
         position={tableActionMenu.position}
         items={tableActionMenu.items}
         onClose={closeTableActionMenu}
+      />
+      <LinkEditor
+        visible={linkEditor.show}
+        position={linkEditor.position}
+        link={linkEditor.link}
+        onSave={(href, text: string) => {
+          linkEditor.onSave(href, text)
+          closeLinkEditor()
+        }}
+        onRemove={() => {
+          linkEditor.onRemove()
+          closeLinkEditor()
+        }}
+        onCancel={closeLinkEditor}
       />
     </RichEditorWrapper>
   )

@@ -1937,6 +1937,12 @@
       "urlPlaceholder": "Paste image link",
       "urlRequired": "Please enter image URL"
     },
+    "link": {
+      "remove": "Remove link",
+      "text": "Link Title",
+      "textPlaceholder": "Please enter the link title",
+      "url": "Link URL"
+    },
     "math": {
       "placeholder": "Enter LaTeX formula"
     },
