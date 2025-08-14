@@ -75,13 +75,14 @@
     color: var(--color-inline-code-text);
     font-size: 0.85rem;
     padding: 0.25em 0.3em;
+    font-family: var(--code-font-family);
   }
 
   pre {
     background: var(--color-code-background);
     border-radius: 0.5rem;
     color: var(--color-text);
-    font-family: 'Ubuntu', monospace;
+    font-family: var(--code-font-family);
     margin: 1.5rem 0;
     padding: 0.75rem 1rem;
     border: 1px solid var(--color-border-soft);
