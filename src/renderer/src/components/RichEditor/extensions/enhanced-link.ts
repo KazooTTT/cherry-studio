@@ -13,6 +13,7 @@ interface LinkHoverPluginOptions {
     linkRange?: { from: number; to: number }
   ) => void
   onLinkHoverEnd?: () => void
+  editable?: boolean
 }
 
 const createLinkHoverPlugin = (options: LinkHoverPluginOptions) => {
@@ -21,6 +22,9 @@ const createLinkHoverPlugin = (options: LinkHoverPluginOptions) => {
     props: {
       handleDOMEvents: {
         mouseover: (view, event) => {
+          // Don't process hover if not editable
+          if (!options.editable) return false
+
           const target = event.target as HTMLElement
           const linkElement = target.closest('a[href]') as HTMLAnchorElement
 
@@ -113,6 +117,7 @@ export interface EnhancedLinkOptions {
     linkRange?: { from: number; to: number }
   ) => void
   onLinkHoverEnd?: () => void
+  editable?: boolean
 }
 
 export const EnhancedLink = Link.extend<EnhancedLinkOptions>({
@@ -124,7 +129,8 @@ export const EnhancedLink = Link.extend<EnhancedLinkOptions>({
       protocols: ['http', 'https', 'mailto', 'tel'],
       openOnClick: true,
       onLinkHover: undefined,
-      onLinkHoverEnd: undefined
+      onLinkHoverEnd: undefined,
+      editable: true
     }
   },
 
@@ -166,7 +172,8 @@ export const EnhancedLink = Link.extend<EnhancedLinkOptions>({
       ...(this.parent?.() || []),
       createLinkHoverPlugin({
         onLinkHover: this.options.onLinkHover,
-        onLinkHoverEnd: this.options.onLinkHoverEnd
+        onLinkHoverEnd: this.options.onLinkHoverEnd,
+        editable: this.options.editable
       })
     ]
   },

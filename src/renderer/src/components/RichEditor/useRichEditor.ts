@@ -163,7 +163,8 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       element: HTMLElement,
       linkRange?: { from: number; to: number }
     ) => {
-      if (!onShowLinkEditor) return
+      // Don't show link editor if not editable or no callback provided
+      if (!onShowLinkEditor || !editable) return
 
       const linkPosition = { x: position.left, y: position.top }
 
@@ -180,7 +181,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         }
       })
     },
-    [onShowLinkEditor]
+    [onShowLinkEditor, editable]
   )
 
   const handleLinkHoverEnd = useCallback(() => {
@@ -199,7 +200,8 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       }),
       EnhancedLink.configure({
         onLinkHover: handleLinkHover,
-        onLinkHoverEnd: handleLinkHoverEnd
+        onLinkHoverEnd: handleLinkHoverEnd,
+        editable: editable
       }),
       TableOfContents.configure({
         getIndex: getHierarchicalIndexes,
