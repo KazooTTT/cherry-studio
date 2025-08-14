@@ -166,7 +166,7 @@ export const TableOfContentsWrapper = styled.div`
   }
 
   .toc-item {
-    margin-left: calc(var(--level, 0) * 1rem);
+    margin-left: calc((var(--level, 1) - 0.75) * 0.5rem);
     margin-bottom: 0.25rem;
 
     a {
