@@ -1,5 +1,6 @@
 import type { Editor } from '@tiptap/core'
 import type { TableOfContentDataItem } from '@tiptap/extension-table-of-contents'
+import React from 'react'
 
 import { TableOfContentsWrapper, ToCDock } from './styles'
 
@@ -78,4 +79,4 @@ export const ToC: React.FC<ToCProps> = ({ items = [], editor }) => {
   )
 }
 
-export default ToC
+export default React.memo(ToC)

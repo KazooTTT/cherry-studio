@@ -142,6 +142,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
   const [tableOfContentsItems, setTableOfContentsItems] = useState<TableOfContentDataItem[]>([])
   const lastActiveHeadingIdRef = useRef<string | null>(null)
   const lastDocSizeRef = useRef<number>(0)
+  const lastContentHashRef = useRef<string>('')
 
   // TipTap editor extensions
   const extensions = useMemo(
@@ -186,14 +187,19 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
           }
 
           const activeId = content[closestIndex]?.id ?? null
+          const contentHash = content.map((i) => `${i.id}:${i.textContent}`).join('|')
 
-          // If doc size and active id are unchanged, avoid setState to prevent rerenders
-          if (lastDocSizeRef.current === docSize && lastActiveHeadingIdRef.current === activeId) {
+          if (
+            lastDocSizeRef.current === docSize &&
+            lastActiveHeadingIdRef.current === activeId &&
+            lastContentHashRef.current === contentHash
+          ) {
             return
           }
 
           lastDocSizeRef.current = docSize
           lastActiveHeadingIdRef.current = activeId
+          lastContentHashRef.current = contentHash
 
           const normalized = content.map((item, idx) => {
             const rect = item.dom.getBoundingClientRect()
