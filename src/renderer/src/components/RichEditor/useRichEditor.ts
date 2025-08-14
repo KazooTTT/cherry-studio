@@ -163,7 +163,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       element: HTMLElement,
       linkRange?: { from: number; to: number }
     ) => {
-      // Don't show link editor if not editable or no callback provided
       if (!onShowLinkEditor || !editable) return
 
       const linkPosition = { x: position.left, y: position.top }
@@ -184,9 +183,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     [onShowLinkEditor, editable]
   )
 
-  const handleLinkHoverEnd = useCallback(() => {
-    // This is handled by the component's own mouse events
-  }, [])
+  const handleLinkHoverEnd = useCallback(() => {}, [])
 
   // TipTap editor extensions
   const extensions = useMemo(
