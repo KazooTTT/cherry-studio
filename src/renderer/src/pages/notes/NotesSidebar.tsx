@@ -583,10 +583,15 @@ const HeaderActions = styled.div`
 const NotesTreeContainer = styled.div`
   flex: 1;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 45px);
 `
 
 const StyledScrollbar = styled(Scrollbar)`
+  flex: 1;
   height: 100%;
+  min-height: 0;
 `
 
 const TreeContent = styled.div`
