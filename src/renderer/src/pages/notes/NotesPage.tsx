@@ -21,6 +21,8 @@ import {
   updateNote,
   uploadNote
 } from '@renderer/services/NotesService'
+import { useAppDispatch, useAppSelector } from '@renderer/store'
+import { selectActiveNodeId, setActiveNodeId } from '@renderer/store/note'
 import { NotesSortType, NotesTreeNode } from '@renderer/types/note'
 import { Button, Empty, Spin } from 'antd'
 import { Eye } from 'lucide-react'
@@ -37,7 +39,8 @@ const NotesPage: FC = () => {
   const { t } = useTranslation()
   const { showWorkspace } = useSettings()
   const [notesTree, setNotesTree] = useState<NotesTreeNode[]>([])
-  const [activeNodeId, setActiveNodeId] = useState<string | undefined>(undefined)
+  const dispatch = useAppDispatch()
+  const activeNodeId = useAppSelector(selectActiveNodeId)
   const [currentContent, setCurrentContent] = useState<string>('')
   const [tokenCount, setTokenCount] = useState(0)
   const [showPreview, setShowPreview] = useState(false)
@@ -167,7 +170,7 @@ const NotesPage: FC = () => {
       const newNote = await createNote(name, '', parentId)
       const updatedTree = await getNotesTree()
       setNotesTree(updatedTree)
-      setActiveNodeId(newNote.id)
+      dispatch(setActiveNodeId(newNote.id))
     } catch (error) {
       logger.error('Failed to create note:', error as Error)
     }
@@ -177,7 +180,7 @@ const NotesPage: FC = () => {
   const handleSelectNode = async (node: NotesTreeNode) => {
     if (node.type === 'file') {
       try {
-        setActiveNodeId(node.id)
+        dispatch(setActiveNodeId(node.id))
 
         if (node.fileId) {
           const updatedFileMetadata = await FileManager.getFile(node.fileId)
@@ -212,7 +215,7 @@ const NotesPage: FC = () => {
 
       // 如果删除的是当前活动节点，清空编辑器
       if (isActiveNodeOrParent) {
-        setActiveNodeId(undefined)
+        dispatch(setActiveNodeId(undefined))
         setCurrentContent('')
         if (editorRef.current) {
           editorRef.current.clear()
@@ -369,7 +372,7 @@ const NotesPage: FC = () => {
                   </RichEditorContainer>
                   <BottomPanel>
                     <HSpaceBetweenStack width="100%" justifyContent="space-between" alignItems="center">
-                      <TokenCount>Characters: {tokenCount}</TokenCount>
+                      <TokenCount>{t('notes.characters')}: {tokenCount}</TokenCount>
                       <Button
                         type="primary"
                         size="small"

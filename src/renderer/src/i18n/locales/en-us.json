@@ -1509,6 +1509,7 @@
     "show_sidebar": "Show Sidebar"
   },
   "notes": {
+    "characters": "Characters",
     "collapse": "Collapse",
     "content_placeholder": "Please enter the note content...",
     "delete": "delete",

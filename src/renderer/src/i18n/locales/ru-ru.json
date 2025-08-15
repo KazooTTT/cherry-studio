@@ -1509,6 +1509,7 @@
     "show_sidebar": "Показать боковую панель"
   },
   "notes": {
+    "characters": "Символы",
     "collapse": "Свернуть",
     "content_placeholder": "Введите содержимое заметки...",
     "delete": "удалить",

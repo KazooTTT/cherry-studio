@@ -1509,6 +1509,7 @@
     "show_sidebar": "显示侧边栏"
   },
   "notes": {
+    "characters": "字符",
     "collapse": "收起",
     "content_placeholder": "请输入笔记内容...",
     "delete": "删除",

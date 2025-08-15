@@ -1509,6 +1509,7 @@
     "show_sidebar": "顯示側邊欄"
   },
   "notes": {
+    "characters": "字符",
     "collapse": "收起",
     "content_placeholder": "請輸入筆記內容...",
     "delete": "删除",

@@ -901,7 +901,8 @@ async function createSiyuanDoc(
  */
 export const exportMessageToNotes = async (title: string, content: string): Promise<NotesTreeNode | null> => {
   try {
-    const note = await createNote(title, content)
+    const cleanedContent = content.replace(/^## 🤖 Assistant(\n|$)/m, '')
+    const note = await createNote(title, cleanedContent)
 
     window.message.success({
       content: i18n.t('message.success.notes.export'),
