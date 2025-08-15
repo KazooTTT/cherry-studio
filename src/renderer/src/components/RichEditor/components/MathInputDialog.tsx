@@ -14,6 +14,10 @@ interface MathInputDialogProps {
   defaultValue?: string
   /** Callback for real-time formula updates */
   onFormulaChange?: (formula: string) => void
+  /** Position relative to target element */
+  position?: { x: number; y: number; top?: number }
+  /** Scroll container reference to prevent scrolling */
+  scrollContainer?: React.RefObject<HTMLDivElement | null>
 }
 
 /**
@@ -26,25 +30,50 @@ const MathInputDialog: React.FC<MathInputDialogProps> = ({
   onSubmit,
   onCancel,
   defaultValue = '',
-  onFormulaChange
+  onFormulaChange,
+  position,
+  scrollContainer
 }) => {
   const { t } = useTranslation()
   const { theme } = useTheme()
   const [value, setValue] = useState<string>(defaultValue)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Reset value when dialog re-opens
   useEffect(() => {
     if (visible) {
       setValue(defaultValue)
     }
   }, [visible, defaultValue])
 
-  // Auto-focus textarea when dialog opens
+  // Prevent scroll container scrolling when dialog is open
+  useEffect(() => {
+    if (visible && scrollContainer?.current) {
+      const scrollElement = scrollContainer.current
+      const originalOverflow = scrollElement.style.overflow
+      const originalScrollbarGutter = scrollElement.style.scrollbarGutter
+
+      scrollElement.style.overflow = 'hidden'
+      scrollElement.style.scrollbarGutter = 'stable'
+
+      return () => {
+        if (scrollElement) {
+          scrollElement.style.overflow = originalOverflow
+          scrollElement.style.scrollbarGutter = originalScrollbarGutter
+        }
+      }
+    }
+    return
+  }, [visible, scrollContainer])
+
   useEffect(() => {
     if (visible && containerRef.current) {
       const textarea = containerRef.current.querySelector('textarea') as HTMLTextAreaElement | null
-      textarea?.focus()
+      if (textarea) {
+        textarea.focus()
+        // Position cursor at the end of the text
+        const length = textarea.value.length
+        textarea.setSelectionRange(length, length)
+      }
     }
   }, [visible])
 
@@ -63,14 +92,37 @@ const MathInputDialog: React.FC<MathInputDialogProps> = ({
     }
   }
 
-  // Theme-aware styles
   const isDark = theme === 'dark'
+
+  const getPositionStyles = (): React.CSSProperties => {
+    if (position) {
+      const dialogHeight = 200
+      const spaceBelow = window.innerHeight - position.y
+      const spaceAbove = position.y
+
+      const showAbove = spaceBelow < dialogHeight + 20 && spaceAbove > dialogHeight + 20
+
+      return {
+        position: 'fixed',
+        // When showing above, use the element's top position for accurate placement
+        top: showAbove ? 'auto' : position.y + 10,
+        bottom: showAbove ? window.innerHeight - (position.top || position.y) + 10 : 'auto',
+        left: position.x,
+        transform: 'translateX(-50%)',
+        zIndex: 1000
+      }
+    }
+
+    return {
+      position: 'fixed',
+      top: '50%',
+      left: '50%',
+      zIndex: 1000
+    }
+  }
+
   const styles: React.CSSProperties = {
-    position: 'fixed',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    zIndex: 1000,
+    ...getPositionStyles(),
     background: isDark ? 'var(--color-background-soft, #222222)' : 'white',
     border: `1px solid ${isDark ? 'var(--color-border, #ffffff19)' : '#d9d9d9'}`,
     borderRadius: 8,

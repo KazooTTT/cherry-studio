@@ -225,6 +225,8 @@ export interface ToolbarProps {
   formattingState: FormattingState
   /** Callback when formatting command is executed */
   onCommand: (command: FormattingCommand) => void
+  /** Scroll container reference to prevent scrolling when dialogs open */
+  scrollContainer?: React.RefObject<HTMLDivElement | null>
 }
 
 // Command System Types for Slash Commands

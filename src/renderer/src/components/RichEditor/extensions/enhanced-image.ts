@@ -64,8 +64,7 @@ export const EnhancedImage = Image.extend({
             'div',
             mergeAttributes(HTMLAttributes, {
               'data-type': 'image-placeholder'
-            }),
-            'Image placeholder - click to upload'
+            })
           ]
         },
 

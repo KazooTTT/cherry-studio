@@ -301,11 +301,11 @@ const turndownService = new TurndownService({
     const el = node as any as HTMLElement
     if (el.nodeName === 'DIV' && el.getAttribute?.('data-type') === 'block-math') {
       const latex = el.getAttribute?.('data-latex') || ''
-      return `$$$${latex}$$$\n\n`
+      return `\n\n$$$${latex}$$$\n\n`
     }
     if (el.nodeName === 'SPAN' && el.getAttribute?.('data-type') === 'inline-math') {
       const latex = el.getAttribute?.('data-latex') || ''
-      return `$$${latex}$$\n\n`
+      return `\n\n$$${latex}$$\n\n`
     }
     if (el.nodeName === 'P' && el.querySelector?.('[data-type="inline-math"]')) {
       // Handle paragraphs containing math spans
@@ -343,7 +343,7 @@ const taskListItemsPlugin: TurndownPlugin = (turndownService) => {
       const isChecked = checkbox?.checked || node.getAttribute('data-checked') === 'true'
       const textContent = node.textContent?.trim() || ''
 
-      return '\n\n- ' + (isChecked ? '[x]' : '[ ]') + ' ' + textContent
+      return '- ' + (isChecked ? '[x]' : '[ ]') + ' ' + textContent + '\n\n'
     }
   })
   turndownService.addRule('taskList', {
@@ -351,7 +351,7 @@ const taskListItemsPlugin: TurndownPlugin = (turndownService) => {
       return node.nodeName === 'UL' && node.getAttribute && node.getAttribute('data-type') === 'taskList'
     },
     replacement: (content: string) => {
-      return content.trim()
+      return content
     }
   })
 }

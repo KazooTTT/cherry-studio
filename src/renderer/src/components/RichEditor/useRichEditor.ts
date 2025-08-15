@@ -270,9 +270,22 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       EnhancedMath.configure({
         blockOptions: {
           onClick: (node, pos) => {
-            const event = new CustomEvent('openMathDialog', {
+            // Get position from the clicked element
+            let position: { x: number; y: number; top: number } | undefined
+            if (event?.target instanceof HTMLElement) {
+              const rect =
+                event.target.closest('.math-display')?.getBoundingClientRect() || event.target.getBoundingClientRect()
+              position = {
+                x: rect.left + rect.width / 2,
+                y: rect.bottom,
+                top: rect.top
+              }
+            }
+
+            const customEvent = new CustomEvent('openMathDialog', {
               detail: {
                 defaultValue: node.attrs.latex || '',
+                position: position,
                 onSubmit: () => {
                   editor.commands.focus()
                 },
@@ -281,15 +294,27 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
                 }
               }
             })
-            window.dispatchEvent(event)
+            window.dispatchEvent(customEvent)
             return true
           }
         },
         inlineOptions: {
           onClick: (node, pos) => {
-            const event = new CustomEvent('openMathDialog', {
+            let position: { x: number; y: number; top: number } | undefined
+            if (event?.target instanceof HTMLElement) {
+              const rect =
+                event.target.closest('.math-inline')?.getBoundingClientRect() || event.target.getBoundingClientRect()
+              position = {
+                x: rect.left + rect.width / 2,
+                y: rect.bottom,
+                top: rect.top
+              }
+            }
+
+            const customEvent = new CustomEvent('openMathDialog', {
               detail: {
                 defaultValue: node.attrs.latex || '',
+                position: position,
                 onSubmit: () => {
                   editor.commands.focus()
                 },
@@ -298,7 +323,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
                 }
               }
             })
-            window.dispatchEvent(event)
+            window.dispatchEvent(customEvent)
             return true
           }
         }

@@ -374,7 +374,14 @@ const RichEditor = ({
       $minHeight={minHeight}
       $maxHeight={maxHeight}
       onKeyDown={onKeyDownEditor}>
-      {showToolbar && <Toolbar editor={editor} formattingState={formattingState} onCommand={handleCommand} />}
+      {showToolbar && (
+        <Toolbar
+          editor={editor}
+          formattingState={formattingState}
+          onCommand={handleCommand}
+          scrollContainer={scrollContainerRef}
+        />
+      )}
       <Scrollbar ref={scrollContainerRef} style={{ flex: 1 }}>
         <StyledEditorContent>
           <PlusButton editor={editor} onElementClick={handlePlusButtonClick}>

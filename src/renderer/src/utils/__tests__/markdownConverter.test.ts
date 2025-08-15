@@ -22,7 +22,6 @@ describe('markdownConverter', () => {
       const html =
         '<ul data-type="taskList" class="task-list"><li data-type="taskItem" class="task-list-item" data-checked="false"><label><input type="checkbox"> abcd</label></li><li data-type="taskItem" class="task-list-item" data-checked="true"><label><input type="checkbox" checked> efgh</lable></li></ul>'
       const result = htmlToMarkdown(html)
-      console.log(result)
       expect(result).toBe('- [ ] abcd\n\n- [x] efgh')
     })
 
@@ -132,7 +131,7 @@ describe('markdownConverter', () => {
     })
 
     it('should convert task list syntax to proper HTML', () => {
-      const markdown = '- [ ] abcd\n- [x] efgh'
+      const markdown = '- [ ] abcd\n\n- [x] efgh\n\n'
       const result = markdownToHtml(markdown)
       expect(result).toContain('data-type="taskList"')
       expect(result).toContain('data-type="taskItem"')
