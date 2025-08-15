@@ -71,8 +71,7 @@ export const EnhancedMath = Math.extend({
             'div',
             mergeAttributes(HTMLAttributes, {
               'data-type': 'math-placeholder'
-            }),
-            'Math equation placeholder - click to edit'
+            })
           ]
         },
 

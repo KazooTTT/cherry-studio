@@ -62,6 +62,7 @@ const getTooltipText = (t: TFunction, command: FormattingCommand): string => {
     bulletList: t('richEditor.toolbar.bulletList'),
     orderedList: t('richEditor.toolbar.orderedList'),
     codeBlock: t('richEditor.toolbar.codeBlock'),
+    taskList: t('richEditor.toolbar.taskList'),
     blockquote: t('richEditor.toolbar.blockquote'),
     link: t('richEditor.toolbar.link'),
     undo: t('richEditor.toolbar.undo'),
@@ -75,7 +76,7 @@ const getTooltipText = (t: TFunction, command: FormattingCommand): string => {
   return tooltipMap[command] || command
 }
 
-export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCommand }) => {
+export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCommand, scrollContainer }) => {
   const { t } = useTranslation()
   const [showImageUploader, setShowImageUploader] = useState(false)
   const [showMathInput, setShowMathInput] = useState(false)
@@ -84,6 +85,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCom
     onMathCancel?: () => void
     onMathFormulaChange?: (formula: string) => void
     mathDefaultValue?: string
+    mathPosition?: { x: number; y: number; top: number }
     onImageSelect?: (imageUrl: string) => void
     onImageCancel?: () => void
   }>({})
@@ -91,13 +93,14 @@ export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCom
   // Listen for custom events from placeholder nodes
   useEffect(() => {
     const handleMathDialog = (event: CustomEvent) => {
-      const { defaultValue, onSubmit, onFormulaChange } = event.detail
+      const { defaultValue, onSubmit, onFormulaChange, position } = event.detail
       setPlaceholderCallbacks((prev) => ({
         ...prev,
         onMathSubmit: onSubmit,
         onMathCancel: () => {},
         onMathFormulaChange: onFormulaChange,
-        mathDefaultValue: defaultValue
+        mathDefaultValue: defaultValue,
+        mathPosition: position
       }))
       setShowMathInput(true)
     }
@@ -199,6 +202,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCom
       <MathInputDialog
         visible={showMathInput}
         defaultValue={placeholderCallbacks.mathDefaultValue || ''}
+        position={placeholderCallbacks.mathPosition}
+        scrollContainer={scrollContainer}
         onSubmit={(formula) => {
           if (placeholderCallbacks.onMathSubmit) {
             placeholderCallbacks.onMathSubmit(formula)
@@ -212,7 +217,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCom
             onMathSubmit: undefined,
             onMathCancel: undefined,
             onMathFormulaChange: undefined,
-            mathDefaultValue: undefined
+            mathDefaultValue: undefined,
+            mathPosition: undefined
           }))
           setShowMathInput(false)
         }}
@@ -224,7 +230,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({ editor, formattingState, onCom
               onMathSubmit: undefined,
               onMathCancel: undefined,
               onMathFormulaChange: undefined,
-              mathDefaultValue: undefined
+              mathDefaultValue: undefined,
+              mathPosition: undefined
             }))
           }
           setShowMathInput(false)
@@ -286,6 +293,8 @@ function getFormattingState(state: FormattingState, command: FormattingCommand):
       return state?.isLink || false
     case 'table':
       return state?.isTable || false
+    case 'taskList':
+      return state?.isTaskList || false
     case 'blockMath':
       return state?.isMath || false
     case 'inlineMath':

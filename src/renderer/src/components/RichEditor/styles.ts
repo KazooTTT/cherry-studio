@@ -90,6 +90,7 @@ export const EditorContent = styled.div`
   /* overflow handled by Scrollbar wrapper */
   position: relative; /* keep internal elements positioned, but ToC is now sibling */
 
+  .plus-button,
   .drag-handle {
     align-items: center;
     background: var(--color-background-soft);
@@ -100,7 +101,6 @@ export const EditorContent = styled.div`
     height: 1.5rem;
     justify-content: center;
     width: 1.5rem;
-    position: relative; /* Ensure proper positioning */
     z-index: 10; /* Keep drag handle above other content */
     flex-shrink: 0; /* Prevent the drag handle from shrinking */
 
@@ -113,6 +113,11 @@ export const EditorContent = styled.div`
       height: 1.25rem;
       color: var(--color-icon);
     }
+  }
+
+  .plus-button {
+    cursor: pointer;
+    transform: translateX(calc(-1 * 1.8rem));
   }
 
   /* Ensure the ProseMirror editor content doesn't override drag handle positioning */

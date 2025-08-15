@@ -185,6 +185,8 @@ export interface FormattingState {
   isInlineMath: boolean
   /** Whether math command can be executed */
   canMath: boolean
+  /** Whether taskList is active */
+  isTaskList: boolean
 }
 
 export type FormattingCommand =
@@ -211,6 +213,7 @@ export type FormattingCommand =
   | 'blockMath'
   | 'inlineMath'
   | 'table'
+  | 'taskList'
   | 'image'
 
 export interface ToolbarProps {
@@ -222,6 +225,8 @@ export interface ToolbarProps {
   formattingState: FormattingState
   /** Callback when formatting command is executed */
   onCommand: (command: FormattingCommand) => void
+  /** Scroll container reference to prevent scrolling when dialogs open */
+  scrollContainer?: React.RefObject<HTMLDivElement | null>
 }
 
 // Command System Types for Slash Commands

@@ -2,11 +2,10 @@ import { ContentSearch, type ContentSearchRef } from '@renderer/components/Conte
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import { EditorContent } from '@tiptap/react'
 import { t } from 'i18next'
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, GripVertical, Plus, Trash2 } from 'lucide-react'
 import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 
-import { MdiDragHandle } from '../Icons/SVGIcon'
 import Scrollbar from '../Scrollbar'
 import {
   getAllCommands,
@@ -18,7 +17,9 @@ import {
   unregisterToolbarCommand
 } from './command'
 import { ActionMenu, type ActionMenuItem } from './components/ActionMenu'
+// DragContextMenuWrapper 已被 TipTap 扩展替代
 import LinkEditor from './components/LinkEditor'
+import PlusButton from './components/PlusButton'
 import { EditorContent as StyledEditorContent, RichEditorWrapper } from './styles'
 import { ToC } from './TableOfContent'
 import { Toolbar } from './toolbar'
@@ -45,61 +46,45 @@ const RichEditor = ({
   // toolbarItems: _toolbarItems // TODO: Implement custom toolbar items
 }: RichEditorProps & { ref?: React.RefObject<RichEditorRef | null> }) => {
   // Use the rich editor hook for complete editor management
-  const { editor, markdown, html, formattingState, tableOfContentsItems, setMarkdown, setHtml, clear, getPreviewText } =
-    useRichEditor({
-      initialContent,
-      onChange: onMarkdownChange,
-      onHtmlChange,
-      onContentChange,
-      onBlur,
-      placeholder,
-      editable,
-      scrollParent: () => scrollContainerRef.current,
-      onShowTableActionMenu: ({ position, actions }) => {
-        const iconMap: Record<string, React.ReactNode> = {
-          insertRowBefore: <ArrowUp size={16} />,
-          insertColumnBefore: <ArrowLeft size={16} />,
-          insertRowAfter: <ArrowDown size={16} />,
-          insertColumnAfter: <ArrowRight size={16} />,
-          deleteRow: <Trash2 size={16} />,
-          deleteColumn: <Trash2 size={16} />
-        }
-
-        const items: ActionMenuItem[] = actions.map((a, idx) => ({
-          key: String(idx),
-          label: a.label,
-          icon: iconMap[a.id],
-          onClick: a.action
-        }))
-        setTableActionMenu({ show: true, position, items })
-      },
-      onShowLinkEditor: ({ link, position, linkRange }) => {
-        setLinkEditor({
-          show: true,
-          position,
-          link,
-          onSave: (href: string, text: string) => {
-            if (editor && linkRange) {
-              // Use the pre-calculated range for much better performance
-              editor
-                .chain()
-                .focus()
-                .setTextSelection({ from: linkRange.from, to: linkRange.to })
-                .insertContent(text)
-                .setTextSelection({ from: linkRange.from, to: linkRange.from + text.length })
-                .setLink({ href })
-                .run()
-            }
-          },
-          onRemove: () => {
-            if (editor && linkRange) {
-              // Select the link first, then remove it
-              editor.chain().focus().setTextSelection({ from: linkRange.from, to: linkRange.to }).unsetLink().run()
-            }
-          }
-        })
+  const {
+    editor,
+    markdown,
+    html,
+    formattingState,
+    tableOfContentsItems,
+    linkEditor,
+    setMarkdown,
+    setHtml,
+    clear,
+    getPreviewText
+  } = useRichEditor({
+    initialContent,
+    onChange: onMarkdownChange,
+    onHtmlChange,
+    onContentChange,
+    onBlur,
+    placeholder,
+    editable,
+    scrollParent: () => scrollContainerRef.current,
+    onShowTableActionMenu: ({ position, actions }) => {
+      const iconMap: Record<string, React.ReactNode> = {
+        insertRowBefore: <ArrowUp size={16} />,
+        insertColumnBefore: <ArrowLeft size={16} />,
+        insertRowAfter: <ArrowDown size={16} />,
+        insertColumnAfter: <ArrowRight size={16} />,
+        deleteRow: <Trash2 size={16} />,
+        deleteColumn: <Trash2 size={16} />
       }
-    })
+
+      const items: ActionMenuItem[] = actions.map((a, idx) => ({
+        key: String(idx),
+        label: a.label,
+        icon: iconMap[a.id],
+        onClick: a.action
+      }))
+      setTableActionMenu({ show: true, position, items })
+    }
+  })
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
   const contentSearchRef = useRef<ContentSearchRef>(null)
@@ -153,21 +138,6 @@ const RichEditor = ({
     items: []
   })
 
-  // Link editor state
-  const [linkEditor, setLinkEditor] = useState<{
-    show: boolean
-    position: { x: number; y: number }
-    link: { href: string; text: string }
-    onSave: (href: string, text: string) => void
-    onRemove: () => void
-  }>({
-    show: false,
-    position: { x: 0, y: 0 },
-    link: { href: '', text: '' },
-    onSave: () => {},
-    onRemove: () => {}
-  })
-
   // Register initial commands on mount
   useEffect(() => {
     if (initialCommands) {
@@ -205,15 +175,22 @@ const RichEditor = ({
     })
   }
 
-  const closeLinkEditor = () => {
-    setLinkEditor({
-      show: false,
-      position: { x: 0, y: 0 },
-      link: { href: '', text: '' },
-      onSave: () => {},
-      onRemove: () => {}
-    })
-  }
+  const handlePlusButtonClick = useCallback(
+    (event: MouseEvent) => {
+      // 防止事件冒泡
+      event.preventDefault()
+      event.stopPropagation()
+
+      // 使用 setTimeout 确保在下一个事件循环中执行
+      setTimeout(() => {
+        if (editor && !editor.isDestroyed) {
+          // 聚焦编辑器并插入 '/'
+          editor.commands.insertContent('/')
+        }
+      }, 10)
+    },
+    [editor]
+  )
 
   const handleCommand = useCallback(
     (command: FormattingCommand) => {
@@ -273,31 +250,41 @@ const RichEditor = ({
           break
         case 'link': {
           const { selection } = editor.state
-          const { $from } = selection
+          const { from, to, $from } = selection
 
           // 如果当前已经是链接，则取消链接
-          if (editor.isActive('link')) {
+          if (editor.isActive('enhancedLink')) {
             editor.chain().focus().unsetLink().run()
           } else {
             // 获取当前段落的文本内容
-            const paragraphText = $from.parent.textContent
-
-            // 如果段落有文本，将段落文本设置为链接
-            if (paragraphText.trim()) {
-              const url = paragraphText.trim().startsWith('http')
-                ? paragraphText.trim()
-                : `https://${paragraphText.trim()}`
-
-              try {
-                const { $from } = selection
-                const start = $from.start()
-                const end = $from.end()
-                editor.chain().focus().setTextSelection({ from: start, to: end }).setLink({ href: url }).run()
-              } catch (error) {
-                editor.chain().focus().toggleLink().run()
+            if (from !== to) {
+              const selectedText = editor.state.doc.textBetween(from, to)
+              if (selectedText.trim()) {
+                const url = selectedText.trim().startsWith('http')
+                  ? selectedText.trim()
+                  : `https://${selectedText.trim()}`
+                editor.chain().focus().setTextSelection({ from, to }).setLink({ href: url }).run()
               }
             } else {
-              editor.chain().focus().toggleLink().run()
+              const paragraphText = $from.parent.textContent
+
+              // 如果段落有文本，将段落文本设置为链接
+              if (paragraphText.trim()) {
+                const url = paragraphText.trim().startsWith('http')
+                  ? paragraphText.trim()
+                  : `https://${paragraphText.trim()}`
+
+                try {
+                  const { $from } = selection
+                  const start = $from.start()
+                  const end = $from.end()
+                  editor.chain().focus().setTextSelection({ from: start, to: end }).setLink({ href: url }).run()
+                } catch (error) {
+                  editor.chain().focus().toggleLink().run()
+                }
+              } else {
+                editor.chain().focus().toggleLink().run()
+              }
             }
           }
           break
@@ -320,6 +307,8 @@ const RichEditor = ({
           // Image insertion is handled by the ImageUploader component in toolbar
           // This case is here for completeness but shouldn't be called directly
           break
+        case 'taskList':
+          editor.chain().focus().toggleTaskList().run()
       }
     },
     [editor]
@@ -385,11 +374,21 @@ const RichEditor = ({
       $minHeight={minHeight}
       $maxHeight={maxHeight}
       onKeyDown={onKeyDownEditor}>
-      {showToolbar && <Toolbar editor={editor} formattingState={formattingState} onCommand={handleCommand} />}
+      {showToolbar && (
+        <Toolbar
+          editor={editor}
+          formattingState={formattingState}
+          onCommand={handleCommand}
+          scrollContainer={scrollContainerRef}
+        />
+      )}
       <Scrollbar ref={scrollContainerRef} style={{ flex: 1 }}>
         <StyledEditorContent>
+          <PlusButton editor={editor} onElementClick={handlePlusButtonClick}>
+            <Plus />
+          </PlusButton>
           <DragHandle editor={editor}>
-            <MdiDragHandle />
+            <GripVertical />
           </DragHandle>
           <EditorContent editor={editor} />
         </StyledEditorContent>
@@ -421,15 +420,9 @@ const RichEditor = ({
         visible={linkEditor.show}
         position={linkEditor.position}
         link={linkEditor.link}
-        onSave={(href, text: string) => {
-          linkEditor.onSave(href, text)
-          closeLinkEditor()
-        }}
-        onRemove={() => {
-          linkEditor.onRemove()
-          closeLinkEditor()
-        }}
-        onCancel={closeLinkEditor}
+        onSave={linkEditor.onSave}
+        onRemove={linkEditor.onRemove}
+        onCancel={linkEditor.onCancel}
       />
     </RichEditorWrapper>
   )
