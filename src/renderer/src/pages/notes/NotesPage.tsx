@@ -38,9 +38,9 @@ const NotesPage: FC = () => {
   const editorRef = useRef<RichEditorRef>(null)
   const { t } = useTranslation()
   const { showWorkspace } = useSettings()
-  const [notesTree, setNotesTree] = useState<NotesTreeNode[]>([])
   const dispatch = useAppDispatch()
   const activeNodeId = useAppSelector(selectActiveNodeId)
+  const [notesTree, setNotesTree] = useState<NotesTreeNode[]>([])
   const [currentContent, setCurrentContent] = useState<string>('')
   const [tokenCount, setTokenCount] = useState(0)
   const [showPreview, setShowPreview] = useState(false)
@@ -347,7 +347,7 @@ const NotesPage: FC = () => {
         )}
         <EditorWrapper>
           <HeaderNavbarContainer>
-            <HeaderNavbar />
+            <HeaderNavbar notesTree={notesTree} />
           </HeaderNavbarContainer>
           {activeNodeId ? (
             <EditorContainer>
@@ -372,7 +372,9 @@ const NotesPage: FC = () => {
                   </RichEditorContainer>
                   <BottomPanel>
                     <HSpaceBetweenStack width="100%" justifyContent="space-between" alignItems="center">
-                      <TokenCount>{t('notes.characters')}: {tokenCount}</TokenCount>
+                      <TokenCount>
+                        {t('notes.characters')}: {tokenCount}
+                      </TokenCount>
                       <Button
                         type="primary"
                         size="small"

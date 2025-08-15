@@ -486,6 +486,28 @@ function getNodePath(name: string, parentId?: string): string {
 }
 
 /**
+ * 获取从根节点到指定节点的完整节点路径数组
+ */
+export async function getNodePathArray(tree: NotesTreeNode[], nodeId: string): Promise<NotesTreeNode[]> {
+  const result: NotesTreeNode[] = []
+
+  const currentNode = findNodeInTree(tree, nodeId)
+  if (!currentNode) {
+    return result
+  }
+
+  result.push(currentNode)
+
+  const parent = findParentNode(tree, nodeId)
+  if (parent) {
+    const parentPath = await getNodePathArray(tree, parent.id)
+    return [...parentPath, ...result]
+  }
+
+  return result
+}
+
+/**
  * 递归构建节点路径
  */
 function buildNodePath(nodeId: string): Promise<string> {
@@ -567,7 +589,7 @@ function insertNodeIntoTree(tree: NotesTreeNode[], node: NotesTreeNode, parentId
 /**
  * 在树中查找节点
  */
-function findNodeInTree(tree: NotesTreeNode[], nodeId: string): NotesTreeNode | null {
+export function findNodeInTree(tree: NotesTreeNode[], nodeId: string): NotesTreeNode | null {
   for (const node of tree) {
     if (node.id === nodeId) {
       return node
