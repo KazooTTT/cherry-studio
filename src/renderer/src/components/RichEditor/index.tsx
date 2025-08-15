@@ -2,11 +2,10 @@ import { ContentSearch, type ContentSearchRef } from '@renderer/components/Conte
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import { EditorContent } from '@tiptap/react'
 import { t } from 'i18next'
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, GripVertical, Plus, Trash2 } from 'lucide-react'
 import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 
-import { MdiDragHandle } from '../Icons/SVGIcon'
 import Scrollbar from '../Scrollbar'
 import {
   getAllCommands,
@@ -18,7 +17,9 @@ import {
   unregisterToolbarCommand
 } from './command'
 import { ActionMenu, type ActionMenuItem } from './components/ActionMenu'
+// DragContextMenuWrapper 已被 TipTap 扩展替代
 import LinkEditor from './components/LinkEditor'
+import PlusButton from './components/PlusButton'
 import { EditorContent as StyledEditorContent, RichEditorWrapper } from './styles'
 import { ToC } from './TableOfContent'
 import { Toolbar } from './toolbar'
@@ -173,6 +174,23 @@ const RichEditor = ({
       items: []
     })
   }
+
+  const handlePlusButtonClick = useCallback(
+    (event: MouseEvent) => {
+      // 防止事件冒泡
+      event.preventDefault()
+      event.stopPropagation()
+
+      // 使用 setTimeout 确保在下一个事件循环中执行
+      setTimeout(() => {
+        if (editor && !editor.isDestroyed) {
+          // 聚焦编辑器并插入 '/'
+          editor.commands.insertContent('/')
+        }
+      }, 10)
+    },
+    [editor]
+  )
 
   const handleCommand = useCallback(
     (command: FormattingCommand) => {
@@ -357,8 +375,11 @@ const RichEditor = ({
       {showToolbar && <Toolbar editor={editor} formattingState={formattingState} onCommand={handleCommand} />}
       <Scrollbar ref={scrollContainerRef} style={{ flex: 1 }}>
         <StyledEditorContent>
+          <PlusButton editor={editor} onElementClick={handlePlusButtonClick}>
+            <Plus />
+          </PlusButton>
           <DragHandle editor={editor}>
-            <MdiDragHandle />
+            <GripVertical />
           </DragHandle>
           <EditorContent editor={editor} />
         </StyledEditorContent>

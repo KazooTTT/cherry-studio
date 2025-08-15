@@ -548,7 +548,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
   const formattingState = useEditorState({
     editor,
     selector: ({ editor }) => {
-      if (!editor) {
+      if (!editor || editor.isDestroyed) {
         return {
           isBold: false,
           canBold: false,
