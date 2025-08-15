@@ -64,15 +64,6 @@ export interface UseRichEditorOptions {
     position: { x: number; y: number }
     actions: { id: string; label: string; action: () => void }[]
   }) => void
-  /** Show link editor on hover */
-  onShowLinkEditor?: (payload: {
-    link: { href: string; text: string; title?: string }
-    position: { x: number; y: number }
-    element: HTMLElement
-    linkRange?: { from: number; to: number }
-    onSave: (href: string, text: string, title?: string) => void
-    onRemove: () => void
-  }) => void
   scrollParent?: () => HTMLElement | null
 }
 
@@ -93,6 +84,15 @@ export interface UseRichEditorReturn {
   formattingState: FormattingState
   /** Table of contents items */
   tableOfContentsItems: TableOfContentDataItem[]
+  /** Link editor state */
+  linkEditor: {
+    show: boolean
+    position: { x: number; y: number }
+    link: { href: string; text: string; title?: string }
+    onSave: (href: string, text: string, title?: string) => void
+    onRemove: () => void
+    onCancel: () => void
+  }
 
   /** Set markdown content */
   setMarkdown: (content: string) => void
@@ -127,7 +127,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     placeholder = '',
     editable = true,
     onShowTableActionMenu,
-    onShowLinkEditor,
     scrollParent
   } = options
 
@@ -155,32 +154,38 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
   const lastDocSizeRef = useRef<number>(0)
   const lastContentHashRef = useRef<string>('')
 
+  // Link editor state
+  const [linkEditorState, setLinkEditorState] = useState<{
+    show: boolean
+    position: { x: number; y: number }
+    link: { href: string; text: string; title?: string }
+    linkRange?: { from: number; to: number }
+  }>({
+    show: false,
+    position: { x: 0, y: 0 },
+    link: { href: '', text: '' }
+  })
+
   // Link hover handlers
   const handleLinkHover = useCallback(
     (
       attrs: { href: string; text: string; title?: string },
       position: DOMRect,
-      element: HTMLElement,
+      _element: HTMLElement,
       linkRange?: { from: number; to: number }
     ) => {
-      if (!onShowLinkEditor || !editable) return
+      if (!editable) return
 
       const linkPosition = { x: position.left, y: position.top }
 
-      onShowLinkEditor({
-        link: attrs,
+      setLinkEditorState({
+        show: true,
         position: linkPosition,
-        element,
-        linkRange,
-        onSave: () => {
-          // This will be handled by accessing the editor from the component
-        },
-        onRemove: () => {
-          // This will be handled by accessing the editor from the component
-        }
+        link: attrs,
+        linkRange
       })
     },
-    [onShowLinkEditor, editable]
+    [editable]
   )
 
   const handleLinkHoverEnd = useCallback(() => {}, [])
@@ -409,6 +414,64 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     }
   }, [editor, editable])
 
+  // Link editor callbacks (after editor is defined)
+  const handleLinkSave = useCallback(
+    (href: string, text: string) => {
+      if (!editor || editor.isDestroyed) return
+
+      const { linkRange } = linkEditorState
+
+      if (linkRange) {
+        // We have explicit link range - use it
+        editor
+          .chain()
+          .focus()
+          .setTextSelection({ from: linkRange.from, to: linkRange.to })
+          .insertContent(text)
+          .setTextSelection({ from: linkRange.from, to: linkRange.from + text.length })
+          .setLink({ href })
+          .run()
+      }
+      setLinkEditorState({
+        show: false,
+        position: { x: 0, y: 0 },
+        link: { href: '', text: '' }
+      })
+    },
+    [editor, linkEditorState]
+  )
+
+  const handleLinkRemove = useCallback(() => {
+    if (!editor || editor.isDestroyed) return
+
+    const { linkRange } = linkEditorState
+
+    if (linkRange) {
+      // Use a more reliable method - directly remove the mark from the range
+      const tr = editor.state.tr
+      tr.removeMark(linkRange.from, linkRange.to, editor.schema.marks.enhancedLink || editor.schema.marks.link)
+      editor.view.dispatch(tr)
+    } else {
+      // No explicit range - try to extend current mark range and remove
+      editor.chain().focus().extendMarkRange('enhancedLink').unsetLink().run()
+    }
+
+    // Close link editor
+    setLinkEditorState({
+      show: false,
+      position: { x: 0, y: 0 },
+      link: { href: '', text: '' }
+    })
+  }, [editor, linkEditorState])
+
+  const handleLinkCancel = useCallback(() => {
+    setLinkEditorState({
+      show: false,
+      position: { x: 0, y: 0 },
+      link: { href: '', text: '' }
+    })
+  }, [])
+
   // Show action menu for table rows/columns
   const showTableActionMenu = useCallback(
     (type: 'row' | 'column', index: number, position?: { x: number; y: number }) => {
@@ -546,7 +609,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         isOrderedList: editor.isActive('orderedList') ?? false,
         isCodeBlock: editor.isActive('codeBlock') ?? false,
         isBlockquote: editor.isActive('blockquote') ?? false,
-        isLink: editor.isActive('link') ?? false,
+        isLink: (editor.isActive('enhancedLink') || editor.isActive('link')) ?? false,
         canLink: editor.can().chain().setLink({ href: '' }).run() ?? false,
         canUnlink: editor.can().chain().unsetLink().run() ?? false,
         canUndo: editor.can().chain().undo().run() ?? false,
@@ -655,6 +718,14 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     disabled: !editable,
     formattingState,
     tableOfContentsItems,
+    linkEditor: {
+      show: linkEditorState.show,
+      position: linkEditorState.position,
+      link: linkEditorState.link,
+      onSave: handleLinkSave,
+      onRemove: handleLinkRemove,
+      onCancel: handleLinkCancel
+    },
 
     // Actions
     setMarkdown,
