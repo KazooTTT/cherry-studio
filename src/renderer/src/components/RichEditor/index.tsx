@@ -307,6 +307,8 @@ const RichEditor = ({
           // Image insertion is handled by the ImageUploader component in toolbar
           // This case is here for completeness but shouldn't be called directly
           break
+        case 'taskList':
+          editor.chain().focus().toggleTaskList().run()
       }
     },
     [editor]

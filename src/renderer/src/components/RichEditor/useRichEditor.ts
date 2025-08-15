@@ -582,7 +582,8 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
           canImage: false,
           isMath: false,
           isInlineMath: false,
-          canMath: false
+          canMath: false,
+          isTaskList: false
         }
       }
 
@@ -619,7 +620,8 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         canImage: editor.can().chain().setImage({ src: '' }).run() ?? false,
         isMath: editor.isActive('blockMath') ?? false,
         isInlineMath: editor.isActive('inlineMath') ?? false,
-        canMath: true
+        canMath: true,
+        isTaskList: editor.isActive('taskList') ?? false
       }
     }
   })

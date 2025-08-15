@@ -185,6 +185,8 @@ export interface FormattingState {
   isInlineMath: boolean
   /** Whether math command can be executed */
   canMath: boolean
+  /** Whether taskList is active */
+  isTaskList: boolean
 }
 
 export type FormattingCommand =
@@ -211,6 +213,7 @@ export type FormattingCommand =
   | 'blockMath'
   | 'inlineMath'
   | 'table'
+  | 'taskList'
   | 'image'
 
 export interface ToolbarProps {

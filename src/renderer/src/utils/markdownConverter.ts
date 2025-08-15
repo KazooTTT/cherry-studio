@@ -301,11 +301,11 @@ const turndownService = new TurndownService({
     const el = node as any as HTMLElement
     if (el.nodeName === 'DIV' && el.getAttribute?.('data-type') === 'block-math') {
       const latex = el.getAttribute?.('data-latex') || ''
-      return `$$$${latex}$$$`
+      return `$$$${latex}$$$\n\n`
     }
     if (el.nodeName === 'SPAN' && el.getAttribute?.('data-type') === 'inline-math') {
       const latex = el.getAttribute?.('data-latex') || ''
-      return `$$${latex}$$`
+      return `$$${latex}$$\n\n`
     }
     if (el.nodeName === 'P' && el.querySelector?.('[data-type="inline-math"]')) {
       // Handle paragraphs containing math spans

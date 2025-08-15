@@ -62,6 +62,7 @@ const getTooltipText = (t: TFunction, command: FormattingCommand): string => {
     bulletList: t('richEditor.toolbar.bulletList'),
     orderedList: t('richEditor.toolbar.orderedList'),
     codeBlock: t('richEditor.toolbar.codeBlock'),
+    taskList: t('richEditor.toolbar.taskList'),
     blockquote: t('richEditor.toolbar.blockquote'),
     link: t('richEditor.toolbar.link'),
     undo: t('richEditor.toolbar.undo'),
@@ -286,6 +287,8 @@ function getFormattingState(state: FormattingState, command: FormattingCommand):
       return state?.isLink || false
     case 'table':
       return state?.isTable || false
+    case 'taskList':
+      return state?.isTaskList || false
     case 'blockMath':
       return state?.isMath || false
     case 'inlineMath':

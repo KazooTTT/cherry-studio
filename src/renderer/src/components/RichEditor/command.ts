@@ -385,7 +385,10 @@ const DEFAULT_COMMANDS: Command[] = [
     keywords: ['task', 'todo', 'checklist', 'checkbox'],
     handler: (editor: Editor) => {
       editor.chain().focus().toggleTaskList().run()
-    }
+    },
+    showInToolbar: true,
+    toolbarGroup: 'blocks',
+    formattingCommand: 'taskList'
   },
   {
     id: 'hardBreak',

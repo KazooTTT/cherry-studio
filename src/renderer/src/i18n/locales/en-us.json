@@ -1970,6 +1970,7 @@
       "redo": "Redo",
       "strike": "Strikethrough",
       "table": "Table",
+      "taskList": "Task List",
       "underline": "Underline",
       "undo": "Undo"
     }
