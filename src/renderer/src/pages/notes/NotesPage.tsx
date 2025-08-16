@@ -45,6 +45,7 @@ const NotesPage: FC = () => {
   const [tokenCount, setTokenCount] = useState(0)
   const [showPreview, setShowPreview] = useState(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isSwitchingMode, setIsSwitchingMode] = useState<boolean>(false)
 
   useEffect(() => {
     const updateCharCount = () => {
@@ -379,20 +380,47 @@ const NotesPage: FC = () => {
                         type="primary"
                         size="small"
                         icon={showPreview ? <EditIcon size={14} /> : <Eye size={14} />}
-                        onClick={() => {
+                        loading={isSwitchingMode}
+                        disabled={isSwitchingMode}
+                        onClick={async () => {
+                          if (isSwitchingMode) return
+
+                          setIsSwitchingMode(true)
                           const currentScrollTop = editorRef.current?.getScrollTop?.() || 0
-                          if (showPreview) {
-                            setShowPreview(false)
-                            requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
-                          } else {
-                            onSave()
-                            requestAnimationFrame(() => {
-                              setShowPreview(true)
-                              requestAnimationFrame(() => editorRef.current?.setScrollTop?.(currentScrollTop))
-                            })
+
+                          try {
+                            if (showPreview) {
+                              // 从预览切换到编辑
+                              await new Promise((resolve) => {
+                                requestAnimationFrame(() => {
+                                  setShowPreview(false)
+                                  requestAnimationFrame(() => {
+                                    editorRef.current?.setScrollTop?.(currentScrollTop)
+                                    resolve(void 0)
+                                  })
+                                })
+                              })
+                            } else {
+                              // 从编辑切换到预览
+                              onSave()
+                              await new Promise((resolve) => {
+                                requestAnimationFrame(() => {
+                                  setShowPreview(true)
+                                  requestAnimationFrame(() => {
+                                    editorRef.current?.setScrollTop?.(currentScrollTop)
+                                    resolve(void 0)
+                                  })
+                                })
+                              })
+                            }
+                          } finally {
+                            // 添加一个小延迟确保过渡完成
+                            setTimeout(() => {
+                              setIsSwitchingMode(false)
+                            }, 100)
                           }
                         }}>
-                        {showPreview ? t('common.edit') : t('common.preview')}
+                        {isSwitchingMode ? t('common.loading') : showPreview ? t('common.edit') : t('common.preview')}
                       </Button>
                     </HSpaceBetweenStack>
                   </BottomPanel>
@@ -464,6 +492,7 @@ const RichEditorContainer = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: opacity 0.2s ease-in-out;
 
   .notes-rich-editor {
     border: none;
@@ -474,12 +503,21 @@ const RichEditorContainer = styled.div`
       height: 100%;
       display: flex;
       flex-direction: column;
+      transition: all 0.15s ease-in-out;
     }
 
     .rich-editor-content {
       flex: 1;
       overflow: auto;
       padding: 16px;
+      transition: all 0.15s ease-in-out;
+    }
+
+    /* 预览模式下的样式优化 */
+    &[data-preview='true'] {
+      .ProseMirror {
+        cursor: default !important;
+      }
     }
   }
 `

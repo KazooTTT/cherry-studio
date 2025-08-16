@@ -439,6 +439,24 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     }
   }, [editor, editable])
 
+  // Update editor content when initialContent changes
+  useEffect(() => {
+    if (editor && !editor.isDestroyed && initialContent !== markdown) {
+      try {
+        const newHtml = markdownToSafeHtml(initialContent)
+        // 使用批处理避免多次渲染
+        requestAnimationFrame(() => {
+          if (editor && !editor.isDestroyed) {
+            editor.commands.setContent(newHtml, { emitUpdate: false })
+            setMarkdownState(initialContent)
+          }
+        })
+      } catch (error) {
+        logger.error('Error updating editor content:', error as Error)
+      }
+    }
+  }, [editor, initialContent, markdown])
+
   // Link editor callbacks (after editor is defined)
   const handleLinkSave = useCallback(
     (href: string, text: string) => {
