@@ -1,5 +1,6 @@
 import { textblockTypeInputRule } from '@tiptap/core'
 import CodeBlock, { type CodeBlockOptions } from '@tiptap/extension-code-block'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
 
 import { CodeBlockNodeReactRenderer } from './CodeBlockNodeView'
 import { ShikiPlugin } from './shikijsPlugin'
@@ -55,6 +56,41 @@ export const CodeBlockShiki = CodeBlock.extend<CodeBlockShikiOptions>({
     return CodeBlockNodeReactRenderer
   },
 
+  addKeyboardShortcuts() {
+    return {
+      Tab: () => {
+        if (this.editor.isActive(this.name)) {
+          return this.editor.commands.insertContent('  ')
+        }
+        return false
+      },
+      'Shift-Tab': () => {
+        if (this.editor.isActive(this.name)) {
+          const { selection } = this.editor.state
+          const { $from } = selection
+          const start = $from.start()
+          const content = $from.parent.textContent
+
+          // Find the current line
+          const beforeCursor = content.slice(0, $from.pos - start - 1)
+          const lines = beforeCursor.split('\n')
+          const currentLineIndex = lines.length - 1
+          const currentLine = lines[currentLineIndex]
+
+          // Check if line starts with spaces that can be removed
+          if (currentLine.startsWith('  ')) {
+            const lineStart = start + 1 + beforeCursor.length - currentLine.length
+            return this.editor.commands.deleteRange({
+              from: lineStart,
+              to: lineStart + 2
+            })
+          }
+        }
+        return false
+      }
+    }
+  },
+
   addProseMirrorPlugins() {
     const shikiPlugin = ShikiPlugin({
       name: this.name,
@@ -62,7 +98,34 @@ export const CodeBlockShiki = CodeBlock.extend<CodeBlockShikiOptions>({
       theme: this.options.theme
     })
 
-    return [...(this.parent?.() || []), shikiPlugin]
+    const codeBlockEventPlugin = new Plugin({
+      key: new PluginKey('codeBlockEvents'),
+      props: {
+        handleKeyDown: (view, event) => {
+          const { selection } = view.state
+          const { $from } = selection
+
+          // Check if we're inside a code block and handle Enter key
+          if ($from.parent.type.name === this.name && event.key === 'Enter') {
+            const content = $from.parent.textContent
+            const beforeCursor = content.slice(0, $from.pos - $from.start() - 1)
+            const lines = beforeCursor.split('\n')
+            const currentLine = lines[lines.length - 1]
+
+            // Get indentation from current line
+            const indent = currentLine.match(/^\s*/)?.[0] || ''
+
+            // Insert newline with same indentation
+            const tr = view.state.tr.insertText('\n' + indent, selection.from, selection.to)
+            view.dispatch(tr)
+            return true
+          }
+          return false
+        }
+      }
+    })
+
+    return [...(this.parent?.() || []), shikiPlugin, codeBlockEventPlugin]
   },
 
   addAttributes() {

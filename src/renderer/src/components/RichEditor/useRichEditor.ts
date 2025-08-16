@@ -361,6 +361,19 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     editable: editable,
     editorProps: {
       handlePaste: (view, event) => {
+        // First check if we're inside a code block - if so, insert plain text
+        const { selection } = view.state
+        const { $from } = selection
+        if ($from.parent.type.name === 'codeBlock') {
+          const text = event.clipboardData?.getData('text/plain') || ''
+          if (text) {
+            const tr = view.state.tr.insertText(text, selection.from, selection.to)
+            view.dispatch(tr)
+            return true
+          }
+        }
+
+        // Default behavior for non-code blocks
         const text = event.clipboardData?.getData('text/plain') ?? ''
         const html = markdownToHtml(text)
         if (html) {
