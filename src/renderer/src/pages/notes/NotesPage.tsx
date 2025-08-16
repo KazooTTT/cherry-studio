@@ -149,7 +149,8 @@ const NotesPage: FC = () => {
     }
 
     loadNoteContent()
-  }, [activeNodeId, notesTree.length, findNodeById, notesTree])
+    // eslint-disable-next-line
+  }, [activeNodeId, notesTree.length, findNodeById])
 
   // 创建文件夹
   const handleCreateFolder = async (name: string, parentId?: string) => {
