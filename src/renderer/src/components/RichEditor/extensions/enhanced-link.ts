@@ -93,11 +93,10 @@ const createLinkHoverPlugin = (options: LinkHoverPluginOptions) => {
               const href = linkElement.getAttribute('href') || ''
               const text = linkElement.textContent || ''
               const title = linkElement.getAttribute('title') || ''
-              const rect = linkElement.getBoundingClientRect()
-              const smartRect = calculateSmartPosition(rect)
 
               // Use ProseMirror's built-in method to get position from DOM
               let linkRange: { from: number; to: number } | undefined
+              let linkRect = linkElement.getBoundingClientRect()
 
               try {
                 // Get the mouse position relative to the editor
@@ -120,6 +119,20 @@ const createLinkHoverPlugin = (options: LinkHoverPluginOptions) => {
                     const range = getMarkRange($pos, linkMark.type, linkMark.attrs)
                     if (range) {
                       linkRange = range
+                      // Calculate the position based on the entire link range, not just the hovered element
+                      try {
+                        const startCoords = view.coordsAtPos(range.from)
+                        const endCoords = view.coordsAtPos(range.to)
+                        // Use the full range for positioning
+                        linkRect = new DOMRect(
+                          startCoords.left,
+                          startCoords.top,
+                          endCoords.right - startCoords.left,
+                          endCoords.bottom - startCoords.top
+                        )
+                      } catch (coordsError) {
+                        // Fallback to original rect if coords calculation fails
+                      }
                     }
                   }
                 }
@@ -160,6 +173,7 @@ const createLinkHoverPlugin = (options: LinkHoverPluginOptions) => {
                 }
               }
 
+              const smartRect = calculateSmartPosition(linkRect)
               options.onLinkHover?.({ href, text, title }, smartRect, linkElement, linkRange)
               hoverTimeout = null
             }, hoverDelay)
