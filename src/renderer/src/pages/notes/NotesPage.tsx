@@ -131,12 +131,10 @@ const NotesPage: FC = () => {
                 const content = await window.api.file.read(fileMetadata.id + fileMetadata.ext)
                 logger.debug(content)
                 setCurrentContent(content)
-                setShowPreview(content.length > 0)
               }
             } catch (error) {
               logger.error('Failed to read file:', error as Error)
               setCurrentContent('')
-              setShowPreview(false)
             }
           }
         } catch (error) {
@@ -147,7 +145,6 @@ const NotesPage: FC = () => {
         }
       } else if (!activeNodeId) {
         setCurrentContent('')
-        setShowPreview(false)
       }
     }
 
@@ -390,7 +387,6 @@ const NotesPage: FC = () => {
 
                           try {
                             if (showPreview) {
-                              // 从预览切换到编辑
                               await new Promise((resolve) => {
                                 requestAnimationFrame(() => {
                                   setShowPreview(false)
@@ -401,7 +397,6 @@ const NotesPage: FC = () => {
                                 })
                               })
                             } else {
-                              // 从编辑切换到预览
                               onSave()
                               await new Promise((resolve) => {
                                 requestAnimationFrame(() => {
