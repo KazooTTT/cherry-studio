@@ -352,10 +352,7 @@ const DEFAULT_COMMANDS: Command[] = [
     icon: Link,
     keywords: ['link', 'url', 'href'],
     handler: (editor: Editor) => {
-      const url = window.prompt('Enter URL')
-      if (url) {
-        editor.chain().focus().setLink({ href: url }).run()
-      }
+      editor.chain().focus().setEnhancedLink({ href: '' }).run()
     },
     showInToolbar: true,
     toolbarGroup: 'media',

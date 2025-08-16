@@ -6,6 +6,9 @@ import { Plugin, PluginKey } from '@tiptap/pm/state'
 // Plugin to handle hover interactions
 const linkHoverPlugin = new PluginKey('linkHover')
 
+// Plugin to auto-update empty href links
+const linkAutoUpdatePlugin = new PluginKey('linkAutoUpdate')
+
 // Helper function to get the range of a mark at a given position
 function getMarkRange($pos: ResolvedPos, markType: MarkType, attrs?: any): { from: number; to: number } | null {
   const { doc } = $pos
@@ -192,6 +195,66 @@ const createLinkHoverPlugin = (options: LinkHoverPluginOptions) => {
   })
 }
 
+// Plugin to automatically update empty href with text content
+const createLinkAutoUpdatePlugin = () => {
+  return new Plugin({
+    key: linkAutoUpdatePlugin,
+    appendTransaction: (transactions, _oldState, newState) => {
+      let tr = newState.tr
+      let hasUpdates = false
+
+      // Only process if there were actual document changes
+      const hasDocChanges = transactions.some((transaction) => transaction.docChanged)
+      if (!hasDocChanges) return null
+
+      newState.doc.descendants((node, pos) => {
+        if (node.isText && node.marks) {
+          node.marks.forEach((mark) => {
+            if (mark.type.name === 'enhancedLink') {
+              const text = node.text || ''
+              const currentHref = mark.attrs.href || ''
+
+              if (text.trim()) {
+                // Determine what the href should be based on the text
+                let expectedHref = text.trim()
+                if (
+                  !expectedHref.startsWith('http://') &&
+                  !expectedHref.startsWith('https://') &&
+                  !expectedHref.startsWith('mailto:') &&
+                  !expectedHref.startsWith('tel:')
+                ) {
+                  // Only add https:// if it looks like a domain (contains a dot)
+                  if (expectedHref.includes('.')) {
+                    expectedHref = `https://${expectedHref}`
+                  }
+                }
+
+                // Only update if the current href doesn't match what it should be
+                // and if the current href looks like it was auto-generated (either empty or matches a previous text state)
+                const shouldUpdate =
+                  currentHref !== expectedHref &&
+                  (currentHref === '' || // Empty href
+                    currentHref === text.trim() || // Href matches text without protocol
+                    currentHref === `https://${text.trim()}` || // Href matches text with https
+                    text.trim().startsWith(currentHref.replace(/^https?:\/\//, ''))) // Text is an extension of current href
+
+                if (shouldUpdate) {
+                  // Update the mark with the new href
+                  tr = tr.removeMark(pos, pos + node.nodeSize, mark.type)
+                  tr = tr.addMark(pos, pos + node.nodeSize, mark.type.create({ ...mark.attrs, href: expectedHref }))
+                  hasUpdates = true
+                }
+              }
+            }
+          })
+        }
+      })
+
+      return hasUpdates ? tr : null
+    }
+  })
+}
+
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     enhancedLink: {
@@ -271,7 +334,8 @@ export const EnhancedLink = Link.extend<EnhancedLinkOptions>({
         onLinkHoverEnd: this.options.onLinkHoverEnd,
         editable: this.options.editable,
         hoverDelay: this.options.hoverDelay
-      })
+      }),
+      createLinkAutoUpdatePlugin()
     ]
   },
 

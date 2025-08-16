@@ -175,10 +175,13 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
 
       const linkPosition = { x: position.left, y: position.top }
 
+      // For empty href, use the text content as initial href suggestion
+      const effectiveHref = attrs.href || attrs.text || ''
+
       setLinkEditorState({
         show: true,
         position: linkPosition,
-        link: attrs,
+        link: { ...attrs, href: effectiveHref },
         linkRange
       })
     },
@@ -437,7 +440,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
           .setTextSelection({ from: linkRange.from, to: linkRange.to })
           .insertContent(text)
           .setTextSelection({ from: linkRange.from, to: linkRange.from + text.length })
-          .setLink({ href })
+          .setEnhancedLink({ href })
           .run()
       }
       setLinkEditorState({
@@ -461,7 +464,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       editor.view.dispatch(tr)
     } else {
       // No explicit range - try to extend current mark range and remove
-      editor.chain().focus().extendMarkRange('enhancedLink').unsetLink().run()
+      editor.chain().focus().extendMarkRange('enhancedLink').unsetEnhancedLink().run()
     }
 
     // Close link editor
@@ -619,8 +622,8 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         isCodeBlock: editor.isActive('codeBlock') ?? false,
         isBlockquote: editor.isActive('blockquote') ?? false,
         isLink: (editor.isActive('enhancedLink') || editor.isActive('link')) ?? false,
-        canLink: editor.can().chain().setLink({ href: '' }).run() ?? false,
-        canUnlink: editor.can().chain().unsetLink().run() ?? false,
+        canLink: editor.can().chain().setEnhancedLink({ href: '' }).run() ?? false,
+        canUnlink: editor.can().chain().unsetEnhancedLink().run() ?? false,
         canUndo: editor.can().chain().undo().run() ?? false,
         canRedo: editor.can().chain().redo().run() ?? false,
         isTable: editor.isActive('table') ?? false,
