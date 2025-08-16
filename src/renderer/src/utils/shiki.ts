@@ -4,30 +4,7 @@ import { getTokenStyleObject, type HighlighterGeneric, SpecialLanguage, ThemedTo
 
 import { AsyncInitializer } from './asyncInitializer'
 
-export const DEFAULT_LANGUAGES = [
-  'text',
-  'javascript',
-  'typescript',
-  'python',
-  'java',
-  'markdown',
-  'json',
-  'yaml',
-  'go',
-  'rust',
-  'c',
-  'c++',
-  'c#',
-  'php',
-  'ruby',
-  'swift',
-  'jsx',
-  'tsx',
-  'lua',
-  'latex',
-  'scss',
-  'shell'
-]
+export const DEFAULT_LANGUAGES = ['text', 'javascript', 'typescript', 'python', 'java', 'markdown', 'json']
 export const DEFAULT_THEMES = ['one-light', 'material-theme-darker']
 
 const logger = loggerService.withContext('Shiki')

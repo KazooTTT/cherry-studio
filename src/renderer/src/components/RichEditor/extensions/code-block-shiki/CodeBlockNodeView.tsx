@@ -1,30 +1,38 @@
 import { CopyOutlined } from '@ant-design/icons'
-import { DEFAULT_LANGUAGES, getHighlighter } from '@renderer/utils/shiki'
+import { DEFAULT_LANGUAGES, getHighlighter, getShiki } from '@renderer/utils/shiki'
 import { NodeViewContent, NodeViewWrapper, type ReactNodeViewProps, ReactNodeViewRenderer } from '@tiptap/react'
 import { Button, Select, Tooltip } from 'antd'
-import { FC, useCallback, useMemo } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 
 const CodeBlockNodeView: FC<ReactNodeViewProps> = (props) => {
   const { node, updateAttributes } = props
+  const [languageOptions, setLanguageOptions] = useState<string[]>(DEFAULT_LANGUAGES)
 
   // Detect language from node attrs or fallback
   const language = (node.attrs.language as string) || 'text'
 
   // Build language options with 'text' always available
-  const languageOptions: string[] = useMemo(() => {
-    let options = DEFAULT_LANGUAGES
+  useEffect(() => {
+    const loadLanguageOptions = async () => {
+      try {
+        const shiki = await getShiki()
+        const highlighter = await getHighlighter()
 
-    getHighlighter().then((highlighter) => {
-      if (highlighter && typeof highlighter.getLoadedLanguages === 'function') {
-        try {
-          options = Array.from(new Set(['text', ...highlighter.getLoadedLanguages()]))
-        } catch {
-          options = DEFAULT_LANGUAGES
-        }
+        // Get bundled languages from shiki
+        const bundledLanguages = Object.keys(shiki.bundledLanguages)
+
+        // Combine with loaded languages
+        const loadedLanguages = highlighter.getLoadedLanguages()
+
+        const allLanguages = Array.from(new Set(['text', ...bundledLanguages, ...loadedLanguages]))
+
+        setLanguageOptions(allLanguages)
+      } catch {
+        setLanguageOptions(DEFAULT_LANGUAGES)
       }
-    })
+    }
 
-    return options
+    loadLanguageOptions()
   }, [])
 
   // Handle language change
