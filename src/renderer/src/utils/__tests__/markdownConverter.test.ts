@@ -96,6 +96,12 @@ describe('markdownConverter', () => {
   })
 
   describe('markdownToHtml', () => {
+    it('should convert \\n to <br>', () => {
+      const markdown = 'Hello\nWorld'
+      const result = markdownToHtml(markdown)
+      expect(result).toBe('<p>Hello\nWorld</p>')
+    })
+
     it('should convert Markdown to HTML', () => {
       const markdown = '# Hello World'
       const result = markdownToHtml(markdown)
@@ -212,6 +218,26 @@ describe('markdownConverter', () => {
       expect(result).toBe(
         '<table>\n<thead>\n<tr>\n<th>f</th>\n<th></th>\n<th></th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td></td>\n<td>f</td>\n<td></td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n<td>f</td>\n</tr>\n</tbody>\n</table>\n'
       )
+    })
+
+    it('should escape XML-like tags in code blocks', () => {
+      const markdown = '```jsx\nconst component = <><div>content</div></>\n```'
+      const result = markdownToHtml(markdown)
+      expect(result).toBe(
+        '<pre><code class="language-jsx">const component = &#x3C;&#x3E;&#x3C;div&#x3E;content&#x3C;/div&#x3E;&#x3C;/&#x3E;\n</code></pre>'
+      )
+    })
+
+    it('should escape XML-like tags in inline code', () => {
+      const markdown = 'Use `<>` for fragments'
+      const result = markdownToHtml(markdown)
+      expect(result).toBe('<p>Use <code>&#x3C;&#x3E;</code> for fragments</p>\n')
+    })
+
+    it('shoud convert XML-like tags in paragraph', () => {
+      const markdown = '<abc></abc>'
+      const result = markdownToHtml(markdown)
+      expect(result).toBe('<p><abc></abc></p>\n')
     })
   })
 

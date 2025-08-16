@@ -20,7 +20,13 @@ export const DEFAULT_LANGUAGES = [
   'c#',
   'php',
   'ruby',
-  'swift'
+  'swift',
+  'jsx',
+  'tsx',
+  'lua',
+  'latex',
+  'scss',
+  'shell'
 ]
 export const DEFAULT_THEMES = ['one-light', 'material-theme-darker']
 

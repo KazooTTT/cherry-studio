@@ -21,22 +21,25 @@ const md = new MarkdownIt({
   typographer: false // Enable smartypants and other sweet transforms
 })
 
-// Override the code_block and code_inline renderers to prevent HTML encoding
+// Override the code_block and code_inline renderers to properly escape HTML entities
 md.renderer.rules.code_block = function (tokens, idx) {
   const token = tokens[idx]
   const langName = token.info ? ` class="language-${token.info.trim()}"` : ''
-  return `<pre><code${langName}>${token.content}</code></pre>`
+  const escapedContent = he.encode(token.content, { useNamedReferences: false })
+  return `<pre><code${langName}>${escapedContent}</code></pre>`
 }
 
 md.renderer.rules.code_inline = function (tokens, idx) {
   const token = tokens[idx]
-  return `<code>${token.content}</code>`
+  const escapedContent = he.encode(token.content, { useNamedReferences: false })
+  return `<code>${escapedContent}</code>`
 }
 
 md.renderer.rules.fence = function (tokens, idx) {
   const token = tokens[idx]
   const langName = token.info ? ` class="language-${token.info.trim()}"` : ''
-  return `<pre><code${langName}>${token.content}</code></pre>`
+  const escapedContent = he.encode(token.content, { useNamedReferences: false })
+  return `<pre><code${langName}>${escapedContent}</code></pre>`
 }
 
 // Custom task list plugin for markdown-it
