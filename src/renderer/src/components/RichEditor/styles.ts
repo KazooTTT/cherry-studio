@@ -282,6 +282,7 @@ export const ToCDock = styled.div`
     gap: 4px;
     opacity: 0.6;
     transition: opacity 0.2s ease;
+    overflow: hidden; /* prevent overflow */
   }
 
   .toc-rail-button {
@@ -294,24 +295,26 @@ export const ToCDock = styled.div`
     cursor: pointer;
     opacity: 0.8;
     width: 12px; /* default for level 1 */
+    display: block;
+    flex-shrink: 0;
     transition:
       background 0.2s ease,
       opacity 0.2s ease,
       transform 0.1s ease;
 
     &:hover {
-      background: var(--color-text); /* hover becomes text color for visibility */
+      background: var(--color-text);
       opacity: 1;
       transform: scaleX(1.05);
     }
 
     &.active {
-      background: var(--color-text); /* light: black, dark: white via variables */
+      background: var(--color-text);
       opacity: 1;
     }
 
     &.scrolled-over {
-      background: var(--color-text-3);
+      background: var(--color-gray-3);
       opacity: 0.9;
     }
 

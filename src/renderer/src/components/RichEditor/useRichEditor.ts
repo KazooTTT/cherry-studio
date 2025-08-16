@@ -25,7 +25,7 @@ import Typography from '@tiptap/extension-typography'
 import { useEditor, useEditorState } from '@tiptap/react'
 import { StarterKit } from '@tiptap/starter-kit'
 import { t } from 'i18next'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { commandSuggestion } from './command'
 import { CodeBlockShiki } from './extensions/code-block-shiki/code-block-shiki'
@@ -150,9 +150,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
   const { activeShikiTheme, languageMap } = useCodeStyle()
 
   const [tableOfContentsItems, setTableOfContentsItems] = useState<TableOfContentDataItem[]>([])
-  const lastActiveHeadingIdRef = useRef<string | null>(null)
-  const lastDocSizeRef = useRef<number>(0)
-  const lastContentHashRef = useRef<string>('')
 
   // Link editor state
   const [linkEditorState, setLinkEditorState] = useState<{
@@ -217,14 +214,14 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
           if (!parent) return
           const parentTop = parent.getBoundingClientRect().top
 
-          const docSize = content.length
-
           let closestIndex = -1
           let minDelta = Number.POSITIVE_INFINITY
           for (let i = 0; i < content.length; i++) {
             const rect = content[i].dom.getBoundingClientRect()
             const delta = rect.top - parentTop
-            if (delta >= -4 && delta < minDelta) {
+            const inThreshold = delta >= -50 && delta < minDelta
+
+            if (inThreshold) {
               minDelta = delta
               closestIndex = i
             }
@@ -238,25 +235,11 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
             if (closestIndex === -1) closestIndex = 0
           }
 
-          const activeId = content[closestIndex]?.id ?? null
-          const contentHash = content.map((i) => `${i.id}:${i.textContent}`).join('|')
-
-          if (
-            lastDocSizeRef.current === docSize &&
-            lastActiveHeadingIdRef.current === activeId &&
-            lastContentHashRef.current === contentHash
-          ) {
-            return
-          }
-
-          lastDocSizeRef.current = docSize
-          lastActiveHeadingIdRef.current = activeId
-          lastContentHashRef.current = contentHash
-
           const normalized = content.map((item, idx) => {
             const rect = item.dom.getBoundingClientRect()
             const isScrolledOver = rect.top < parentTop
-            return { ...item, isActive: idx === closestIndex, isScrolledOver }
+            const isActive = idx === closestIndex
+            return { ...item, isActive, isScrolledOver }
           })
 
           setTableOfContentsItems(normalized)
