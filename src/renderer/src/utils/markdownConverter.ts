@@ -16,10 +16,15 @@ export interface TaskListOptions {
 const md = new MarkdownIt({
   html: true, // Enable HTML tags in source
   xhtmlOut: true, // Use '>' for single tags (<br> instead of <br />)
-  breaks: false, // Convert '\n' in paragraphs into <br>
+  breaks: true, // Convert '\n' in paragraphs into <br>
   linkify: false, // Autoconvert URL-like text to links
   typographer: false // Enable smartypants and other sweet transforms
 })
+
+// Override the softbreak renderer to not add newlines after <br />
+md.renderer.rules.softbreak = function () {
+  return '<br />'
+}
 
 // Override the code_block and code_inline renderers to properly escape HTML entities
 md.renderer.rules.code_block = function (tokens, idx) {
@@ -391,7 +396,30 @@ export const markdownToHtml = (markdown: string | null | undefined): string => {
   }
 
   try {
-    return md.render(markdown)
+    // Store whitespace patterns after newlines for later restoration
+    const whitespaceMap = new Map<string, string>()
+    let counter = 0
+
+    // Replace whitespace after newlines with unique tokens
+    const processedMarkdown = markdown.replace(/\n( +)/g, (_, spaces) => {
+      const token = `__WS_TOKEN_${counter++}__`
+      whitespaceMap.set(token, spaces)
+      return '\n' + token
+    })
+
+    const result = md.render(processedMarkdown)
+
+    // Restore the whitespace tokens with actual spaces
+    let restoredResult = result
+    whitespaceMap.forEach((spaces, token) => {
+      restoredResult = restoredResult.replace(new RegExp(token, 'g'), spaces)
+    })
+
+    // Only remove trailing newline for single paragraph cases with <br /> tags (line breaks)
+    if (restoredResult.match(/^<p>.*<br \/>.*<\/p>\n$/)) {
+      return restoredResult.replace(/\n$/, '')
+    }
+    return restoredResult
   } catch (error) {
     logger.error('Error converting Markdown to HTML:', error as Error)
     return ''

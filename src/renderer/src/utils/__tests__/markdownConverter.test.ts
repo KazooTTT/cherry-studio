@@ -99,7 +99,65 @@ describe('markdownConverter', () => {
     it('should convert \\n to <br>', () => {
       const markdown = 'Hello\nWorld'
       const result = markdownToHtml(markdown)
-      expect(result).toBe('<p>Hello\nWorld</p>\n')
+      expect(result).toBe('<p>Hello<br />World</p>')
+    })
+
+    it('should keep blank space', () => {
+      const markdown = 'Hello\n    World'
+      const result = markdownToHtml(markdown)
+      expect(result).toBe('<p>Hello<br />    World</p>')
+    })
+
+    it('should preserve indentation in multi-line text', () => {
+      const markdown = 'Line 1\n  Line 2 with 2 spaces\n    Line 3 with 4 spaces'
+      const result = markdownToHtml(markdown)
+      expect(result).toBe('<p>Line 1<br />  Line 2 with 2 spaces<br />    Line 3 with 4 spaces</p>')
+    })
+
+    it('should handle indentation in blockquotes', () => {
+      const markdown = '> Quote line 1\n>   Quote line 2 with indentation'
+      const result = markdownToHtml(markdown)
+      // This should preserve indentation within the blockquote
+      expect(result).toContain('Quote line 1')
+      expect(result).toContain('Quote line 2 with indentation')
+    })
+
+    it('should preserve indentation in nested lists', () => {
+      const markdown = '- Item 1\n  - Nested item\n    - Double nested\n      with continued line'
+      const result = markdownToHtml(markdown)
+      // Should create proper nested list structure
+      expect(result).toContain('<ul>')
+      expect(result).toContain('<li>')
+    })
+
+    it('should handle poetry or formatted text with indentation', () => {
+      const markdown = 'Roses are red\n    Violets are blue\n        Sugar is sweet\n            And so are you'
+      const result = markdownToHtml(markdown)
+      expect(result).toBe(
+        '<p>Roses are red<br />    Violets are blue<br />        Sugar is sweet<br />            And so are you</p>'
+      )
+    })
+
+    it('should preserve indentation after line breaks with multiple paragraphs', () => {
+      const markdown = 'First paragraph\n  with indentation\n\nSecond paragraph\n    with different indentation'
+      const result = markdownToHtml(markdown)
+      expect(result).toContain('<p>First paragraph<br />  with indentation</p>')
+      expect(result).toContain('<p>Second paragraph<br />    with different indentation</p>')
+    })
+
+    it('should handle zero-width indentation (just line break)', () => {
+      const markdown = 'Hello\n\nWorld'
+      const result = markdownToHtml(markdown)
+      expect(result).toBe('<p>Hello</p>\n<p>World</p>\n')
+    })
+
+    it('should preserve indentation in mixed content', () => {
+      const markdown =
+        'Normal text\n  Indented continuation\n\n- List item\n    List continuation\n\n> Quote\n>   Indented quote'
+      const result = markdownToHtml(markdown)
+      expect(result).toContain('<p>Normal text<br />  Indented continuation</p>')
+      expect(result).toContain('<li>')
+      expect(result).toContain('<blockquote>')
     })
 
     it('should convert Markdown to HTML', () => {
