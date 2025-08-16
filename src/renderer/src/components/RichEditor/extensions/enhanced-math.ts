@@ -61,6 +61,7 @@ export const EnhancedMath = Extension.create({
       Node.create({
         name: 'mathPlaceholder',
         group: 'block',
+        content: 'block+',
         atom: true,
         draggable: true,
 
