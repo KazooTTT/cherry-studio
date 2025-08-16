@@ -409,7 +409,9 @@ const RichEditor = ({
           positionMode="absolute"
         />
       )}
-      {showTableOfContents && <ToC items={tableOfContentsItems} editor={editor} />}
+      {showTableOfContents && (
+        <ToC items={tableOfContentsItems} editor={editor} scrollContainerRef={scrollContainerRef} />
+      )}
       <ActionMenu
         show={tableActionMenu.show}
         position={tableActionMenu.position}
