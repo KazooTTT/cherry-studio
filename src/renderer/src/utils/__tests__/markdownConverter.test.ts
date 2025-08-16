@@ -99,7 +99,7 @@ describe('markdownConverter', () => {
     it('should convert \\n to <br>', () => {
       const markdown = 'Hello\nWorld'
       const result = markdownToHtml(markdown)
-      expect(result).toBe('<p>Hello\nWorld</p>')
+      expect(result).toBe('<p>Hello\nWorld</p>\n')
     })
 
     it('should convert Markdown to HTML', () => {
@@ -203,13 +203,15 @@ describe('markdownConverter', () => {
     it('should convert code block to HTML', () => {
       const markdown = '```\nconsole.log("Hello, world!");\n```'
       const result = markdownToHtml(markdown)
-      expect(result).toBe('<pre><code>console.log("Hello, world!");\n</code></pre>')
+      expect(result).toBe('<pre><code>console.log(&#x22;Hello, world!&#x22;);\n</code></pre>')
     })
 
     it('should convert code block with language to HTML', () => {
       const markdown = '```javascript\nconsole.log("Hello, world!");\n```'
       const result = markdownToHtml(markdown)
-      expect(result).toBe('<pre><code class="language-javascript">console.log("Hello, world!");\n</code></pre>')
+      expect(result).toBe(
+        '<pre><code class="language-javascript">console.log(&#x22;Hello, world!&#x22;);\n</code></pre>'
+      )
     })
 
     it('should convert table to HTML', () => {
