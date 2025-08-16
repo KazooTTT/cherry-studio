@@ -1,5 +1,5 @@
-import { mergeAttributes, Node } from '@tiptap/core'
-import Math from '@tiptap/extension-mathematics'
+import { Extension, InputRule, mergeAttributes, Node } from '@tiptap/core'
+import { BlockMath, InlineMath } from '@tiptap/extension-mathematics'
 import { ReactNodeViewRenderer } from '@tiptap/react'
 
 import MathPlaceholderNodeView from '../components/placeholder/MathPlaceholderNodeView'
@@ -12,28 +12,52 @@ declare module '@tiptap/core' {
   }
 }
 
-// Enhanced Math extension that emits events instead of using prompt
-export const EnhancedMath = Math.extend({
-  addCommands() {
+export const EnhancedMath = Extension.create({
+  name: 'enhancedMath',
+
+  addOptions() {
     return {
-      ...this.parent?.(),
-      insertMathPlaceholder:
-        (options: { mathType?: 'block' | 'inline' } = {}) =>
-        ({ commands }) => {
-          return commands.insertContent({
-            type: 'mathPlaceholder',
-            attrs: {
-              mathType: options.mathType || 'block'
-            }
-          })
-        }
+      inlineOptions: undefined,
+      blockOptions: undefined,
+      katexOptions: undefined
     }
   },
 
   addExtensions() {
-    const base = (this.parent?.() as any[]) || []
     return [
-      ...base,
+      BlockMath.extend({
+        addInputRules() {
+          return [
+            new InputRule({
+              find: /^\$\$([^$]+)\$\$$/,
+              handler: ({ state, range, match }) => {
+                const [, latex] = match
+                const { tr } = state
+                const start = range.from
+                const end = range.to
+                tr.replaceWith(start, end, this.type.create({ latex }))
+              }
+            })
+          ]
+        }
+      }).configure({ ...this.options.blockOptions, katexOptions: this.options.katexOptions }),
+      InlineMath.extend({
+        addInputRules() {
+          return [
+            new InputRule({
+              find: /(^|[^$])(\$([^$\n]+?)\$)(?!\$)/,
+              handler: ({ state, range, match }) => {
+                const latex = match[3]
+                const { tr } = state
+                const start = range.from
+                const end = range.to
+
+                tr.replaceWith(start, end, this.type.create({ latex }))
+              }
+            })
+          ]
+        }
+      }).configure({ ...this.options.inlineOptions, katexOptions: this.options.katexOptions }),
       Node.create({
         name: 'mathPlaceholder',
         group: 'block',
