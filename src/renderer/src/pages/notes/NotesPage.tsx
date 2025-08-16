@@ -131,12 +131,10 @@ const NotesPage: FC = () => {
                 const content = await window.api.file.read(fileMetadata.id + fileMetadata.ext)
                 logger.debug(content)
                 setCurrentContent(content)
-                setShowPreview(content.length > 0)
               }
             } catch (error) {
               logger.error('Failed to read file:', error as Error)
               setCurrentContent('')
-              setShowPreview(false)
             }
           }
         } catch (error) {
@@ -147,12 +145,12 @@ const NotesPage: FC = () => {
         }
       } else if (!activeNodeId) {
         setCurrentContent('')
-        setShowPreview(false)
       }
     }
 
     loadNoteContent()
-  }, [activeNodeId, notesTree.length, findNodeById, notesTree])
+    // eslint-disable-next-line
+  }, [activeNodeId, notesTree.length, findNodeById])
 
   // 创建文件夹
   const handleCreateFolder = async (name: string, parentId?: string) => {
@@ -390,7 +388,6 @@ const NotesPage: FC = () => {
 
                           try {
                             if (showPreview) {
-                              // 从预览切换到编辑
                               await new Promise((resolve) => {
                                 requestAnimationFrame(() => {
                                   setShowPreview(false)
@@ -401,7 +398,6 @@ const NotesPage: FC = () => {
                                 })
                               })
                             } else {
-                              // 从编辑切换到预览
                               onSave()
                               await new Promise((resolve) => {
                                 requestAnimationFrame(() => {
