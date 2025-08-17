@@ -38,7 +38,7 @@ describe('markdownConverter', () => {
     it('should keep math block containers intact', () => {
       const html = '<div data-latex="a+b+c" data-type="block-math"></div>'
       const result = htmlToMarkdown(html)
-      expect(result).toBe('$$$a+b+c$$$')
+      expect(result).toBe('$$a+b+c$$')
     })
 
     it('should convert multiple math blocks to Markdown', () => {
@@ -46,21 +46,21 @@ describe('markdownConverter', () => {
         '<div data-latex="\\begin{array}{c}\n\\nabla \\times \\vec{\\mathbf{B}} -\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{E}}}{\\partial t} &amp;\n= \\frac{4\\pi}{c}\\vec{\\mathbf{j}}    \\nabla \\cdot \\vec{\\mathbf{E}} &amp; = 4 \\pi \\rho \\\\\n\n\\nabla \\times \\vec{\\mathbf{E}}\\, +\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{B}}}{\\partial t} &amp; = \\vec{\\mathbf{0}} \\\\\n\n\\nabla \\cdot \\vec{\\mathbf{B}} &amp; = 0\n\n\\end{array}" data-type="block-math"></div>'
       const result = htmlToMarkdown(html)
       expect(result).toBe(
-        '$$$\\begin{array}{c}\n\\nabla \\times \\vec{\\mathbf{B}} -\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{E}}}{\\partial t} &\n= \\frac{4\\pi}{c}\\vec{\\mathbf{j}}    \\nabla \\cdot \\vec{\\mathbf{E}} & = 4 \\pi \\rho \\\\\n\n\\nabla \\times \\vec{\\mathbf{E}}\\, +\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{B}}}{\\partial t} & = \\vec{\\mathbf{0}} \\\\\n\n\\nabla \\cdot \\vec{\\mathbf{B}} & = 0\n\n\\end{array}$$$'
+        '$$\\begin{array}{c}\n\\nabla \\times \\vec{\\mathbf{B}} -\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{E}}}{\\partial t} &\n= \\frac{4\\pi}{c}\\vec{\\mathbf{j}}    \\nabla \\cdot \\vec{\\mathbf{E}} & = 4 \\pi \\rho \\\\\n\n\\nabla \\times \\vec{\\mathbf{E}}\\, +\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{B}}}{\\partial t} & = \\vec{\\mathbf{0}} \\\\\n\n\\nabla \\cdot \\vec{\\mathbf{B}} & = 0\n\n\\end{array}$$'
       )
     })
 
     it('should convert math inline syntax to Markdown', () => {
       const html = '<span data-latex="a+b+c" data-type="inline-math"></span>'
       const result = htmlToMarkdown(html)
-      expect(result).toBe('$$a+b+c$$')
+      expect(result).toBe('$a+b+c$')
     })
 
     it('shoud convert multiple math blocks and inline math to Markdown', () => {
       const html =
         '<div data-latex="a+b+c" data-type="block-math"></div><p><span data-latex="d+e+f" data-type="inline-math"></span></p>'
       const result = htmlToMarkdown(html)
-      expect(result).toBe('$$$a+b+c$$$\n\n$$d+e+f$$')
+      expect(result).toBe('$$a+b+c$$\n\n$d+e+f$')
     })
 
     it('should convert heading and img to Markdown', () => {
@@ -167,19 +167,19 @@ describe('markdownConverter', () => {
     })
 
     it('should convert math block syntax to HTML', () => {
-      const markdown = '$$$a+b+c$$$'
+      const markdown = '$$a+b+c$$'
       const result = markdownToHtml(markdown)
       expect(result).toContain('<div data-latex="a+b+c" data-type="block-math"></div>')
     })
 
     it('should convert math inline syntax to HTML', () => {
-      const markdown = '$$a+b+c$$'
+      const markdown = '$a+b+c$'
       const result = markdownToHtml(markdown)
       expect(result).toContain('<span data-latex="a+b+c" data-type="inline-math"></span>')
     })
 
     it('should convert multiple math blocks to HTML', () => {
-      const markdown = `$$$\\begin{array}{c}
+      const markdown = `$$\\begin{array}{c}
 \\nabla \\times \\vec{\\mathbf{B}} -\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{E}}}{\\partial t} &
 = \\frac{4\\pi}{c}\\vec{\\mathbf{j}}    \\nabla \\cdot \\vec{\\mathbf{E}} & = 4 \\pi \\rho \\\\
 
@@ -187,7 +187,7 @@ describe('markdownConverter', () => {
 
 \\nabla \\cdot \\vec{\\mathbf{B}} & = 0
 
-\\end{array}$$$`
+\\end{array}$$`
       const result = markdownToHtml(markdown)
       expect(result).toContain(
         '<div data-latex="\\begin{array}{c}\n\\nabla \\times \\vec{\\mathbf{B}} -\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{E}}}{\\partial t} &amp;\n= \\frac{4\\pi}{c}\\vec{\\mathbf{j}}    \\nabla \\cdot \\vec{\\mathbf{E}} &amp; = 4 \\pi \\rho \\\\\n\n\\nabla \\times \\vec{\\mathbf{E}}\\, +\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{B}}}{\\partial t} &amp; = \\vec{\\mathbf{0}} \\\\\n\n\\nabla \\cdot \\vec{\\mathbf{B}} &amp; = 0\n\n\\end{array}" data-type="block-math"></div>'
@@ -363,6 +363,43 @@ describe('markdownConverter', () => {
       const backToMarkdown = htmlToMarkdown(html)
 
       expect(backToMarkdown).toBe(originalMarkdown)
+    })
+  })
+
+  describe('LaTeX Escaping in Tables', () => {
+    it('should test simple inline math with backslashes', () => {
+      const html = '<span data-latex="\\int_{-\\infty}^{\\infty}" data-type="inline-math"></span>'
+      const result = htmlToMarkdown(html)
+      expect(result).toBe('$\\int_{-\\infty}^{\\infty}$')
+    })
+
+    it('should test inline math within table structure', () => {
+      const tableHtml =
+        '<table><thead><tr><th>Formula</th><th>Description</th></tr></thead><tbody><tr><td><span data-latex="\\int_{-\\infty}^{\\infty} e^{-x&sup2;} dx = \\sqrt{\\pi}" data-type="inline-math"></span></td><td>Gaussian integral</td></tr></tbody></table>'
+      const result = htmlToMarkdown(tableHtml)
+      expect(result).toContain('$\\int_{-\\infty}^{\\infty} e^{-x²} dx = \\sqrt{\\pi}$')
+    })
+
+    it('should preserve LaTeX backslashes in table cells during round trip conversion', () => {
+      const tableWithLatex =
+        '| Formula | Description |\n| --- | --- |\n| $\\int_{-\\infty}^{\\infty} e^{-x²} dx = \\sqrt{\\pi}$ | Gaussian integral |'
+      const html = markdownToHtml(tableWithLatex)
+      const backToMarkdown = htmlToMarkdown(html)
+
+      // The LaTeX formula should preserve its backslashes
+      expect(backToMarkdown).toContain('$\\int_{-\\infty}^{\\infty} e^{-x²} dx = \\sqrt{\\pi}$')
+      expect(backToMarkdown).not.toContain('$\\\\int_{-\\\\infty}^{\\\\infty} e^{-x²} dx = \\\\sqrt{\\\\pi}$')
+    })
+
+    it('should handle LaTeX in table cells without double escaping', () => {
+      const markdown =
+        '| Math | Result |\n| --- | --- |\n| $E = mc^2$ | Energy-mass equivalence |\n| $\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$ | Sum formula |'
+      const html = markdownToHtml(markdown)
+      const result = htmlToMarkdown(html)
+
+      expect(result).toContain('$E = mc^2$')
+      expect(result).toContain('$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$')
+      expect(result).not.toContain('$\\\\sum_{i=1}^{n} i = \\\\frac{n(n+1)}{2}$')
     })
   })
 })

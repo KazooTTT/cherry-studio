@@ -375,10 +375,18 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
 
         // Default behavior for non-code blocks
         const text = event.clipboardData?.getData('text/plain') ?? ''
-        const html = markdownToHtml(text)
-        if (html) {
-          view.dispatch(view.state.tr.deleteSelection())
-          editor.commands.insertContent(html)
+        if (text) {
+          const html = markdownToHtml(text)
+          const { $from } = selection
+          const atStartOfLine = $from.parentOffset === 0
+          const inEmptyParagraph = $from.parent.type.name === 'paragraph' && $from.parent.textContent === ''
+
+          if (!atStartOfLine && !inEmptyParagraph) {
+            const cleanHtml = html.replace(/^<p>(.*?)<\/p>/s, '$1')
+            editor.commands.insertContent(cleanHtml)
+          } else {
+            editor.commands.insertContent(html)
+          }
           onPaste?.(html)
           return true
         }
