@@ -382,7 +382,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
           const inEmptyParagraph = $from.parent.type.name === 'paragraph' && $from.parent.textContent === ''
 
           if (!atStartOfLine && !inEmptyParagraph) {
-            const cleanHtml = html.replace(/^<p>(.*?)<\/p>\s*$/s, '$1')
+            const cleanHtml = html.replace(/^<p>(.*?)<\/p>/s, '$1')
             editor.commands.insertContent(cleanHtml)
           } else {
             editor.commands.insertContent(html)
