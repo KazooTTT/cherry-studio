@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { htmlToMarkdown, markdownToHtml, sanitizeHtml } from '../markdownConverter'
+import { htmlToMarkdown, markdownToHtml, markdownToSafeHtml, sanitizeHtml } from '../markdownConverter'
 
 describe('markdownConverter', () => {
   describe('htmlToMarkdown', () => {
@@ -401,5 +401,36 @@ describe('markdownConverter', () => {
       expect(result).toContain('$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$')
       expect(result).not.toContain('$\\\\sum_{i=1}^{n} i = \\\\frac{n(n+1)}{2}$')
     })
+  })
+
+  it('should convert markdown image with file:// protocol to HTML img tag', () => {
+    const markdown =
+      '![pasted_image_45285c9c-a7cd-4c3d-a9b6-6854c3bbe479.png](file:///Users/xxxx/Library/Application Support/CherryStudioDev/Data/Files/45285c9c-a7cd-4c3d-a9b6-6854c3bbe479.png)'
+    const result = markdownToHtml(markdown)
+    expect(result).toContain(
+      '<img src="file:///Users/xxxx/Library/Application Support/CherryStudioDev/Data/Files/45285c9c-a7cd-4c3d-a9b6-6854c3bbe479.png" alt="pasted_image_45285c9c-a7cd-4c3d-a9b6-6854c3bbe479.png" />'
+    )
+  })
+
+  it('should handle file:// protocol images differently from http images', () => {
+    const markdown =
+      'Local: ![Local image](file:///path/to/local.png)\\n\\nRemote: ![Remote image](https://example.com/remote.png)'
+    const result = markdownToHtml(markdown)
+    // file:// should be converted to HTML img tag
+    expect(result).toContain('<img src="file:///path/to/local.png" alt="Local image" />')
+    // https:// should be processed by markdown-it normally
+    expect(result).toContain('<img src="https://example.com/remote.png" alt="Remote image" />')
+  })
+
+  it('should handle images with spaces in file:// protocol paths', () => {
+    const markdown = '![My Image](file:///path/to/my image with spaces.png)'
+    const result = markdownToSafeHtml(markdown)
+    expect(result).toContain('<img src="file:///path/to/my image with spaces.png" alt="My Image">')
+  })
+
+  it('shoud img label to markdown', () => {
+    const html = '<img src="file:///path/to/my image with spaces.png" alt="My Image" />'
+    const result = htmlToMarkdown(html)
+    expect(result).toBe('![My Image](file:///path/to/my image with spaces.png)')
   })
 })

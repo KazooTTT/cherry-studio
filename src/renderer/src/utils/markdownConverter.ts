@@ -555,12 +555,28 @@ export const markdownToHtml = (markdown: string | null | undefined): string => {
   }
 
   try {
+    // First, convert any standalone markdown images to HTML img tags
+    // This handles cases where markdown images should be rendered as HTML instead of going through markdown-it
+    let processedMarkdown = markdown.replace(
+      /!\[([^\]]*)\]\(([^)]+?)(?:\s+"([^"]*)")?\)/g,
+      (match, alt, src, title) => {
+        // Only convert file:// protocol images to HTML img tags
+        if (src.startsWith('file://')) {
+          const altText = alt || ''
+          const srcUrl = src.trim()
+          const titleAttr = title ? ` title="${title}"` : ''
+          return `<img src="${srcUrl}" alt="${altText}"${titleAttr} />`
+        }
+        return match
+      }
+    )
+
     // Store whitespace patterns after newlines for later restoration
     const whitespaceMap = new Map<string, string>()
     let counter = 0
 
     // Replace whitespace after newlines with unique tokens
-    const processedMarkdown = markdown.replace(/\n( +)/g, (_, spaces) => {
+    processedMarkdown = processedMarkdown.replace(/\n( +)/g, (_, spaces) => {
       const token = `__WS_TOKEN_${counter++}__`
       whitespaceMap.set(token, spaces)
       return '\n' + token
@@ -650,7 +666,7 @@ export const sanitizeHtml = (html: string): string => {
       'loading'
     ],
     ALLOW_DATA_ATTR: true,
-    ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\\-]+(?:[^a-z+.\-:]|$))/i
+    ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|file|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\\-]+(?:[^a-z+.\-:]|$))/i
   })
 }
 
@@ -661,6 +677,7 @@ export const sanitizeHtml = (html: string): string => {
  */
 export const markdownToSafeHtml = (markdown: string): string => {
   const html = markdownToHtml(markdown)
+  console.log(html)
   return sanitizeHtml(html)
 }
 
