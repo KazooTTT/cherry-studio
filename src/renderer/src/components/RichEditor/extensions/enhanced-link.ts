@@ -55,19 +55,17 @@ const createLinkHoverPlugin = (options: LinkHoverPluginOptions) => {
     const viewportHeight = window.innerHeight
     const editorOffset = 200 // Approximate height of link editor popup
 
-    // Check if link is in the bottom portion of the viewport
     const isNearBottom = rect.bottom > viewportHeight - editorOffset
 
     if (isNearBottom) {
-      // Create a new DOMRect-like object with adjusted position
-      return {
-        ...rect,
-        top: rect.top - editorOffset,
-        bottom: rect.top,
-        y: rect.y - editorOffset
-      } as DOMRect
+      const adjustedRect = new DOMRect(
+        rect.left, // x
+        rect.top - editorOffset, // y (position above the link)
+        rect.width, // width
+        rect.height // height
+      )
+      return adjustedRect
     }
-
     return rect
   }
 
@@ -119,19 +117,32 @@ const createLinkHoverPlugin = (options: LinkHoverPluginOptions) => {
                     const range = getMarkRange($pos, linkMark.type, linkMark.attrs)
                     if (range) {
                       linkRange = range
-                      // Calculate the position based on the entire link range, not just the hovered element
-                      try {
-                        const startCoords = view.coordsAtPos(range.from)
-                        const endCoords = view.coordsAtPos(range.to)
-                        // Use the full range for positioning
-                        linkRect = new DOMRect(
-                          startCoords.left,
-                          startCoords.top,
-                          endCoords.right - startCoords.left,
-                          endCoords.bottom - startCoords.top
-                        )
-                      } catch (coordsError) {
-                        // Fallback to original rect if coords calculation fails
+
+                      // Check if this is near the end of the document
+                      const docSize = view.state.doc.content.size
+                      const isNearDocEnd = range.to >= docSize - 10 // Within 10 characters of doc end
+
+                      if (isNearDocEnd) {
+                        // For links near document end, prefer DOM positioning over ProseMirror coords
+                        // as ProseMirror coords can be inaccurate at document boundaries
+                        const newLinkRect = linkElement.getBoundingClientRect()
+
+                        linkRect = newLinkRect
+                      } else {
+                        // Calculate the position based on the entire link range for other cases
+                        try {
+                          const startCoords = view.coordsAtPos(range.from)
+                          const endCoords = view.coordsAtPos(range.to)
+                          // Use the full range for positioning
+                          linkRect = new DOMRect(
+                            startCoords.left,
+                            startCoords.top,
+                            endCoords.right - startCoords.left,
+                            Math.max(endCoords.bottom - startCoords.top, 16)
+                          )
+                        } catch (coordsError) {
+                          linkRect = linkElement.getBoundingClientRect()
+                        }
                       }
                     }
                   }
