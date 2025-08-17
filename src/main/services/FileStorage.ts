@@ -356,6 +356,80 @@ class FileStorage {
     }
   }
 
+  public savePastedImage = async (
+    _: Electron.IpcMainInvokeEvent,
+    imageData: Uint8Array | Buffer,
+    extension?: string
+  ): Promise<FileMetadata> => {
+    try {
+      const uuid = uuidv4()
+      const ext = extension || '.png'
+      const destPath = path.join(this.storageDir, uuid + ext)
+
+      logger.debug('Saving pasted image:', {
+        storageDir: this.storageDir,
+        destPath,
+        bufferSize: imageData.length
+      })
+
+      // 确保目录存在
+      if (!fs.existsSync(this.storageDir)) {
+        fs.mkdirSync(this.storageDir, { recursive: true })
+      }
+
+      // 确保 imageData 是 Buffer
+      const buffer = Buffer.isBuffer(imageData) ? imageData : Buffer.from(imageData)
+
+      // 如果图片大于1MB，进行压缩处理
+      if (buffer.length > MB) {
+        await this.compressImageBuffer(buffer, destPath, ext)
+      } else {
+        await fs.promises.writeFile(destPath, buffer)
+      }
+
+      const stats = await fs.promises.stat(destPath)
+
+      const fileMetadata: FileMetadata = {
+        id: uuid,
+        origin_name: `pasted_image_${uuid}${ext}`,
+        name: uuid + ext,
+        path: destPath,
+        created_at: new Date().toISOString(),
+        size: stats.size,
+        ext: ext.slice(1),
+        type: getFileType(ext),
+        count: 1
+      }
+
+      return fileMetadata
+    } catch (error) {
+      logger.error('Failed to save pasted image:', error as Error)
+      throw error
+    }
+  }
+
+  private async compressImageBuffer(imageBuffer: Buffer, destPath: string, ext: string): Promise<void> {
+    try {
+      // 创建临时文件
+      const tempPath = path.join(this.tempDir, `temp_${uuidv4()}${ext}`)
+      await fs.promises.writeFile(tempPath, imageBuffer)
+
+      // 使用现有的压缩方法
+      await this.compressImage(tempPath, destPath)
+
+      // 清理临时文件
+      try {
+        await fs.promises.unlink(tempPath)
+      } catch (error) {
+        logger.warn('Failed to cleanup temp file:', error as Error)
+      }
+    } catch (error) {
+      logger.error('Image buffer compression failed, saving original:', error as Error)
+      // 压缩失败时保存原始文件
+      await fs.promises.writeFile(destPath, imageBuffer)
+    }
+  }
+
   public base64File = async (_: Electron.IpcMainInvokeEvent, id: string): Promise<{ data: string; mime: string }> => {
     const filePath = path.join(this.storageDir, id)
     const buffer = await fs.promises.readFile(filePath)

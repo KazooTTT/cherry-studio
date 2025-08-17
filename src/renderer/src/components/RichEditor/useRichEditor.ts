@@ -33,6 +33,7 @@ import { EnhancedImage } from './extensions/enhanced-image'
 import { EnhancedLink } from './extensions/enhanced-link'
 import { EnhancedMath } from './extensions/enhanced-math'
 import { Placeholder } from './extensions/placeholder'
+import { blobToArrayBuffer, compressImage, shouldCompressImage } from './helpers/imageUtils'
 
 const logger = loggerService.withContext('useRichEditor')
 
@@ -373,6 +374,19 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
           }
         }
 
+        // Handle image paste
+        const items = Array.from(event.clipboardData?.items || [])
+        const imageItem = items.find((item) => item.type.startsWith('image/'))
+
+        if (imageItem) {
+          const file = imageItem.getAsFile()
+          if (file) {
+            // Handle image paste by saving to local storage
+            handleImagePaste(file)
+            return true
+          }
+        }
+
         // Default behavior for non-code blocks
         const text = event.clipboardData?.getData('text/plain') ?? ''
         if (text) {
@@ -428,6 +442,58 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       }
     }
   })
+
+  // Handle image paste function
+  const handleImagePaste = useCallback(
+    async (file: File) => {
+      try {
+        let processedFile: File | Blob = file
+        let extension = file.type.split('/')[1] ? `.${file.type.split('/')[1]}` : '.png'
+
+        // 如果图片需要压缩，先进行压缩
+        if (shouldCompressImage(file)) {
+          logger.info('Image needs compression, compressing...', {
+            originalSize: file.size,
+            fileName: file.name
+          })
+
+          processedFile = await compressImage(file, {
+            maxWidth: 1200,
+            maxHeight: 1200,
+            quality: 0.8,
+            outputFormat: file.type.includes('png') ? 'png' : 'jpeg'
+          })
+
+          // 更新扩展名
+          extension = file.type.includes('png') ? '.png' : '.jpg'
+
+          logger.info('Image compressed successfully', {
+            originalSize: file.size,
+            compressedSize: processedFile.size,
+            compressionRatio: (((file.size - processedFile.size) / file.size) * 100).toFixed(1) + '%'
+          })
+        }
+
+        // Convert file to buffer
+        const arrayBuffer = await blobToArrayBuffer(processedFile)
+        const buffer = new Uint8Array(arrayBuffer)
+
+        // Save image to local storage
+        const fileMetadata = await window.api.file.savePastedImage(buffer, extension)
+
+        // Insert image into editor using local file path
+        if (editor && !editor.isDestroyed) {
+          const imageUrl = `file://${fileMetadata.path}`
+          editor.chain().focus().setImage({ src: imageUrl, alt: fileMetadata.origin_name }).run()
+        }
+
+        logger.info('Image pasted and saved:', fileMetadata)
+      } catch (error) {
+        logger.error('Failed to handle image paste:', error as Error)
+      }
+    },
+    [editor]
+  )
 
   useEffect(() => {
     if (editor && !editor.isDestroyed) {
