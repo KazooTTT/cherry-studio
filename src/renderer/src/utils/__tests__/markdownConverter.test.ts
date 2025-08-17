@@ -365,4 +365,41 @@ describe('markdownConverter', () => {
       expect(backToMarkdown).toBe(originalMarkdown)
     })
   })
+
+  describe('LaTeX Escaping in Tables', () => {
+    it('should test simple inline math with backslashes', () => {
+      const html = '<span data-latex="\\int_{-\\infty}^{\\infty}" data-type="inline-math"></span>'
+      const result = htmlToMarkdown(html)
+      expect(result).toBe('$\\int_{-\\infty}^{\\infty}$')
+    })
+
+    it('should test inline math within table structure', () => {
+      const tableHtml =
+        '<table><thead><tr><th>Formula</th><th>Description</th></tr></thead><tbody><tr><td><span data-latex="\\int_{-\\infty}^{\\infty} e^{-x&sup2;} dx = \\sqrt{\\pi}" data-type="inline-math"></span></td><td>Gaussian integral</td></tr></tbody></table>'
+      const result = htmlToMarkdown(tableHtml)
+      expect(result).toContain('$\\int_{-\\infty}^{\\infty} e^{-x²} dx = \\sqrt{\\pi}$')
+    })
+
+    it('should preserve LaTeX backslashes in table cells during round trip conversion', () => {
+      const tableWithLatex =
+        '| Formula | Description |\n| --- | --- |\n| $\\int_{-\\infty}^{\\infty} e^{-x²} dx = \\sqrt{\\pi}$ | Gaussian integral |'
+      const html = markdownToHtml(tableWithLatex)
+      const backToMarkdown = htmlToMarkdown(html)
+
+      // The LaTeX formula should preserve its backslashes
+      expect(backToMarkdown).toContain('$\\int_{-\\infty}^{\\infty} e^{-x²} dx = \\sqrt{\\pi}$')
+      expect(backToMarkdown).not.toContain('$\\\\int_{-\\\\infty}^{\\\\infty} e^{-x²} dx = \\\\sqrt{\\\\pi}$')
+    })
+
+    it('should handle LaTeX in table cells without double escaping', () => {
+      const markdown =
+        '| Math | Result |\n| --- | --- |\n| $E = mc^2$ | Energy-mass equivalence |\n| $\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$ | Sum formula |'
+      const html = markdownToHtml(markdown)
+      const result = htmlToMarkdown(html)
+
+      expect(result).toContain('$E = mc^2$')
+      expect(result).toContain('$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$')
+      expect(result).not.toContain('$\\\\sum_{i=1}^{n} i = \\\\frac{n(n+1)}{2}$')
+    })
+  })
 })

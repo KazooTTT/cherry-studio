@@ -1,5 +1,5 @@
 import { loggerService } from '@logger'
-import { tables, TurndownPlugin } from '@truto/turndown-plugin-gfm'
+import { TurndownPlugin } from '@truto/turndown-plugin-gfm'
 import DOMPurify from 'dompurify'
 import he from 'he'
 import MarkdownIt from 'markdown-it'
@@ -300,22 +300,32 @@ const turndownService = new TurndownService({
     const el = node as any as HTMLElement
     if (el.nodeName === 'DIV' && el.getAttribute?.('data-type') === 'block-math') {
       const latex = el.getAttribute?.('data-latex') || ''
-      return `$$${latex}$$\n\n`
+      const decodedLatex = he.decode(latex, {
+        isAttributeValue: false,
+        strict: false
+      })
+      return `$$${decodedLatex}$$\n\n`
     }
     if (el.nodeName === 'SPAN' && el.getAttribute?.('data-type') === 'inline-math') {
       const latex = el.getAttribute?.('data-latex') || ''
-      return `\n\n$${latex}$\n\n`
+      const decodedLatex = he.decode(latex, {
+        isAttributeValue: false,
+        strict: false
+      })
+      return `$${decodedLatex}$`
     }
+    // Handle paragraphs containing only math spans
     if (el.nodeName === 'P' && el.querySelector?.('[data-type="inline-math"]')) {
-      // Handle paragraphs containing math spans
       const mathSpans = el.querySelectorAll('[data-type="inline-math"]')
-      const mathContent = Array.from(mathSpans)
-        .map((span) => {
-          const latex = span.getAttribute('data-latex') || ''
-          return `$${latex}$`
+      if (mathSpans.length === 1 && el.children.length === 1) {
+        const span = mathSpans[0]
+        const latex = span.getAttribute('data-latex') || ''
+        const decodedLatex = he.decode(latex, {
+          isAttributeValue: false,
+          strict: false
         })
-        .join(' ')
-      return '\n\n' + mathContent
+        return `$${decodedLatex}$`
+      }
     }
     return (node as any).isBlock ? '\n\n' : ''
   }
@@ -331,6 +341,164 @@ turndownService.addRule('underline', {
   filter: ['u'],
   replacement: (content) => `<u>${content}</u>`
 })
+
+// Helper function to safely get text content and clean it with LaTeX support
+function cleanCellContent(content: string, cellElement?: Element): string {
+  // First check for math elements in the cell
+  if (cellElement) {
+    const blockMath = cellElement.querySelector('[data-type="block-math"]')
+    if (blockMath) {
+      const latex = blockMath.getAttribute('data-latex') || ''
+      const decodedLatex = he.decode(latex, { isAttributeValue: false, strict: false })
+      return `$$${decodedLatex}$$`
+    }
+
+    const inlineMath = cellElement.querySelector('[data-type="inline-math"]')
+    if (inlineMath) {
+      const latex = inlineMath.getAttribute('data-latex') || ''
+      const decodedLatex = he.decode(latex, { isAttributeValue: false, strict: false })
+      return `$${decodedLatex}$`
+    }
+  }
+
+  if (!content) return '   ' // Default empty cell content
+
+  // Clean and normalize content
+  let cleaned = content
+    .trim()
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .replace(/\|/g, '\\|') // Escape pipes
+    .replace(/\n+/g, ' ') // Convert newlines to spaces
+    .replace(/\r+/g, ' ') // Convert carriage returns to spaces
+
+  // If content is still empty or only whitespace, provide default
+  if (!cleaned || cleaned.match(/^\s*$/)) {
+    return '   '
+  }
+
+  // Ensure minimum width for table readability
+  if (cleaned.length < 3) {
+    cleaned += ' '.repeat(3 - cleaned.length)
+  }
+
+  return cleaned
+}
+
+// Enhanced cell replacement with LaTeX support
+function cellWithLatex(content: string, node: Element, index?: number | null): string {
+  if (index === null && node && node.parentNode) {
+    index = Array.prototype.indexOf.call(node.parentNode.childNodes, node)
+  }
+  if (index === null) index = 0
+
+  let prefix = ' '
+  if (index === 0) prefix = '| '
+
+  const cellContent = cleanCellContent(content, node)
+
+  // Handle colspan by adding extra empty cells
+  let colspan = 1
+  if (node && node.getAttribute) {
+    colspan = parseInt(node.getAttribute('colspan') || '1', 10)
+    if (isNaN(colspan) || colspan < 1) colspan = 1
+  }
+
+  let result = prefix + cellContent + ' |'
+
+  // Add empty cells for colspan
+  for (let i = 1; i < colspan; i++) {
+    result += '   |'
+  }
+
+  return result
+}
+
+const customTablesPlugin: TurndownPlugin = (turndownService) => {
+  turndownService.addRule('tableCell', {
+    filter: ['th', 'td'],
+    replacement: function (content: string, node: Element) {
+      return cellWithLatex(content, node, null)
+    }
+  })
+
+  turndownService.addRule('tableRow', {
+    filter: 'tr',
+    replacement: function (content: string, node: Element) {
+      // Skip empty rows
+      if (!content || !content.trim()) return ''
+
+      let borderCells = ''
+
+      // Add separator row for heading (simplified version)
+      const parentNode = node.parentNode
+      if (parentNode && parentNode.nodeName === 'THEAD') {
+        const table = node.closest('table')
+        if (table) {
+          // Count cells in this row
+          const cellNodes = Array.from(node.querySelectorAll('th, td'))
+          const colCount = cellNodes.length
+
+          if (colCount > 0) {
+            for (let i = 0; i < colCount; i++) {
+              const prefix = i === 0 ? '| ' : ' '
+              borderCells += prefix + '---' + ' |'
+            }
+          }
+        }
+      }
+
+      return '\n' + content + (borderCells ? '\n' + borderCells : '')
+    }
+  })
+
+  turndownService.addRule('table', {
+    filter: 'table',
+    replacement: function (content: string) {
+      // Clean up content (remove extra newlines)
+      content = content.replace(/\n+/g, '\n').trim()
+
+      // If no content after cleaning, return empty
+      if (!content) return ''
+
+      // Split into lines and filter out empty lines
+      const lines = content.split('\n').filter((line) => line.trim())
+
+      if (lines.length === 0) return ''
+
+      // Check if we need to add a header row
+      const hasHeaderSeparator = lines.length >= 2 && /\|\s*-+/.test(lines[1])
+
+      let result = lines.join('\n')
+
+      // If no header separator exists, add a simple one
+      if (!hasHeaderSeparator && lines.length >= 1) {
+        const firstLine = lines[0]
+        const colCount = (firstLine.match(/\|/g) || []).length - 1
+
+        if (colCount > 0) {
+          let separator = '|'
+          for (let i = 0; i < colCount; i++) {
+            separator += ' --- |'
+          }
+
+          // Insert separator after first line
+          const resultLines = [lines[0], separator, ...lines.slice(1)]
+          result = resultLines.join('\n')
+        }
+      }
+
+      return '\n\n' + result + '\n\n'
+    }
+  })
+
+  // Remove table sections but keep content
+  turndownService.addRule('tableSection', {
+    filter: ['thead', 'tbody', 'tfoot'],
+    replacement: function (content: string) {
+      return content
+    }
+  })
+}
 
 const taskListItemsPlugin: TurndownPlugin = (turndownService) => {
   turndownService.addRule('taskListItems', {
@@ -355,7 +523,7 @@ const taskListItemsPlugin: TurndownPlugin = (turndownService) => {
   })
 }
 
-turndownService.use([tables, taskListItemsPlugin])
+turndownService.use([customTablesPlugin, taskListItemsPlugin])
 
 /**
  * Converts HTML content to Markdown
