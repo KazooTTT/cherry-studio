@@ -46,6 +46,7 @@ const NotesPage: FC = () => {
   const [showPreview, setShowPreview] = useState(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isSwitchingMode, setIsSwitchingMode] = useState<boolean>(false)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false)
 
   useEffect(() => {
     const updateCharCount = () => {
@@ -87,10 +88,47 @@ const NotesPage: FC = () => {
     [activeNodeId, currentContent, findNodeById, notesTree]
   )
 
+  // 检查是否有未保存的更改
+  const checkUnsavedChanges = useCallback(async () => {
+    if (!hasUnsavedChanges) return true
+
+    return new Promise<boolean>((resolve) => {
+      window.modal.confirm({
+        title: t('common.confirm'),
+        content: t('notes.unsaved_changes'),
+        okText: t('common.confirm'),
+        cancelText: t('common.cancel'),
+        centered: true,
+        onOk: () => {
+          setHasUnsavedChanges(false)
+          resolve(true)
+        },
+        onCancel: () => {
+          resolve(false)
+        }
+      })
+    })
+  }, [hasUnsavedChanges, t])
+
+  // useEffect(() => {
+  //   registerUnsavedCheck('/notes', checkUnsavedChanges)
+  //
+  //   return () => {
+  //     unregisterUnsavedCheck('/notes')
+  //   }
+  // }, [checkUnsavedChanges])
+
   const onSave = () => {
     const newMarkdown = editorRef.current?.getMarkdown() || ''
     setCurrentContent(newMarkdown)
     saveCurrentNote(newMarkdown)
+    setHasUnsavedChanges(false)
+  }
+
+  const handleContentChange = () => {
+    if (!activeNodeId) return
+    const newMarkdown = editorRef.current?.getMarkdown() || ''
+    setHasUnsavedChanges(newMarkdown !== currentContent)
   }
 
   const handleCommandsReady = (commandAPI: Pick<RichEditorRef, 'unregisterCommand'>) => {
@@ -177,6 +215,11 @@ const NotesPage: FC = () => {
 
   // 选择节点
   const handleSelectNode = async (node: NotesTreeNode) => {
+    if (hasUnsavedChanges && activeNodeId) {
+      const canNavigate = await checkUnsavedChanges()
+      if (!canNavigate) return
+    }
+
     if (node.type === 'file') {
       try {
         dispatch(setActiveNodeId(node.id))
@@ -359,6 +402,7 @@ const NotesPage: FC = () => {
                       key={`${activeNodeId}-${showPreview ? 'preview' : 'edit'}`}
                       ref={editorRef}
                       initialContent={currentContent}
+                      onContentChange={handleContentChange}
                       onCommandsReady={handleCommandsReady}
                       showToolbar={!showPreview}
                       editable={!showPreview}
@@ -456,7 +500,9 @@ const EditorWrapper = styled.div`
   position: relative;
   flex-direction: column;
   justify-content: space-between;
-  max-width: calc(100vw - 260px);
+  width: 100%;
+  flex: 1;
+  max-width: 100%;
   overflow: hidden;
   min-height: 0;
 `

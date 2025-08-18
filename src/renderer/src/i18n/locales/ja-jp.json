@@ -1537,6 +1537,7 @@
     "star": "お気に入りに追加する",
     "starred_notes": "収集したノート",
     "title": "ノート",
+    "unsaved_changes": "保存されていないコンテンツがあります。本当に離れますか？",
     "unstar": "お気に入りを解除する",
     "untitled_folder": "新ファイル夹",
     "untitled_note": "無題のメモ",

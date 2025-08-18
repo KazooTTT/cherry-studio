@@ -1537,6 +1537,7 @@
     "star": "收藏",
     "starred_notes": "收藏的笔记",
     "title": "笔记",
+    "unsaved_changes": "你有未保存的内容，确定要离开吗？",
     "unstar": "取消收藏",
     "untitled_folder": "新文件夹",
     "untitled_note": "无标题笔记",

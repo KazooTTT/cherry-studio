@@ -1537,6 +1537,7 @@
     "star": "Favorite",
     "starred_notes": "Collected notes",
     "title": "Notes",
+    "unsaved_changes": "You have unsaved content, are you sure you want to leave?",
     "unstar": "Unfavorite",
     "untitled_folder": "New Folder",
     "untitled_note": "Untitled Note",
