@@ -25,7 +25,7 @@ import { useAppDispatch, useAppSelector } from '@renderer/store'
 import { selectActiveNodeId, setActiveNodeId } from '@renderer/store/note'
 import { NotesSortType, NotesTreeNode } from '@renderer/types/note'
 import { Button, Empty, Spin } from 'antd'
-import { Eye } from 'lucide-react'
+import { SaveIcon } from 'lucide-react'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -377,7 +377,7 @@ const NotesPage: FC = () => {
                       <Button
                         type="primary"
                         size="small"
-                        icon={showPreview ? <EditIcon size={14} /> : <Eye size={14} />}
+                        icon={showPreview ? <EditIcon size={14} /> : <SaveIcon size={14} />}
                         loading={isSwitchingMode}
                         disabled={isSwitchingMode}
                         onClick={async () => {
@@ -416,7 +416,7 @@ const NotesPage: FC = () => {
                             }, 100)
                           }
                         }}>
-                        {isSwitchingMode ? t('common.loading') : showPreview ? t('common.edit') : t('common.preview')}
+                        {isSwitchingMode ? t('common.loading') : showPreview ? t('common.edit') : t('common.save')}
                       </Button>
                     </HSpaceBetweenStack>
                   </BottomPanel>
