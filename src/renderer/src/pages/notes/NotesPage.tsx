@@ -448,32 +448,36 @@ const ContentContainer = styled.div`
   display: flex;
   flex: 1;
   flex-direction: row;
-  overflow: hidden;
+  min-height: 0;
 `
 
 const EditorWrapper = styled.div`
-  flex: 1;
   display: flex;
   position: relative;
-  overflow: hidden;
   flex-direction: column;
+  justify-content: space-between;
+  max-width: calc(100vw - 260px);
+  overflow: hidden;
+  min-height: 0;
 `
 
 const EditorContainer = styled.div`
-  flex: 1;
   display: flex;
   flex-direction: column;
+  flex: 1;
   margin: 16px;
   border: 0.5px solid var(--color-border);
   border-radius: 6px;
-  overflow: hidden;
   background: var(--color-background);
+  overflow: hidden;
+  min-height: 0;
 `
 
 const RichEditorContainer = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
   overflow: hidden;
   transition: opacity 0.2s ease-in-out;
 
@@ -510,6 +514,9 @@ const BottomPanel = styled.div`
   border-top: 1px solid var(--color-border);
   background: var(--color-background-soft);
   flex-shrink: 0;
+  height: 48px;
+  display: flex;
+  align-items: center;
 `
 
 const TokenCount = styled.div`
