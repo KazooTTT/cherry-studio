@@ -75,6 +75,7 @@ export const EnhancedImage = Image.extend({
       Node.create({
         name: 'imagePlaceholder',
         group: 'block',
+        content: 'block+',
         atom: true,
         draggable: true,
 
