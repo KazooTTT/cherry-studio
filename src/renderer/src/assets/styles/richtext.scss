@@ -3,7 +3,8 @@
   outline: none;
   min-height: 120px;
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-wrap: break-word;
+  word-break: break-word;
 
   &:focus {
     outline: none;
@@ -56,7 +57,11 @@
   p {
     margin: 1.1rem 0 0.5rem 0;
     white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    width: 100%;
     line-height: 1.6;
+    hyphens: auto;
 
     &:has(+ ul) {
       margin-bottom: 0;
