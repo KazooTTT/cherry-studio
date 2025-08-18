@@ -10,6 +10,12 @@ describe('markdownConverter', () => {
       expect(result).toBe('# Hello World')
     })
 
+    it('should keep <br> to <br>', () => {
+      const html = '<p>Text with<br>\nindentation<br>\nand without indentation</p>'
+      const result = htmlToMarkdown(html)
+      expect(result).toBe('Text with<br>indentation<br>and without indentation')
+    })
+
     it('should convert task list HTML back to Markdown', () => {
       const html =
         '<ul data-type="taskList" class="task-list"><li data-type="taskItem" class="task-list-item" data-checked="false"><input type="checkbox" disabled> abcd</li><li data-type="taskItem" class="task-list-item" data-checked="true"><input type="checkbox" checked disabled> efgh</li></ul>'
@@ -96,22 +102,10 @@ describe('markdownConverter', () => {
   })
 
   describe('markdownToHtml', () => {
-    it('should convert \\n to <br>', () => {
-      const markdown = 'Hello\nWorld'
+    it('should convert <br> to <br>', () => {
+      const markdown = 'Text with<br>\nindentation<br>\nand without indentation'
       const result = markdownToHtml(markdown)
-      expect(result).toBe('<p>Hello<br />World</p>')
-    })
-
-    it('should keep blank space', () => {
-      const markdown = 'Hello\n    World'
-      const result = markdownToHtml(markdown)
-      expect(result).toBe('<p>Hello<br />    World</p>')
-    })
-
-    it('should preserve indentation in multi-line text', () => {
-      const markdown = 'Line 1\n  Line 2 with 2 spaces\n    Line 3 with 4 spaces'
-      const result = markdownToHtml(markdown)
-      expect(result).toBe('<p>Line 1<br />  Line 2 with 2 spaces<br />    Line 3 with 4 spaces</p>')
+      expect(result).toBe('<p>Text with<br>\nindentation<br>\nand without indentation</p>\n')
     })
 
     it('should handle indentation in blockquotes', () => {
@@ -133,16 +127,15 @@ describe('markdownConverter', () => {
     it('should handle poetry or formatted text with indentation', () => {
       const markdown = 'Roses are red\n    Violets are blue\n        Sugar is sweet\n            And so are you'
       const result = markdownToHtml(markdown)
-      expect(result).toBe(
-        '<p>Roses are red<br />    Violets are blue<br />        Sugar is sweet<br />            And so are you</p>'
-      )
+      expect(result).toBe('<p>Roses are red\nViolets are blue\nSugar is sweet\nAnd so are you</p>\n')
     })
 
     it('should preserve indentation after line breaks with multiple paragraphs', () => {
-      const markdown = 'First paragraph\n  with indentation\n\nSecond paragraph\n    with different indentation'
+      const markdown = 'First paragraph\n\n    with indentation\n\n    Second paragraph\n\nwith different indentation'
       const result = markdownToHtml(markdown)
-      expect(result).toContain('<p>First paragraph<br />  with indentation</p>')
-      expect(result).toContain('<p>Second paragraph<br />    with different indentation</p>')
+      expect(result).toBe(
+        '<p>First paragraph</p>\n<pre><code>with indentation\n\nSecond paragraph\n</code></pre><p>with different indentation</p>\n'
+      )
     })
 
     it('should handle zero-width indentation (just line break)', () => {
@@ -155,9 +148,9 @@ describe('markdownConverter', () => {
       const markdown =
         'Normal text\n  Indented continuation\n\n- List item\n    List continuation\n\n> Quote\n>   Indented quote'
       const result = markdownToHtml(markdown)
-      expect(result).toContain('<p>Normal text<br />  Indented continuation</p>')
-      expect(result).toContain('<li>')
-      expect(result).toContain('<blockquote>')
+      expect(result).toBe(
+        '<p>Normal text\nIndented continuation</p>\n<ul>\n<li>List item\nList continuation</li>\n</ul>\n<blockquote>\n<p>Quote\nIndented quote</p>\n</blockquote>\n'
+      )
     })
 
     it('should convert Markdown to HTML', () => {
@@ -403,34 +396,47 @@ describe('markdownConverter', () => {
     })
   })
 
-  it('should convert markdown image with file:// protocol to HTML img tag', () => {
-    const markdown =
-      '![pasted_image_45285c9c-a7cd-4c3d-a9b6-6854c3bbe479.png](file:///Users/xxxx/Library/Application Support/CherryStudioDev/Data/Files/45285c9c-a7cd-4c3d-a9b6-6854c3bbe479.png)'
+  describe('markdown image', () => {
+    it('should convert markdown iamge to HTML img tag', () => {
+      const markdown = '![foo](train.jpg)'
+      const result = markdownToHtml(markdown)
+      expect(result).toBe('<p><img src="train.jpg" alt="foo" /></p>\n')
+    })
+    it('should convert markdown image with file:// protocol to HTML img tag', () => {
+      const markdown =
+        '![pasted_image_45285c9c-a7cd-4c3d-a9b6-6854c3bbe479.png](file:///Users/xxxx/Library/Application Support/CherryStudioDev/Data/Files/45285c9c-a7cd-4c3d-a9b6-6854c3bbe479.png)'
+      const result = markdownToHtml(markdown)
+      expect(result).toContain(
+        '<img src="file:///Users/xxxx/Library/Application Support/CherryStudioDev/Data/Files/45285c9c-a7cd-4c3d-a9b6-6854c3bbe479.png" alt="pasted_image_45285c9c-a7cd-4c3d-a9b6-6854c3bbe479.png" />'
+      )
+    })
+
+    it('should handle file:// protocol images differently from http images', () => {
+      const markdown =
+        'Local: ![Local image](file:///path/to/local.png)\\n\\nRemote: ![Remote image](https://example.com/remote.png)'
+      const result = markdownToHtml(markdown)
+      // file:// should be converted to HTML img tag
+      expect(result).toContain('<img src="file:///path/to/local.png" alt="Local image" />')
+      // https:// should be processed by markdown-it normally
+      expect(result).toContain('<img src="https://example.com/remote.png" alt="Remote image" />')
+    })
+
+    it('should handle images with spaces in file:// protocol paths', () => {
+      const markdown = '![My Image](file:///path/to/my image with spaces.png)'
+      const result = markdownToSafeHtml(markdown)
+      expect(result).toContain('<img src="file:///path/to/my image with spaces.png" alt="My Image">')
+    })
+
+    it('shoud img label to markdown', () => {
+      const html = '<img src="file:///path/to/my image with spaces.png" alt="My Image" />'
+      const result = htmlToMarkdown(html)
+      expect(result).toBe('![My Image](file:///path/to/my image with spaces.png)')
+    })
+  })
+
+  it('should handle hardbreak with backslash followed by indented text', () => {
+    const markdown = 'Text with \\\n    indentation \\\nand without indentation'
     const result = markdownToHtml(markdown)
-    expect(result).toContain(
-      '<img src="file:///Users/xxxx/Library/Application Support/CherryStudioDev/Data/Files/45285c9c-a7cd-4c3d-a9b6-6854c3bbe479.png" alt="pasted_image_45285c9c-a7cd-4c3d-a9b6-6854c3bbe479.png" />'
-    )
-  })
-
-  it('should handle file:// protocol images differently from http images', () => {
-    const markdown =
-      'Local: ![Local image](file:///path/to/local.png)\\n\\nRemote: ![Remote image](https://example.com/remote.png)'
-    const result = markdownToHtml(markdown)
-    // file:// should be converted to HTML img tag
-    expect(result).toContain('<img src="file:///path/to/local.png" alt="Local image" />')
-    // https:// should be processed by markdown-it normally
-    expect(result).toContain('<img src="https://example.com/remote.png" alt="Remote image" />')
-  })
-
-  it('should handle images with spaces in file:// protocol paths', () => {
-    const markdown = '![My Image](file:///path/to/my image with spaces.png)'
-    const result = markdownToSafeHtml(markdown)
-    expect(result).toContain('<img src="file:///path/to/my image with spaces.png" alt="My Image">')
-  })
-
-  it('shoud img label to markdown', () => {
-    const html = '<img src="file:///path/to/my image with spaces.png" alt="My Image" />'
-    const result = htmlToMarkdown(html)
-    expect(result).toBe('![My Image](file:///path/to/my image with spaces.png)')
+    expect(result).toBe('<p>Text with <br />\nindentation <br />\nand without indentation</p>\n')
   })
 })

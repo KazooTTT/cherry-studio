@@ -10,7 +10,8 @@ export const RichEditorWrapper = styled.div<{
   border: 1px solid var(--color-border);
   border-radius: 6px;
   background: var(--color-background);
-  overflow: hidden;
+  overflow-y: hidden;
+  overflow-x: visible;
 
   ${({ $minHeight }) => $minHeight && `min-height: ${$minHeight}px;`}
   ${({ $maxHeight }) => $maxHeight && `max-height: ${$maxHeight}px;`}
