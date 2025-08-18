@@ -345,9 +345,7 @@ const NotesPage: FC = () => {
           />
         )}
         <EditorWrapper>
-          <HeaderNavbarContainer>
-            <HeaderNavbar notesTree={notesTree} />
-          </HeaderNavbarContainer>
+          <HeaderNavbar notesTree={notesTree} />
           {activeNodeId ? (
             <EditorContainer>
               {isLoading ? (
@@ -459,17 +457,6 @@ const EditorWrapper = styled.div`
   position: relative;
   overflow: hidden;
   flex-direction: column;
-`
-
-const HeaderNavbarContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 0 16px;
-  height: 40px;
-  border-bottom: 1px solid var(--color-border);
-  justify-content: flex-start;
-  width: 100%;
 `
 
 const EditorContainer = styled.div`

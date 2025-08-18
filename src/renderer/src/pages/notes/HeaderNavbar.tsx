@@ -1,5 +1,6 @@
 import { loggerService } from '@logger'
-import { NavbarHeader } from '@renderer/components/app/Navbar'
+import { NavbarCenter, NavbarHeader, NavbarRight } from '@renderer/components/app/Navbar'
+import { HStack } from '@renderer/components/Layout'
 import { useNavbarPosition } from '@renderer/hooks/useSettings'
 import { useShowWorkspace } from '@renderer/hooks/useStore'
 import { findNodeInTree, getNodePathArray } from '@renderer/services/NotesService'
@@ -60,65 +61,29 @@ const HeaderNavbar = ({ notesTree }) => {
 
   return (
     <NavbarHeader className="home-navbar">
-      <NavbarWrapper>
-        <LeftSection>
-          {isTopNavbar && showWorkspace && (
-            <Tooltip title={t('navbar.hide_sidebar')} mouseEnterDelay={0.8}>
-              <NavbarIcon onClick={handleToggleShowWorkspace}>
-                <PanelLeftClose size={18} />
-              </NavbarIcon>
-            </Tooltip>
-          )}
-          {isTopNavbar && !showWorkspace && (
-            <Tooltip title={t('navbar.show_sidebar')} mouseEnterDelay={0.8}>
-              <NavbarIcon onClick={handleToggleShowWorkspace}>
-                <PanelRightClose size={18} />
-              </NavbarIcon>
-            </Tooltip>
-          )}
-        </LeftSection>
-        <CenterSection>
-          <Breadcrumb items={breadcrumbItems} />
-        </CenterSection>
-        <RightSection />
-      </NavbarWrapper>
+      <HStack alignItems="center">
+        {isTopNavbar && showWorkspace && (
+          <Tooltip title={t('navbar.hide_sidebar')} mouseEnterDelay={0.8}>
+            <NavbarIcon onClick={handleToggleShowWorkspace}>
+              <PanelLeftClose size={18} />
+            </NavbarIcon>
+          </Tooltip>
+        )}
+        {isTopNavbar && !showWorkspace && (
+          <Tooltip title={t('navbar.show_sidebar')} mouseEnterDelay={0.8}>
+            <NavbarIcon onClick={handleToggleShowWorkspace}>
+              <PanelRightClose size={18} />
+            </NavbarIcon>
+          </Tooltip>
+        )}
+      </HStack>
+      <NavbarCenter>
+        <Breadcrumb items={breadcrumbItems} />
+      </NavbarCenter>
+      <NavbarRight />
     </NavbarHeader>
   )
 }
-
-const NavbarWrapper = styled.div`
-  display: flex;
-  width: 100%;
-  position: relative;
-`
-
-const LeftSection = styled.div`
-  display: flex;
-  align-items: center;
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1;
-`
-
-const CenterSection = styled.div`
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-`
-
-const RightSection = styled.div`
-  display: flex;
-  align-items: center;
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1;
-`
 
 export const NavbarIcon = styled.div`
   -webkit-app-region: none;
