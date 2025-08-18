@@ -162,8 +162,8 @@
     margin: 0;
     /* Allow action endpoints (rendered as decorations) to slightly overflow table edges */
     overflow: visible;
-    table-layout: auto;
-    width: auto;
+    table-layout: fixed;
+    width: 100%;
 
     td,
     th {
@@ -269,8 +269,24 @@
       overflow-x: auto;
       overflow-y: visible;
 
+      &::-webkit-scrollbar {
+        cursor: default;
+      }
+
+      &::-webkit-scrollbar:horizontal {
+        cursor: default;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        cursor: default;
+      }
+
+      &::-webkit-scrollbar-track {
+        cursor: default;
+      }
+
       table {
-        width: auto;
+        width: max-content;
         min-width: 100%;
       }
     }
