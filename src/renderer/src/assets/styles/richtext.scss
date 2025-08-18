@@ -162,15 +162,15 @@
     margin: 0;
     /* Allow action endpoints (rendered as decorations) to slightly overflow table edges */
     overflow: visible;
-    table-layout: fixed;
-    width: 100%;
+    table-layout: auto;
+    width: auto;
 
     td,
     th {
       border: 1px solid var(--color-border-soft);
       box-sizing: border-box;
       display: table-cell;
-      min-width: 1em;
+      min-width: 120px;
       padding: 6px 8px;
       position: relative;
       vertical-align: top;
@@ -270,8 +270,8 @@
       overflow-y: visible;
 
       table {
-        width: 100%;
-        min-width: max-content;
+        width: auto;
+        min-width: 100%;
       }
     }
 
