@@ -60,8 +60,8 @@ const HeaderNavbar = ({ notesTree }) => {
   }, [activeNodeId, notesTree])
 
   return (
-    <NavbarHeader className="home-navbar">
-      <HStack alignItems="center">
+    <NavbarHeader className="home-navbar" style={{ justifyContent: 'flex-start' }}>
+      <HStack alignItems="center" flex="0 0 auto">
         {isTopNavbar && showWorkspace && (
           <Tooltip title={t('navbar.hide_sidebar')} mouseEnterDelay={0.8}>
             <NavbarIcon onClick={handleToggleShowWorkspace}>
@@ -77,10 +77,12 @@ const HeaderNavbar = ({ notesTree }) => {
           </Tooltip>
         )}
       </HStack>
-      <NavbarCenter>
+      <NavbarCenter style={{ flex: 1 }}>
         <Breadcrumb items={breadcrumbItems} />
       </NavbarCenter>
-      <NavbarRight />
+      <div style={{ flex: '0 0 auto' }}>
+        <NavbarRight style={{ minWidth: 'auto' }} />
+      </div>
     </NavbarHeader>
   )
 }
