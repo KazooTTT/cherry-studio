@@ -14,6 +14,7 @@ import { Tooltip } from 'antd'
 import {
   FileSearch,
   Folder,
+  Hammer,
   Home,
   Languages,
   LayoutGrid,
@@ -22,8 +23,8 @@ import {
   Palette,
   Settings,
   Sparkle,
-  SquareTerminal,
   Sun,
+  Terminal,
   X
 } from 'lucide-react'
 import { useCallback, useEffect } from 'react'
@@ -52,11 +53,13 @@ const getTabIcon = (tabId: string): React.ReactNode | undefined => {
     case 'knowledge':
       return <FileSearch size={14} />
     case 'mcp':
-      return <SquareTerminal size={14} />
+      return <Hammer size={14} />
     case 'files':
       return <Folder size={14} />
     case 'settings':
       return <Settings size={14} />
+    case 'code':
+      return <Terminal size={14} />
     default:
       return null
   }
