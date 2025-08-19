@@ -33,6 +33,11 @@
     line-height: 1.1;
     text-wrap: pretty;
     font-weight: 600;
+
+    code {
+      font-size: inherit;
+      font-weight: inherit;
+    }
   }
 
   h1 {
