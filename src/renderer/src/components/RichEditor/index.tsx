@@ -165,7 +165,17 @@ const RichEditor = ({
     }
   }, [editor, onCommandsReady])
 
-  // Event listener removed; ActionMenu is triggered via hook callback
+  // Handle drag end callback to clean up draggable attribute
+  const handleDragEnd = useCallback((e: DragEvent) => {
+    // Clean up draggable attribute from the drag handle element
+    const target = e.target as HTMLElement
+    if (target && target.classList.contains('drag-handle')) {
+      // Use setTimeout to ensure this runs after TipTap's drag end handling
+      setTimeout(() => {
+        target.removeAttribute('draggable')
+      }, 0)
+    }
+  }, [])
 
   const closeTableActionMenu = () => {
     setTableActionMenu({
@@ -387,7 +397,7 @@ const RichEditor = ({
           <PlusButton editor={editor} onElementClick={handlePlusButtonClick}>
             <Plus />
           </PlusButton>
-          <DragHandle editor={editor}>
+          <DragHandle editor={editor} onElementDragEnd={handleDragEnd}>
             <GripVertical />
           </DragHandle>
           <EditorContent style={{ height: '100%' }} editor={editor} />
