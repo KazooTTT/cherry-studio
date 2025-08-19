@@ -25,7 +25,7 @@ import { useAppDispatch, useAppSelector } from '@renderer/store'
 import { selectActiveNodeId, setActiveNodeId } from '@renderer/store/note'
 import { NotesSortType, NotesTreeNode } from '@renderer/types/note'
 import { Button, Empty, Spin } from 'antd'
-import { SaveIcon } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -46,7 +46,6 @@ const NotesPage: FC = () => {
   const [showPreview, setShowPreview] = useState(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isSwitchingMode, setIsSwitchingMode] = useState<boolean>(false)
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false)
 
   useEffect(() => {
     const updateCharCount = () => {
@@ -88,47 +87,9 @@ const NotesPage: FC = () => {
     [activeNodeId, currentContent, findNodeById, notesTree]
   )
 
-  // 检查是否有未保存的更改
-  const checkUnsavedChanges = useCallback(async () => {
-    if (!hasUnsavedChanges) return true
-
-    return new Promise<boolean>((resolve) => {
-      window.modal.confirm({
-        title: t('common.confirm'),
-        content: t('notes.unsaved_changes'),
-        okText: t('common.confirm'),
-        cancelText: t('common.cancel'),
-        centered: true,
-        onOk: () => {
-          setHasUnsavedChanges(false)
-          resolve(true)
-        },
-        onCancel: () => {
-          resolve(false)
-        }
-      })
-    })
-  }, [hasUnsavedChanges, t])
-
-  // useEffect(() => {
-  //   registerUnsavedCheck('/notes', checkUnsavedChanges)
-  //
-  //   return () => {
-  //     unregisterUnsavedCheck('/notes')
-  //   }
-  // }, [checkUnsavedChanges])
-
-  const onSave = () => {
-    const newMarkdown = editorRef.current?.getMarkdown() || ''
+  const handleMarkdownChange = (newMarkdown: string) => {
     setCurrentContent(newMarkdown)
     saveCurrentNote(newMarkdown)
-    setHasUnsavedChanges(false)
-  }
-
-  const handleContentChange = () => {
-    if (!activeNodeId) return
-    const newMarkdown = editorRef.current?.getMarkdown() || ''
-    setHasUnsavedChanges(newMarkdown !== currentContent)
   }
 
   const handleCommandsReady = (commandAPI: Pick<RichEditorRef, 'unregisterCommand'>) => {
@@ -215,11 +176,6 @@ const NotesPage: FC = () => {
 
   // 选择节点
   const handleSelectNode = async (node: NotesTreeNode) => {
-    if (hasUnsavedChanges && activeNodeId) {
-      const canNavigate = await checkUnsavedChanges()
-      if (!canNavigate) return
-    }
-
     if (node.type === 'file') {
       try {
         dispatch(setActiveNodeId(node.id))
@@ -402,7 +358,7 @@ const NotesPage: FC = () => {
                       key={`${activeNodeId}-${showPreview ? 'preview' : 'edit'}`}
                       ref={editorRef}
                       initialContent={currentContent}
-                      onContentChange={handleContentChange}
+                      onMarkdownChange={handleMarkdownChange}
                       onCommandsReady={handleCommandsReady}
                       showToolbar={!showPreview}
                       editable={!showPreview}
@@ -419,7 +375,7 @@ const NotesPage: FC = () => {
                       <Button
                         type="primary"
                         size="small"
-                        icon={showPreview ? <EditIcon size={14} /> : <SaveIcon size={14} />}
+                        icon={showPreview ? <EditIcon size={14} /> : <Eye size={14} />}
                         loading={isSwitchingMode}
                         disabled={isSwitchingMode}
                         onClick={async () => {
@@ -440,7 +396,6 @@ const NotesPage: FC = () => {
                                 })
                               })
                             } else {
-                              onSave()
                               await new Promise((resolve) => {
                                 requestAnimationFrame(() => {
                                   setShowPreview(true)
@@ -458,7 +413,7 @@ const NotesPage: FC = () => {
                             }, 100)
                           }
                         }}>
-                        {isSwitchingMode ? t('common.loading') : showPreview ? t('common.edit') : t('common.save')}
+                        {isSwitchingMode ? t('common.loading') : showPreview ? t('common.edit') : t('common.preview')}
                       </Button>
                     </HSpaceBetweenStack>
                   </BottomPanel>
