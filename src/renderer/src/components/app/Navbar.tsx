@@ -44,7 +44,7 @@ export const NavbarMain: FC<Props> = ({ children, ...props }) => {
   const isFullscreen = useFullscreen()
   return (
     <NavbarMainContainer {...props} $isFullscreen={isFullscreen}>
-      {children}st
+      {children}
     </NavbarMainContainer>
   )
 }
