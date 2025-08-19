@@ -123,6 +123,7 @@ export const EditorContent = styled.div`
   /* Ensure the ProseMirror editor content doesn't override drag handle positioning */
   .ProseMirror {
     position: relative;
+    height: 100%;
 
     /* Allow text selection when not editable */
     &:not([contenteditable='true']) {

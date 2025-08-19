@@ -382,7 +382,7 @@ const RichEditor = ({
           scrollContainer={scrollContainerRef}
         />
       )}
-      <Scrollbar ref={scrollContainerRef} style={{ flex: 1 }}>
+      <Scrollbar ref={scrollContainerRef} style={{ flex: 1, display: 'flex' }}>
         <StyledEditorContent>
           <PlusButton editor={editor} onElementClick={handlePlusButtonClick}>
             <Plus />
@@ -390,7 +390,7 @@ const RichEditor = ({
           <DragHandle editor={editor}>
             <GripVertical />
           </DragHandle>
-          <EditorContent editor={editor} />
+          <EditorContent style={{ height: '100%' }} editor={editor} />
         </StyledEditorContent>
       </Scrollbar>
       {enableContentSearch && (
