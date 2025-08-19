@@ -1958,6 +1958,7 @@
         "title": "Undo"
       }
     },
+    "dragHandle": "Drag to move",
     "image": {
       "placeholder": "Add a picture"
     },
@@ -1990,6 +1991,7 @@
       "placeholder": "Enter LaTeX formula"
     },
     "placeholder": "Write '/' for commands",
+    "plusButton": "Click to add below",
     "toolbar": {
       "blockMath": "Block Math",
       "blockquote": "Quote",

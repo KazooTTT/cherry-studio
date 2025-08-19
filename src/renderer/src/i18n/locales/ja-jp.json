@@ -1958,6 +1958,7 @@
         "title": "取り消す"
       }
     },
+    "dragHandle": "ブロックをドラッグします",
     "image": {
       "placeholder": "写真を追加します"
     },
@@ -1990,6 +1991,7 @@
       "placeholder": "ラテックスフォーミュラを入力します"
     },
     "placeholder": "'/'を入力してコマンドを呼び出します",
+    "plusButton": "クリックして以下を追加します",
     "toolbar": {
       "blockMath": "数式",
       "blockquote": "引用",

@@ -1,6 +1,7 @@
 import { ContentSearch, type ContentSearchRef } from '@renderer/components/ContentSearch'
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import { EditorContent } from '@tiptap/react'
+import { Tooltip } from 'antd'
 import { t } from 'i18next'
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, GripVertical, Plus, Trash2 } from 'lucide-react'
 import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
@@ -392,10 +393,14 @@ const RichEditor = ({
       <Scrollbar ref={scrollContainerRef} style={{ flex: 1, display: 'flex' }}>
         <StyledEditorContent>
           <PlusButton editor={editor} onElementClick={handlePlusButtonClick}>
-            <Plus />
+            <Tooltip title={t('richEditor.plusButton')}>
+              <Plus />
+            </Tooltip>
           </PlusButton>
           <DragHandle editor={editor} onElementDragEnd={handleDragEnd}>
-            <GripVertical />
+            <Tooltip title={t('richEditor.dragHandle')}>
+              <GripVertical />
+            </Tooltip>
           </DragHandle>
           <EditorContent style={{ height: '100%' }} editor={editor} />
         </StyledEditorContent>

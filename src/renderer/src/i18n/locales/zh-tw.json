@@ -1958,6 +1958,7 @@
         "title": "撤銷"
       }
     },
+    "dragHandle": "拖拽塊",
     "image": {
       "placeholder": "添加圖片"
     },

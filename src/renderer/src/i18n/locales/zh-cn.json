@@ -1958,6 +1958,7 @@
         "title": "撤销"
       }
     },
+    "dragHandle": "拖拽块",
     "image": {
       "placeholder": "添加图片"
     },
@@ -1990,6 +1991,7 @@
       "placeholder": "输入 LaTeX 公式"
     },
     "placeholder": "输入'/'调用命令",
+    "plusButton": "点击在下方添加",
     "toolbar": {
       "blockMath": "数学公式块",
       "blockquote": "引用",
