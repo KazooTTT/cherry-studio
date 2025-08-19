@@ -537,7 +537,21 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
 
       <NotesTreeContainer>
         <StyledScrollbar>
-          <TreeContent>{filteredTree.map((node) => renderTreeNode(node))}</TreeContent>
+          <TreeContent>
+            {filteredTree.map((node) => renderTreeNode(node))}
+            {!isShowStarred && !isShowSearch && (
+              <DropHintNode>
+                <TreeNodeContainer active={false} depth={0}>
+                  <TreeNodeContent>
+                    <NodeIcon>
+                      <FilePlus size={16} />
+                    </NodeIcon>
+                    <DropHintText>{t('notes.drop_markdown_hint')}</DropHintText>
+                  </TreeNodeContent>
+                </TreeNodeContainer>
+              </DropHintNode>
+            )}
+          </TreeContent>
         </StyledScrollbar>
       </NotesTreeContainer>
 
@@ -750,6 +764,28 @@ const DragOverIndicator = styled.div`
   border: 2px dashed rgba(0, 123, 255, 0.6);
   border-radius: 4px;
   pointer-events: none;
+`
+
+const DropHintNode = styled.div`
+  margin-top: 8px;
+
+  ${TreeNodeContainer} {
+    background-color: transparent;
+    border: 1px dashed var(--color-border);
+    cursor: default;
+    opacity: 0.6;
+
+    &:hover {
+      background-color: var(--color-background-soft);
+      opacity: 0.8;
+    }
+  }
+`
+
+const DropHintText = styled.div`
+  color: var(--color-text-3);
+  font-size: 12px;
+  font-style: italic;
 `
 
 export default NotesSidebar
