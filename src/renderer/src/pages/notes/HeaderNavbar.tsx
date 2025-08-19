@@ -17,7 +17,7 @@ import { menuItems } from './MenuConfig'
 
 const logger = loggerService.withContext('HeaderNavbar')
 
-const HeaderNavbar = ({ notesTree }) => {
+const HeaderNavbar = ({ notesTree, getCurrentNoteContent }) => {
   const { isTopNavbar } = useNavbarPosition()
   const { showWorkspace, toggleShowWorkspace } = useShowWorkspace()
   const activeNodeId = useAppSelector(selectActiveNodeId)
@@ -27,6 +27,21 @@ const HeaderNavbar = ({ notesTree }) => {
   const handleToggleShowWorkspace = useCallback(() => {
     toggleShowWorkspace()
   }, [toggleShowWorkspace])
+
+  const handleCopyContent = useCallback(async () => {
+    try {
+      const content = getCurrentNoteContent?.()
+      if (content) {
+        await navigator.clipboard.writeText(content)
+        window.message.success(t('common.copied'))
+      } else {
+        window.message.warning(t('notes.no_content_to_copy'))
+      }
+    } catch (error) {
+      logger.error('Failed to copy content:', error as Error)
+      window.message.error(t('common.copy_failed'))
+    }
+  }, [getCurrentNoteContent])
 
   const buildMenuItem = (item: any) => {
     if (item.type === 'divider') {
@@ -66,7 +81,13 @@ const HeaderNavbar = ({ notesTree }) => {
           {item.isActive?.(settings) && <span style={{ color: 'var(--color-primary)' }}>✓</span>}
         </div>
       ),
-      onClick: () => item.action(settings, updateSettings)
+      onClick: () => {
+        if (item.copyAction) {
+          handleCopyContent()
+        } else if (item.action) {
+          item.action(settings, updateSettings)
+        }
+      }
     }
   }
 

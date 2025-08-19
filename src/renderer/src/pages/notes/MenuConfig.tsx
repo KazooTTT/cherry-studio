@@ -1,5 +1,5 @@
 import { NotesSettings } from '@renderer/store/note'
-import { Edit3, Eye, FileText, MonitorSpeaker, Type } from 'lucide-react'
+import { Copy, Edit3, Eye, FileText, MonitorSpeaker, Type } from 'lucide-react'
 import { ReactNode } from 'react'
 
 export interface MenuItem {
@@ -11,9 +11,21 @@ export interface MenuItem {
   children?: MenuItem[]
   isActive?: (settings: NotesSettings) => boolean
   component?: (settings: NotesSettings, updateSettings: (newSettings: Partial<NotesSettings>) => void) => ReactNode
+  copyAction?: boolean
 }
 
 export const menuItems: MenuItem[] = [
+  {
+    key: 'copy-content',
+    labelKey: 'notes.copyContent',
+    icon: Copy,
+    copyAction: true
+  },
+  {
+    key: 'divider0',
+    type: 'divider',
+    labelKey: ''
+  },
   {
     key: 'fullwidth',
     labelKey: 'notes.settings.fullWidth',

@@ -13,7 +13,7 @@ export const RichEditorWrapper = styled.div<{
   border-radius: 6px;
   background: var(--color-background);
   overflow-y: hidden;
-  width: ${({ $isFullWidth }) => ($isFullWidth ? '100%' : '80%')};
+  width: ${({ $isFullWidth }) => ($isFullWidth ? '100%' : '60%')};
   margin: ${({ $isFullWidth }) => ($isFullWidth ? '0' : '0 auto')};
   font-family: ${({ $fontFamily }) => ($fontFamily === 'serif' ? 'var(--font-family-serif)' : 'var(--font-family)')};
 

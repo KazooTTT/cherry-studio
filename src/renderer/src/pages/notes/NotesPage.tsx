@@ -322,6 +322,14 @@ const NotesPage: FC = () => {
     }
   }
 
+  const getCurrentNoteContent = useCallback(() => {
+    if (settings.editorMode === 'source') {
+      return currentContent
+    } else {
+      return editorRef.current?.getMarkdown() || currentContent
+    }
+  }, [currentContent, settings.editorMode])
+
   return (
     <Container id="notes-page">
       <ContentContainer id="content-container">
@@ -342,7 +350,7 @@ const NotesPage: FC = () => {
           />
         )}
         <EditorWrapper>
-          <HeaderNavbar notesTree={notesTree} />
+          <HeaderNavbar notesTree={notesTree} getCurrentNoteContent={getCurrentNoteContent} />
           {activeNodeId ? (
             <>
               {isLoading ? (
