@@ -433,6 +433,7 @@ const Container = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
+  width: 100%;
 `
 
 const LoadingContainer = styled.div`
@@ -460,6 +461,7 @@ const EditorWrapper = styled.div`
   max-width: 100%;
   overflow: hidden;
   min-height: 0;
+  min-width: 0;
 `
 
 const EditorContainer = styled.div`
