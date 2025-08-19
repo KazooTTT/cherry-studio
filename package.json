@@ -141,7 +141,7 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@tiptap/extension-collaboration": "^3.2.0",
-    "@tiptap/extension-drag-handle": "^3.2.0",
+    "@tiptap/extension-drag-handle": "patch:@tiptap/extension-drag-handle@npm%3A3.2.0#~/.yarn/patches/@tiptap-extension-drag-handle-npm-3.2.0-5a9ebff7c9.patch",
     "@tiptap/extension-drag-handle-react": "^3.2.0",
     "@tiptap/extension-image": "^3.2.0",
     "@tiptap/extension-list": "^3.2.0",

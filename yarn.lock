@@ -7137,7 +7137,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-drag-handle@npm:^3.2.0":
+"@tiptap/extension-drag-handle@npm:3.2.0":
   version: 3.2.0
   resolution: "@tiptap/extension-drag-handle@npm:3.2.0"
   dependencies:
@@ -7149,6 +7149,21 @@ __metadata:
     "@tiptap/pm": ^3.2.0
     "@tiptap/y-tiptap": ^3.0.0-beta.3
   checksum: 10c0/b1ad74b85332ae1b34c5b61190992d15c9c3718dc320a13e71edf4b56e5cfc9c3bec9039249217c60f744407fe68debd53abd588aa131ae76f662abae096ce55
+  languageName: node
+  linkType: hard
+
+"@tiptap/extension-drag-handle@patch:@tiptap/extension-drag-handle@npm%3A3.2.0#~/.yarn/patches/@tiptap-extension-drag-handle-npm-3.2.0-5a9ebff7c9.patch":
+  version: 3.2.0
+  resolution: "@tiptap/extension-drag-handle@patch:@tiptap/extension-drag-handle@npm%3A3.2.0#~/.yarn/patches/@tiptap-extension-drag-handle-npm-3.2.0-5a9ebff7c9.patch::version=3.2.0&hash=2b492f"
+  dependencies:
+    "@floating-ui/dom": "npm:^1.6.13"
+  peerDependencies:
+    "@tiptap/core": ^3.2.0
+    "@tiptap/extension-collaboration": ^3.2.0
+    "@tiptap/extension-node-range": ^3.2.0
+    "@tiptap/pm": ^3.2.0
+    "@tiptap/y-tiptap": ^3.0.0-beta.3
+  checksum: 10c0/09b0e68a58b8dae2f0425c893f17f85ed55b5f5698b4b3a811e7f74cc16e2edd2c25d1df767fe2ad2a543fc96659ed09a5ce0f9f2e16f1db2185c6c4d67f0e37
   languageName: node
   linkType: hard
 
@@ -9181,7 +9196,7 @@ __metadata:
     "@testing-library/react": "npm:^16.3.0"
     "@testing-library/user-event": "npm:^14.6.1"
     "@tiptap/extension-collaboration": "npm:^3.2.0"
-    "@tiptap/extension-drag-handle": "npm:^3.2.0"
+    "@tiptap/extension-drag-handle": "patch:@tiptap/extension-drag-handle@npm%3A3.2.0#~/.yarn/patches/@tiptap-extension-drag-handle-npm-3.2.0-5a9ebff7c9.patch"
     "@tiptap/extension-drag-handle-react": "npm:^3.2.0"
     "@tiptap/extension-image": "npm:^3.2.0"
     "@tiptap/extension-list": "npm:^3.2.0"
