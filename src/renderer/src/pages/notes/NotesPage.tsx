@@ -421,7 +421,9 @@ const NotesPage: FC = () => {
               )}
             </EditorContainer>
           ) : (
-            <Empty description={t('notes.empty')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            <EmptyContainer>
+              <Empty description={t('notes.empty')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            </EmptyContainer>
           )}
         </EditorWrapper>
       </ContentContainer>
@@ -441,6 +443,15 @@ const LoadingContainer = styled.div`
   align-items: center;
   width: 100%;
   height: 100%;
+`
+
+const EmptyContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  flex: 1;
 `
 
 const ContentContainer = styled.div`
