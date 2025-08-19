@@ -344,7 +344,7 @@ const NotesPage: FC = () => {
         <EditorWrapper>
           <HeaderNavbar notesTree={notesTree} />
           {activeNodeId ? (
-            <EditorContainer>
+            <>
               {isLoading ? (
                 <LoadingContainer>
                   <Spin tip={t('common.loading')} />
@@ -406,7 +406,7 @@ const NotesPage: FC = () => {
                   </BottomPanel>
                 </>
               )}
-            </EditorContainer>
+            </>
           ) : (
             <EmptyContainer>
               <Empty description={t('notes.empty')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
@@ -460,18 +460,6 @@ const EditorWrapper = styled.div`
   overflow: hidden;
   min-height: 0;
   min-width: 0;
-`
-
-const EditorContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  margin: 16px;
-  border: 0.5px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-background);
-  overflow: hidden;
-  min-height: 0;
 `
 
 const RichEditorContainer = styled.div`
