@@ -93,16 +93,14 @@ export const EditorContent = styled.div`
   .plus-button,
   .drag-handle {
     align-items: center;
-    background: var(--color-background-soft);
     border-radius: 0.25rem;
-    border: 1px solid var(--color-border);
     cursor: grab;
     display: flex;
     height: 1.5rem;
     justify-content: center;
     width: 1.5rem;
-    z-index: 10; /* Keep drag handle above other content */
-    flex-shrink: 0; /* Prevent the drag handle from shrinking */
+    z-index: 10;
+    flex-shrink: 0;
 
     &:hover {
       background: var(--color-hover);
