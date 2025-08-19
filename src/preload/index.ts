@@ -76,6 +76,7 @@ const api = {
   clearCache: () => ipcRenderer.invoke(IpcChannel.App_ClearCache),
   logToMain: (source: LogSourceWithContext, level: LogLevel, message: string, data: any[]) =>
     ipcRenderer.invoke(IpcChannel.App_LogToMain, source, level, message, data),
+  setFullScreen: (value: boolean): Promise<void> => ipcRenderer.invoke(IpcChannel.App_SetFullScreen, value),
   mac: {
     isProcessTrusted: (): Promise<boolean> => ipcRenderer.invoke(IpcChannel.App_MacIsProcessTrusted),
     requestProcessTrust: (): Promise<boolean> => ipcRenderer.invoke(IpcChannel.App_MacRequestProcessTrust)
@@ -297,7 +298,8 @@ const api = {
       return ipcRenderer.invoke(IpcChannel.Mcp_UploadDxt, buffer, file.name)
     },
     abortTool: (callId: string) => ipcRenderer.invoke(IpcChannel.Mcp_AbortTool, callId),
-    getServerVersion: (server: MCPServer) => ipcRenderer.invoke(IpcChannel.Mcp_GetServerVersion, server)
+    getServerVersion: (server: MCPServer): Promise<string | null> =>
+      ipcRenderer.invoke(IpcChannel.Mcp_GetServerVersion, server)
   },
   python: {
     execute: (script: string, context?: Record<string, any>, timeout?: number) =>
@@ -396,6 +398,15 @@ const api = {
     cleanLocalData: () => ipcRenderer.invoke(IpcChannel.TRACE_CLEAN_LOCAL_DATA),
     addStreamMessage: (spanId: string, modelName: string, context: string, message: any) =>
       ipcRenderer.invoke(IpcChannel.TRACE_ADD_STREAM_MESSAGE, spanId, modelName, context, message)
+  },
+  codeTools: {
+    run: (
+      cliTool: string,
+      model: string,
+      directory: string,
+      env: Record<string, string>,
+      options?: { autoUpdateToLatest?: boolean }
+    ) => ipcRenderer.invoke(IpcChannel.CodeTools_Run, cliTool, model, directory, env, options)
   }
 }
 

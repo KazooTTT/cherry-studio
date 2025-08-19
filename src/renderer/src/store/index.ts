@@ -8,6 +8,7 @@ import storeSyncService from '../services/StoreSyncService'
 import agents from './agents'
 import assistants from './assistants'
 import backup from './backup'
+import codeTools from './codeTools'
 import copilot from './copilot'
 import inputToolsReducer from './inputTools'
 import knowledge from './knowledge'
@@ -36,6 +37,7 @@ const rootReducer = combineReducers({
   assistants,
   agents,
   backup,
+  codeTools,
   nutstore,
   paintings,
   llm,
@@ -62,7 +64,7 @@ const persistedReducer = persistReducer(
   {
     key: 'cherry-studio',
     storage,
-    version: 132,
+    version: 136,
     blacklist: ['runtime', 'messages', 'messageBlocks', 'tabs'],
     migrate
   },

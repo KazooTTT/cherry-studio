@@ -392,7 +392,7 @@ const PopupContainer: React.FC<Props> = ({ source, title, resolve }) => {
       onOk={onOk}
       onCancel={onCancel}
       afterClose={onClose}
-      destroyOnClose
+      destroyOnHidden
       centered
       width={500}
       okText={t('common.save')}
