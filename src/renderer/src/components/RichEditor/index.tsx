@@ -170,10 +170,7 @@ const RichEditor = ({
     // Clean up draggable attribute from the drag handle element
     const target = e.target as HTMLElement
     if (target && target.classList.contains('drag-handle')) {
-      // Use setTimeout to ensure this runs after TipTap's drag end handling
-      setTimeout(() => {
-        target.removeAttribute('draggable')
-      }, 0)
+      target.removeAttribute('draggable')
     }
   }, [])
 

@@ -98,7 +98,6 @@ export const EditorContent = styled.div`
     display: flex;
     height: 1.5rem;
     justify-content: center;
-    width: 1.5rem;
     z-index: 10;
     flex-shrink: 0;
 
@@ -114,8 +113,14 @@ export const EditorContent = styled.div`
   }
 
   .plus-button {
+    width: 1.5rem;
     cursor: pointer;
-    transform: translateX(calc(-1 * 1.8rem));
+    transform: translateX(calc(-1 * 1.5rem));
+  }
+
+  .drag-handle {
+    width: 1rem;
+    transform: translateX(-0.5rem) !important;
   }
 
   /* Ensure the ProseMirror editor content doesn't override drag handle positioning */
