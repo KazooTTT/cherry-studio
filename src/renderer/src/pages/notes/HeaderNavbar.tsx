@@ -6,11 +6,14 @@ import { useShowWorkspace } from '@renderer/hooks/useStore'
 import { findNodeInTree, getNodePathArray } from '@renderer/services/NotesService'
 import { useAppSelector } from '@renderer/store'
 import { selectActiveNodeId } from '@renderer/store/note'
-import { Breadcrumb, BreadcrumbProps, Tooltip } from 'antd'
+import { Breadcrumb, BreadcrumbProps, Dropdown, Tooltip } from 'antd'
 import { t } from 'i18next'
-import { PanelLeftClose, PanelRightClose } from 'lucide-react'
+import { MoreHorizontal, PanelLeftClose, PanelRightClose } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
+
+import { useNotesSettings } from '../../hooks/useNotesSettings'
+import { menuItems } from './MenuConfig'
 
 const logger = loggerService.withContext('HeaderNavbar')
 
@@ -19,10 +22,53 @@ const HeaderNavbar = ({ notesTree }) => {
   const { showWorkspace, toggleShowWorkspace } = useShowWorkspace()
   const activeNodeId = useAppSelector(selectActiveNodeId)
   const [breadcrumbItems, setBreadcrumbItems] = useState<Required<BreadcrumbProps>['items']>([])
+  const { settings, updateSettings } = useNotesSettings()
 
   const handleToggleShowWorkspace = useCallback(() => {
     toggleShowWorkspace()
   }, [toggleShowWorkspace])
+
+  const buildMenuItem = (item: any) => {
+    if (item.type === 'divider') {
+      return { type: 'divider' as const, key: item.key }
+    }
+
+    if (item.type === 'component') {
+      return {
+        key: item.key,
+        label: item.component(settings, updateSettings),
+        onClick: () => {} // No-op since component handles its own interactions
+      }
+    }
+
+    const IconComponent = item.icon
+
+    // Handle submenu items
+    if (item.children) {
+      return {
+        key: item.key,
+        label: (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {IconComponent && <IconComponent size={16} />}
+            <span>{t(item.labelKey)}</span>
+          </div>
+        ),
+        children: item.children.map(buildMenuItem)
+      }
+    }
+
+    return {
+      key: item.key,
+      label: (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {IconComponent && <IconComponent size={16} />}
+          <span>{t(item.labelKey)}</span>
+          {item.isActive?.(settings) && <span style={{ color: 'var(--color-primary)' }}>✓</span>}
+        </div>
+      ),
+      onClick: () => item.action(settings, updateSettings)
+    }
+  }
 
   // 构建面包屑路径
   useEffect(() => {
@@ -80,9 +126,19 @@ const HeaderNavbar = ({ notesTree }) => {
       <NavbarCenter style={{ flex: 1 }}>
         <Breadcrumb items={breadcrumbItems} />
       </NavbarCenter>
-      <div style={{ flex: '0 0 auto' }}>
-        <NavbarRight style={{ minWidth: 'auto' }} />
-      </div>
+      <NavbarRight style={{ paddingRight: 0 }}>
+        <Tooltip title={t('notes.settings.title')} mouseEnterDelay={0.8}>
+          <Dropdown
+            menu={{ items: menuItems.map(buildMenuItem) }}
+            trigger={['click']}
+            placement="bottomRight"
+            destroyOnHidden={false}>
+            <NavbarIcon>
+              <MoreHorizontal size={18} />
+            </NavbarIcon>
+          </Dropdown>
+        </Tooltip>
+      </NavbarRight>
     </NavbarHeader>
   )
 }
@@ -114,6 +170,11 @@ export const NavbarIcon = styled.div`
   .anticon {
     color: var(--color-icon);
     font-size: 16px;
+  }
+  svg {
+    color: var(--color-icon);
+    width: 18px;
+    height: 18px;
   }
   &:hover {
     background-color: var(--color-background-mute);

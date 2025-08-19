@@ -1527,6 +1527,17 @@
     "only_markdown": "僅支援 Markdown 格式",
     "rename": "重命名",
     "save": "儲存到筆記",
+    "settings": {
+      "defaultFont": "默認字體",
+      "editorMode": "編輯模式",
+      "fontFamily": "字體系列",
+      "fullWidth": "全寬模式",
+      "previewMode": "預覽模式",
+      "serifFont": "襯線字體",
+      "sourceMode": "源碼模式",
+      "title": "更多選項",
+      "viewMode": "視圖模式"
+    },
     "show_starred": "顯示收藏的筆記",
     "sort_a2z": "文件名（A-Z）",
     "sort_created_asc": "建立時間（從舊到新）",
@@ -1991,6 +2002,7 @@
       "placeholder": "輸入 LaTeX 公式"
     },
     "placeholder": "輸入'/'調用命令",
+    "plusButton": "點擊在下方添加",
     "toolbar": {
       "blockMath": "數學公式塊",
       "blockquote": "引用",

@@ -1527,6 +1527,17 @@
     "only_markdown": "仅支持 Markdown 格式",
     "rename": "重命名",
     "save": "保存到笔记",
+    "settings": {
+      "defaultFont": "默认字体",
+      "editorMode": "编辑模式",
+      "fontFamily": "字体系列",
+      "fullWidth": "全宽模式",
+      "previewMode": "预览模式",
+      "serifFont": "衬线字体",
+      "sourceMode": "源码模式",
+      "title": "更多选项",
+      "viewMode": "视图模式"
+    },
     "show_starred": "显示收藏的笔记",
     "sort_a2z": "文件名（A-Z）",
     "sort_created_asc": "创建时间（从旧到新）",

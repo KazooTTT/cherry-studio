@@ -1527,6 +1527,17 @@
     "only_markdown": "Markdown ファイルのみをアップロードできます",
     "rename": "名前の変更",
     "save": "メモに保存する",
+    "settings": {
+      "defaultFont": "デフォルトフォント",
+      "editorMode": "編集モード",
+      "fontFamily": "フォントシリーズ",
+      "fullWidth": "全幅モード",
+      "previewMode": "プレビューモード",
+      "serifFont": "セリフフォント",
+      "sourceMode": "ソースコードモード",
+      "title": "その他のオプション",
+      "viewMode": "ビューモード"
+    },
     "show_starred": "お気に入りのノートを表示する",
     "sort_a2z": "ファイル名（A-Z）",
     "sort_created_asc": "作成日時（古い順）",

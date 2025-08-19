@@ -62,7 +62,7 @@ const persistedReducer = persistReducer(
   {
     key: 'cherry-studio',
     storage,
-    version: 131,
+    version: 132,
     blacklist: ['runtime', 'messages', 'messageBlocks', 'tabs'],
     migrate
   },
@@ -81,7 +81,7 @@ const persistedReducer = persistReducer(
  * Call storeSyncService.subscribe() in the window's entryPoint.tsx
  */
 storeSyncService.setOptions({
-  syncList: ['assistants/', 'settings/', 'llm/', 'selectionStore/']
+  syncList: ['assistants/', 'settings/', 'llm/', 'selectionStore/', 'note/']
 })
 
 const store = configureStore({

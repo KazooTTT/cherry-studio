@@ -31,6 +31,7 @@ import { RootState } from '.'
 import { DEFAULT_TOOL_ORDER } from './inputTools'
 import { initialState as llmInitialState, moveProvider } from './llm'
 import { mcpSlice } from './mcp'
+import { initialState as notesInitialState } from './note'
 import { defaultActionItems } from './selectionStore'
 import { DEFAULT_SIDEBAR_ICONS, initialState as settingsInitialState } from './settings'
 import { initialState as shortcutsInitialState } from './shortcuts'
@@ -2107,6 +2108,18 @@ const migrateConfig = {
       state.settings.showWorkspace = true
     }
     return state
+  },
+  '132': (state: RootState) => {
+    try {
+      // Initialize notes settings if not present
+      if (!state.note) {
+        state.note = notesInitialState
+      }
+      return state
+    } catch (error) {
+      logger.error('migrate 132 error', error as Error)
+      return state
+    }
   }
 }
 

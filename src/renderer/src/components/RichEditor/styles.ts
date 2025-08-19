@@ -3,6 +3,8 @@ import styled from 'styled-components'
 export const RichEditorWrapper = styled.div<{
   $minHeight?: number
   $maxHeight?: number
+  $isFullWidth?: boolean
+  $fontFamily?: 'default' | 'serif'
 }>`
   display: flex;
   flex-direction: column;
@@ -11,6 +13,9 @@ export const RichEditorWrapper = styled.div<{
   border-radius: 6px;
   background: var(--color-background);
   overflow-y: hidden;
+  width: ${({ $isFullWidth }) => ($isFullWidth ? '100%' : '80%')};
+  margin: ${({ $isFullWidth }) => ($isFullWidth ? '0' : '0 auto')};
+  font-family: ${({ $fontFamily }) => ($fontFamily === 'serif' ? 'var(--font-family-serif)' : 'var(--font-family)')};
 
   ${({ $minHeight }) => $minHeight && `min-height: ${$minHeight}px;`}
   ${({ $maxHeight }) => $maxHeight && `max-height: ${$maxHeight}px;`}

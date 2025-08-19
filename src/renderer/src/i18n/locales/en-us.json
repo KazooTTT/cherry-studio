@@ -1527,6 +1527,17 @@
     "only_markdown": "Only Markdown files are supported",
     "rename": "Rename",
     "save": "Save to Notes",
+    "settings": {
+      "defaultFont": "Default Font",
+      "editorMode": "Editor Mode",
+      "fontFamily": "Font Family",
+      "fullWidth": "Full Width",
+      "previewMode": "Preview Mode",
+      "serifFont": "Serif Font",
+      "sourceMode": "Source Mode",
+      "title": "Editor Settings",
+      "viewMode": "View Mode"
+    },
     "show_starred": "Show favorite notes",
     "sort_a2z": "File name (A-Z)",
     "sort_created_asc": "Creation time (oldest first)",

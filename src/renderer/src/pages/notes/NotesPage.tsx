@@ -1,11 +1,12 @@
 import { loggerService } from '@logger'
-import { EditIcon } from '@renderer/components/Icons'
+import CodeEditor from '@renderer/components/CodeEditor'
 import { HSpaceBetweenStack } from '@renderer/components/Layout'
 import RichEditor from '@renderer/components/RichEditor'
 import { RichEditorRef } from '@renderer/components/RichEditor/types'
+import Selector from '@renderer/components/Selector'
+import { useNotesSettings } from '@renderer/hooks/useNotesSettings'
 import { useSettings } from '@renderer/hooks/useSettings'
 import HeaderNavbar from '@renderer/pages/notes/HeaderNavbar'
-import NotesNavbar from '@renderer/pages/notes/NotesNavbar'
 import FileManager from '@renderer/services/FileManager'
 import {
   createFolder,
@@ -24,8 +25,7 @@ import {
 import { useAppDispatch, useAppSelector } from '@renderer/store'
 import { selectActiveNodeId, setActiveNodeId } from '@renderer/store/note'
 import { NotesSortType, NotesTreeNode } from '@renderer/types/note'
-import { Button, Empty, Spin } from 'antd'
-import { Eye } from 'lucide-react'
+import { Empty, Spin } from 'antd'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -40,12 +40,11 @@ const NotesPage: FC = () => {
   const { showWorkspace } = useSettings()
   const dispatch = useAppDispatch()
   const activeNodeId = useAppSelector(selectActiveNodeId)
+  const { settings, updateSettings } = useNotesSettings()
   const [notesTree, setNotesTree] = useState<NotesTreeNode[]>([])
   const [currentContent, setCurrentContent] = useState<string>('')
   const [tokenCount, setTokenCount] = useState(0)
-  const [showPreview, setShowPreview] = useState(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [isSwitchingMode, setIsSwitchingMode] = useState<boolean>(false)
 
   useEffect(() => {
     const updateCharCount = () => {
@@ -325,7 +324,6 @@ const NotesPage: FC = () => {
 
   return (
     <Container id="notes-page">
-      <NotesNavbar />
       <ContentContainer id="content-container">
         {showWorkspace && (
           <NotesSidebar
@@ -354,67 +352,56 @@ const NotesPage: FC = () => {
               ) : (
                 <>
                   <RichEditorContainer>
-                    <RichEditor
-                      key={`${activeNodeId}-${showPreview ? 'preview' : 'edit'}`}
-                      ref={editorRef}
-                      initialContent={currentContent}
-                      onMarkdownChange={handleMarkdownChange}
-                      onCommandsReady={handleCommandsReady}
-                      showToolbar={!showPreview}
-                      editable={!showPreview}
-                      showTableOfContents
-                      enableContentSearch
-                      className="notes-rich-editor"
-                    />
+                    {settings.editorMode === 'source' ? (
+                      <CodeEditor
+                        value={currentContent}
+                        language="markdown"
+                        onChange={handleMarkdownChange}
+                        height="100%"
+                        style={{
+                          height: '100%'
+                        }}
+                      />
+                    ) : (
+                      <RichEditor
+                        key={`${activeNodeId}-${settings.editorMode === 'preview' ? 'preview' : 'edit'}`}
+                        ref={editorRef}
+                        initialContent={currentContent}
+                        onMarkdownChange={handleMarkdownChange}
+                        onCommandsReady={handleCommandsReady}
+                        showToolbar={settings.editorMode === 'editor'}
+                        editable={settings.editorMode === 'editor'}
+                        showTableOfContents
+                        enableContentSearch
+                        className="notes-rich-editor"
+                        isFullWidth={settings.isFullWidth}
+                        fontFamily={settings.fontFamily}
+                      />
+                    )}
                   </RichEditorContainer>
                   <BottomPanel>
                     <HSpaceBetweenStack width="100%" justifyContent="space-between" alignItems="center">
                       <TokenCount>
                         {t('notes.characters')}: {tokenCount}
                       </TokenCount>
-                      <Button
-                        type="primary"
-                        size="small"
-                        icon={showPreview ? <EditIcon size={14} /> : <Eye size={14} />}
-                        loading={isSwitchingMode}
-                        disabled={isSwitchingMode}
-                        onClick={async () => {
-                          if (isSwitchingMode) return
-
-                          setIsSwitchingMode(true)
-                          const currentScrollTop = editorRef.current?.getScrollTop?.() || 0
-
-                          try {
-                            if (showPreview) {
-                              await new Promise((resolve) => {
-                                requestAnimationFrame(() => {
-                                  setShowPreview(false)
-                                  requestAnimationFrame(() => {
-                                    editorRef.current?.setScrollTop?.(currentScrollTop)
-                                    resolve(void 0)
-                                  })
-                                })
-                              })
-                            } else {
-                              await new Promise((resolve) => {
-                                requestAnimationFrame(() => {
-                                  setShowPreview(true)
-                                  requestAnimationFrame(() => {
-                                    editorRef.current?.setScrollTop?.(currentScrollTop)
-                                    resolve(void 0)
-                                  })
-                                })
-                              })
-                            }
-                          } finally {
-                            // 添加一个小延迟确保过渡完成
-                            setTimeout(() => {
-                              setIsSwitchingMode(false)
-                            }, 100)
-                          }
+                      <div
+                        style={{
+                          fontSize: '12px',
+                          color: 'var(--color-text-3)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8
                         }}>
-                        {isSwitchingMode ? t('common.loading') : showPreview ? t('common.edit') : t('common.preview')}
-                      </Button>
+                        <Selector
+                          value={settings.editorMode}
+                          onChange={(value: 'editor' | 'source' | 'preview') => updateSettings({ editorMode: value })}
+                          options={[
+                            { label: t('notes.settings.editorMode'), value: 'editor' },
+                            { label: t('notes.settings.sourceMode'), value: 'source' },
+                            { label: t('notes.settings.previewMode'), value: 'preview' }
+                          ]}
+                        />
+                      </div>
                     </HSpaceBetweenStack>
                   </BottomPanel>
                 </>
