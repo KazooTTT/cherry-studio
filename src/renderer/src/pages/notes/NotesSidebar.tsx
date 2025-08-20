@@ -16,6 +16,7 @@ import {
   FilePlus,
   FileSearch,
   Folder,
+  FolderInput,
   FolderOpen,
   FolderPlus,
   Search,
@@ -70,6 +71,11 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   const [isDragOverSidebar, setIsDragOverSidebar] = useState(false)
   const [sortType, setSortType] = useState<NotesSortType>('sort_a2z')
   const dragNodeRef = useRef<HTMLDivElement | null>(null)
+
+  // FIXME
+  const handleOpenFolder = useCallback(() => {
+    onCreateFolder(t('notes.untitled_folder'))
+  }, [onCreateFolder, t])
 
   const handleCreateFolder = useCallback(() => {
     onCreateFolder(t('notes.untitled_folder'))
@@ -470,6 +476,12 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
         <HeaderActions>
           {!isShowStarred && !isShowSearch && (
             <>
+              <Tooltip title={t('notes.open_folder')} mouseEnterDelay={0.8}>
+                <ActionButton onClick={handleOpenFolder}>
+                  <FolderInput size={18} />
+                </ActionButton>
+              </Tooltip>
+
               <Tooltip title={t('notes.new_folder')} mouseEnterDelay={0.8}>
                 <ActionButton onClick={handleCreateFolder}>
                   <FolderPlus size={18} />

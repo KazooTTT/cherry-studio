@@ -1575,6 +1575,7 @@
     "new_note": "新建笔记",
     "no_content_to_copy": "没有内容可复制",
     "only_markdown": "仅支持 Markdown 格式",
+    "open_folder": "打开外部文件夹",
     "rename": "重命名",
     "save": "保存到笔记",
     "settings": {

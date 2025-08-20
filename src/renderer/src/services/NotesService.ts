@@ -12,6 +12,101 @@ const NOTES_TREE_ID = 'notes-tree-structure'
 const logger = loggerService.withContext('NotesService')
 
 /**
+ * 获取外部文件夹结构
+ */
+export async function getExternalNotesTree(
+  folderPath: string,
+  options: {
+    recursive?: boolean
+    fileExtensions?: string[]
+    ignoreHiddenFiles?: boolean
+  } = {}
+): Promise<NotesTreeNode[]> {
+  try {
+    const { recursive = true, fileExtensions = ['.md'], ignoreHiddenFiles = true } = options
+
+    const directoryStructure = await window.api.file.getDirectoryStructure(folderPath, {
+      recursive,
+      includeFiles: true,
+      includeDirectories: true,
+      fileExtensions
+    })
+
+    if (!directoryStructure || !Array.isArray(directoryStructure)) {
+      logger.error('Failed to get external directory structure')
+      return []
+    }
+
+    const tree = convertToNotesTree(directoryStructure, folderPath, ignoreHiddenFiles)
+
+    logger.debug('External notes tree loaded:', tree)
+    return tree
+  } catch (error) {
+    logger.error('Failed to get external notes tree:', error as Error)
+    return []
+  }
+}
+
+/**
+ * 将目录结构转换为笔记树结构
+ * @param items 目录项目
+ * @param basePath 基础路径
+ * @param ignoreHiddenFiles 是否忽略隐藏文件
+ * @returns 笔记树结构
+ */
+function convertToNotesTree(items: any[], basePath: string, ignoreHiddenFiles: boolean): NotesTreeNode[] {
+  const tree: NotesTreeNode[] = []
+
+  for (const item of items) {
+    if (ignoreHiddenFiles && item.name.startsWith('.')) {
+      continue
+    }
+
+    const folderId = uuidv4()
+    const isDirectory = item.type === 'directory'
+    const node: NotesTreeNode = {
+      id: folderId,
+      name: item.name,
+      type: isDirectory ? 'folder' : 'file',
+      externalPath: item.path,
+      isExternal: true,
+      createdAt: item.createdAt || new Date().toISOString(),
+      updatedAt: item.modifiedAt || new Date().toISOString()
+    }
+
+    node.treePath = getExternalNodePath(item.path, basePath)
+
+    if (isDirectory && item.children && Array.isArray(item.children)) {
+      node.children = convertToNotesTree(item.children, basePath, ignoreHiddenFiles)
+      node.expanded = false
+    }
+
+    tree.push(node)
+  }
+
+  return tree
+}
+
+/**
+ * 获取外部节点的树路径
+ */
+function getExternalNodePath(fullPath: string, basePath: string): string {
+  const normalizedFullPath = fullPath.replace(/\\/g, '/')
+  const normalizedBasePath = basePath.replace(/\\/g, '/')
+
+  let relativePath = normalizedFullPath
+  if (normalizedFullPath.startsWith(normalizedBasePath)) {
+    relativePath = normalizedFullPath.slice(normalizedBasePath.length)
+  }
+
+  if (!relativePath.startsWith('/')) {
+    relativePath = '/' + relativePath
+  }
+
+  return relativePath
+}
+
+/**
  * 获取笔记树结构
  */
 export async function getNotesTree(): Promise<NotesTreeNode[]> {
@@ -67,8 +162,8 @@ async function syncFile(tree: NotesTreeNode[]): Promise<void> {
  */
 function collectFileIds(tree: NotesTreeNode[], fileIds: string[]): void {
   for (const node of tree) {
-    if (node.type === 'file' && node.fileId) {
-      fileIds.push(node.fileId)
+    if (node.type === 'file' && node.id) {
+      fileIds.push(node.id)
     }
     if (node.children && node.children.length > 0) {
       collectFileIds(node.children, fileIds)
@@ -83,8 +178,8 @@ function updateFileNames(tree: NotesTreeNode[], metadataMap: Map<string, any>): 
   let hasChanges = false
 
   for (const node of tree) {
-    if (node.type === 'file' && node.fileId) {
-      const metadata = metadataMap.get(node.fileId)
+    if (node.type === 'file' && node.id) {
+      const metadata = metadataMap.get(node.id)
       if (metadata && metadata.origin_name !== node.name) {
         node.name = metadata.origin_name
         node.updatedAt = new Date().toISOString()
@@ -108,10 +203,10 @@ function removeDeletedFiles(tree: NotesTreeNode[], deletedFileIds: string[]): bo
 
   for (let i = tree.length - 1; i >= 0; i--) {
     const node = tree[i]
-    if (node.type === 'file' && node.fileId && deletedFileIds.includes(node.fileId)) {
+    if (node.type === 'file' && node.id && deletedFileIds.includes(node.id)) {
       tree.splice(i, 1)
       hasChanges = true
-      logger.info(`Removed deleted file node: ${node.name} (${node.fileId})`)
+      logger.info(`Removed deleted file node: ${node.name} (${node.id})`)
     } else if (node.children && node.children.length > 0) {
       const childChanges = removeDeletedFiles(node.children, deletedFileIds)
       hasChanges = hasChanges || childChanges
@@ -184,7 +279,6 @@ export async function createNote(name: string, content: string = '', parentId?: 
       name: name,
       type: 'file',
       treePath: getNodePath(name, parentId),
-      fileId: noteId,
       createdAt: fileMetadata.created_at,
       updatedAt: fileMetadata.created_at
     }
@@ -204,12 +298,12 @@ export async function createNote(name: string, content: string = '', parentId?: 
  * 更新笔记内容
  */
 export async function updateNote(node: NotesTreeNode, content: string): Promise<void> {
-  if (node.type !== 'file' || !node.fileId) {
+  if (node.type !== 'file' || !node.id) {
     throw new Error('Invalid note node')
   }
 
   try {
-    const fileMetadata = await FileManager.getFile(node.fileId)
+    const fileMetadata = await FileManager.getFile(node.id)
     if (!fileMetadata) {
       throw new Error('Note file not found in database')
     }
@@ -287,7 +381,6 @@ export async function uploadNote(file: File): Promise<NotesTreeNode> {
       name: file.name,
       type: 'file',
       treePath: `/${file.name}`,
-      fileId: noteId,
       createdAt: fileMetadata.created_at,
       updatedAt: fileMetadata.created_at
     }
@@ -321,13 +414,13 @@ export async function renameNode(nodeId: string, newName: string): Promise<void>
   node.updatedAt = new Date().toISOString()
 
   // 如果是文件类型，还需要更新文件记录
-  if (node.type === 'file' && node.fileId) {
+  if (node.type === 'file' && node.id) {
     try {
       // 获取文件元数据
-      const fileMetadata = await FileManager.getFile(node.fileId)
+      const fileMetadata = await FileManager.getFile(node.id)
       if (fileMetadata) {
         // 更新文件的原始名称（显示名称）
-        await db.files.update(node.fileId, {
+        await db.files.update(node.id, {
           origin_name: newName
         })
       }
@@ -627,46 +720,16 @@ function removeNodeFromTree(tree: NotesTreeNode[], nodeId: string): boolean {
  * 递归删除节点及其文件
  */
 async function deleteNodeRecursively(node: NotesTreeNode): Promise<void> {
-  if (node.type === 'file' && node.fileId) {
+  if (node.type === 'file' && node.id) {
     try {
-      await FileManager.deleteFile(node.fileId, true)
+      await FileManager.deleteFile(node.id, true)
     } catch (error) {
-      logger.error(`Failed to delete file with id ${node.fileId}:`, error as Error)
+      logger.error(`Failed to delete file with id ${node.id}:`, error as Error)
     }
   } else if (node.type === 'folder' && node.children) {
     for (const child of node.children) {
       await deleteNodeRecursively(child)
     }
-  }
-}
-
-/**
- * 对笔记树的同一层级节点进行排序
- */
-export async function sortNotes(sortType: NotesSortType, folderId?: string): Promise<void> {
-  try {
-    const tree = await getNotesTree()
-
-    // 确定要排序的节点列表
-    let nodesToSort: NotesTreeNode[] = tree
-    if (folderId) {
-      const folderNode = findNodeInTree(tree, folderId)
-      if (!folderNode || folderNode.type !== 'folder' || !folderNode.children) {
-        logger.error(`Failed to sort notes: folder node not found or invalid - ${folderId}`)
-        return
-      }
-      nodesToSort = folderNode.children
-    }
-
-    // 执行排序
-    sortNodesArray(nodesToSort, sortType)
-
-    // 保存更改后的树结构
-    await saveNotesTree(tree)
-    logger.info(`Sorted notes successfully: ${sortType} ${folderId ? `in folder ${folderId}` : 'at root level'}`)
-  } catch (error) {
-    logger.error('Failed to sort notes:', error as Error)
-    throw error
   }
 }
 

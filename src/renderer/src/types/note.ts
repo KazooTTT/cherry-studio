@@ -1,5 +1,3 @@
-import { FileMetadata } from './file'
-
 export type NotesSortType =
   | 'sort_a2z' // 文件名（A-Z）
   | 'sort_z2a' // 文件名（Z-A）
@@ -16,21 +14,12 @@ export interface NotesTreeNode {
   id: string
   name: string
   type: 'folder' | 'file'
-  treePath?: string // 在文件树中的路径，区别于FileMetadata的path
+  treePath?: string // 对于外部文件，使用相对路径作为treePath
   children?: NotesTreeNode[]
   is_starred?: boolean
   expanded?: boolean
-  fileId?: string // 文件类型节点对应的FileManager中的文件ID
   createdAt: string
   updatedAt: string
-}
-
-/**
- * @interface
- * @description 笔记文件接口，继承FileMetadata
- */
-export interface NoteFile extends FileMetadata {
-  content?: string // 笔记内容
-  parentId?: string // 父节点ID
-  isStarred?: boolean // 是否收藏
+  isExternal?: boolean
+  externalPath?: string
 }

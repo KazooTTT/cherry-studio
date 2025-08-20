@@ -172,7 +172,16 @@ const api = {
     base64File: (fileId: string) => ipcRenderer.invoke(IpcChannel.File_Base64File, fileId),
     pdfInfo: (fileId: string) => ipcRenderer.invoke(IpcChannel.File_GetPdfInfo, fileId),
     getPathForFile: (file: File) => webUtils.getPathForFile(file),
-    openFileWithRelativePath: (file: FileMetadata) => ipcRenderer.invoke(IpcChannel.File_OpenWithRelativePath, file)
+    openFileWithRelativePath: (file: FileMetadata) => ipcRenderer.invoke(IpcChannel.File_OpenWithRelativePath, file),
+    getDirectoryStructure: (
+      dirPath: string,
+      options?: {
+        recursive?: boolean
+        includeFiles?: boolean
+        includeDirectories?: boolean
+        fileExtensions?: string[]
+      }
+    ) => ipcRenderer.invoke(IpcChannel.File_GetDirectoryStructure, dirPath, options)
   },
   fs: {
     read: (pathOrUrl: string, encoding?: BufferEncoding) => ipcRenderer.invoke(IpcChannel.Fs_Read, pathOrUrl, encoding)

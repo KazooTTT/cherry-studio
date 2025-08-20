@@ -113,9 +113,9 @@ const NotesPage: FC = () => {
         try {
           const activeNode = findNodeById(notesTree, activeNodeId)
           logger.debug('Active node:', activeNode)
-          if (activeNode && activeNode.type === 'file' && activeNode.fileId) {
+          if (activeNode && activeNode.type === 'file' && activeNode.id) {
             try {
-              const fileMetadata = await FileManager.getFile(activeNode.fileId)
+              const fileMetadata = await FileManager.getFile(activeNode.id)
               logger.debug('File metadata:', fileMetadata)
               if (fileMetadata) {
                 const content = await window.api.file.read(fileMetadata.id + fileMetadata.ext)
@@ -186,8 +186,8 @@ const NotesPage: FC = () => {
         try {
           dispatch(setActiveNodeId(node.id))
 
-          if (node.fileId) {
-            const updatedFileMetadata = await FileManager.getFile(node.fileId)
+          if (node.id) {
+            const updatedFileMetadata = await FileManager.getFile(node.id)
             if (updatedFileMetadata && updatedFileMetadata.origin_name !== node.name) {
               // 如果数据库中的显示名称与树节点中的名称不同，更新树节点
               const updatedTree = [...notesTree]
