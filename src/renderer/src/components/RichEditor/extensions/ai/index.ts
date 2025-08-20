@@ -11,7 +11,7 @@ import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import { v4 as uuidv4 } from 'uuid'
 
-import { getLast50Chars } from './util'
+import { getLastChars } from './utils'
 
 const logger = loggerService.withContext('TipTapAI')
 
@@ -318,7 +318,7 @@ async function generateCompletionPreview(editor: Editor, assistant: Assistant, t
 
     const completionParams: CompletionsParams = {
       assistant,
-      messages: getLast50Chars(text),
+      messages: getLastChars(text, 100),
       enableWebSearch: false,
       enableUrlContext: false,
       streamOutput: true,

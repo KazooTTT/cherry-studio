@@ -368,7 +368,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         fixSpellingAssistant: getAiFixSpellingAssistant(),
 
         // AI补全触发模式配置
-        completionTriggerMode: 'auto', // 'manual' | 'auto' | 'hybrid'
+        completionTriggerMode: 'manual', // 'manual' | 'auto' | 'hybrid'
         autoCompletionDelay: 800, // 自动触发延迟(ms)
         minTextLength: 8, // 触发补全的最小文本长度
 
