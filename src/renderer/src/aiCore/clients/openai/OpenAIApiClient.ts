@@ -924,13 +924,24 @@ export class OpenAIAPIClient extends OpenAIBaseClient<
                 if ('index' in toolCall) {
                   const { id, index, function: fun } = toolCall
                   if (fun?.name) {
-                    toolCalls[index] = {
-                      id: id || '',
-                      function: {
-                        name: fun.name,
-                        arguments: fun.arguments || ''
-                      },
-                      type: 'function'
+                    if (index === -1) {
+                      toolCalls.push({
+                        id: id || '',
+                        function: {
+                          name: fun.name,
+                          arguments: fun.arguments || ''
+                        },
+                        type: 'function'
+                      })
+                    } else {
+                      toolCalls[index] = {
+                        id: id || '',
+                        function: {
+                          name: fun.name,
+                          arguments: fun.arguments || ''
+                        },
+                        type: 'function'
+                      }
                     }
                   } else if (fun?.arguments) {
                     if (toolCalls[index] && toolCalls[index].type === 'function' && 'function' in toolCalls[index]) {
