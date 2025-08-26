@@ -1593,6 +1593,9 @@
     "untitled_folder": "Nueva carpeta",
     "untitled_note": "Nota sin título"
   },
+  "navigate": {
+    "provider_settings": "Ir a la configuración del proveedor"
+  },
   "notification": {
     "assistant": "Respuesta del asistente",
     "knowledge": {

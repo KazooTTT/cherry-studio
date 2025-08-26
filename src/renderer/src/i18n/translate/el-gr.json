@@ -1593,6 +1593,9 @@
     "untitled_folder": "Νέος φάκελος",
     "untitled_note": "σημείωση χωρίς τίτλο"
   },
+  "navigate": {
+    "provider_settings": "Μετάβαση στις ρυθμίσεις παρόχου"
+  },
   "notification": {
     "assistant": "Απάντηση Βοηθού",
     "knowledge": {

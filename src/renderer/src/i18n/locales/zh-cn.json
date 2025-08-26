@@ -1656,6 +1656,9 @@
     "upload_failed": "笔记上传失败",
     "upload_success": "笔记上传成功"
   },
+  "navigate": {
+    "provider_settings": "跳转到服务商设置界面"
+  },
   "notification": {
     "assistant": "助手响应",
     "knowledge": {

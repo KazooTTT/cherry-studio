@@ -1656,6 +1656,9 @@
     "upload_failed": "ノートのアップロードに失敗しました",
     "upload_success": "ノートのアップロードが成功しました"
   },
+  "navigate": {
+    "provider_settings": "プロバイダー設定に移動"
+  },
   "notification": {
     "assistant": "助手回應",
     "knowledge": {

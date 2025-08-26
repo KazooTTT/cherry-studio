@@ -1593,6 +1593,9 @@
     "untitled_folder": "nouveau dossier",
     "untitled_note": "Note sans titre"
   },
+  "navigate": {
+    "provider_settings": "Aller aux paramètres du fournisseur"
+  },
   "notification": {
     "assistant": "Réponse de l'assistant",
     "knowledge": {

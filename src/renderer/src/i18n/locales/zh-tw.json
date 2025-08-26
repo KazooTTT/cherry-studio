@@ -1656,6 +1656,9 @@
     "upload_failed": "筆記上傳失敗",
     "upload_success": "筆記上傳成功"
   },
+  "navigate": {
+    "provider_settings": "跳轉到服務商設置界面"
+  },
   "notification": {
     "assistant": "助手回應",
     "knowledge": {

@@ -1593,6 +1593,9 @@
     "untitled_folder": "Nova pasta",
     "untitled_note": "Nota sem título"
   },
+  "navigate": {
+    "provider_settings": "Ir para as configurações do provedor"
+  },
   "notification": {
     "assistant": "Resposta do assistente",
     "knowledge": {
