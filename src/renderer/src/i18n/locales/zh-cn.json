@@ -322,6 +322,7 @@
       "expand": "展开",
       "file_error": "文件处理出错",
       "file_not_supported": "模型不支持此文件类型",
+      "file_not_supported_count": "{{count}} 个文件不被支持",
       "generate_image": "生成图片",
       "generate_image_not_supported": "模型不支持生成图片",
       "knowledge_base": "知识库",
@@ -583,7 +584,8 @@
       },
       "edit": {
         "placeholder": "输入新名称",
-        "title": "编辑话题名"
+        "title": "编辑话题名",
+        "title_tip": "提示: 双击话题名可以直接就地重命名"
       },
       "export": {
         "image": "导出为图片",
@@ -746,6 +748,9 @@
     "enabled": "已启用",
     "error": "错误",
     "expand": "展开",
+    "file": {
+      "not_supported": "不支持的文件类型 {{type}}"
+    },
     "footnote": "引用内容",
     "footnotes": "引用内容",
     "fullscreen": "已进入全屏模式，按 F11 退出",
@@ -786,6 +791,7 @@
     "success": "成功",
     "swap": "交换",
     "topics": "话题",
+    "upload_files": "上传文件",
     "warning": "警告",
     "you": "用户"
   },
@@ -803,6 +809,13 @@
   "error": {
     "backup": {
       "file_format": "备份文件格式错误"
+    },
+    "boundary": {
+      "default": {
+        "devtools": "打开调试面板",
+        "message": "似乎出现了一些问题...",
+        "reload": "重新加载"
+      }
     },
     "chat": {
       "chunk": {
@@ -884,6 +897,9 @@
   },
   "history": {
     "continue_chat": "继续聊天",
+    "error": {
+      "topic_not_found": "话题不存在"
+    },
     "locate": {
       "message": "定位到消息"
     },
@@ -1536,7 +1552,10 @@
     "rerank_model_not_support_provider": "目前重排序模型不支持该服务商 ({{provider}})",
     "rerank_model_support_provider": "目前重排序模型仅支持部分服务商 ({{provider}})",
     "rerank_model_tooltip": "在设置 -> 模型服务中点击管理按钮添加",
-    "search": "搜索模型...",
+    "search": {
+      "placeholder": "搜索模型...",
+      "tooltip": "搜索模型"
+    },
     "stream_output": "流式输出",
     "type": {
       "embedding": "嵌入",
@@ -1644,6 +1663,26 @@
       "success": "成功添加 {{type}} 到知识库"
     },
     "tip": "如果响应成功，则只针对超过30秒的消息进行提醒"
+  },
+  "ocr": {
+    "error": {
+      "provider": {
+        "cannot_remove_builtin": "不能删除内置提供商",
+        "existing": "提供商已存在",
+        "not_found": "OCR 提供商不存在",
+        "update_failed": "更新配置失败"
+      },
+      "unknown": "OCR 过程发生错误"
+    },
+    "file": {
+      "not_supported": "不支持的文件类型 {{type}}"
+    },
+    "processing": "OCR 处理中...",
+    "warning": {
+      "provider": {
+        "fallback": "已回退到 {{name}}，这可能导致问题"
+      }
+    }
   },
   "ollama": {
     "keep_alive_time": {
@@ -2967,6 +3006,7 @@
         "title": "自动更新"
       },
       "avatar": {
+        "builtin": "内置头像",
         "reset": "重置头像"
       },
       "backup": {
@@ -3185,6 +3225,10 @@
         "size": "大小",
         "text": "文本",
         "uri": "URI"
+      },
+      "search": {
+        "placeholder": "搜索 MCP 服务器...",
+        "tooltip": "搜索 MCP 服务器"
       },
       "searchNpx": "搜索 MCP",
       "serverPlural": "服务器",
@@ -3765,6 +3809,20 @@
     },
     "title": "设置",
     "tool": {
+      "ocr": {
+        "image": {
+          "error": {
+            "provider_not_found": "该提供商不存在"
+          },
+          "tesseract": {
+            "langs": "支持的语言",
+            "temp_tooltip": "目前暂时只支持中文和英文"
+          },
+          "title": "图片"
+        },
+        "image_provider": "OCR 服务提供商",
+        "title": "OCR 服务"
+      },
       "preprocess": {
         "provider": "文档处理服务商",
         "provider_placeholder": "选择一个文档处理服务商",
@@ -3980,7 +4038,7 @@
         },
         "label": "自动检测方法",
         "llm": {
-          "tip": "使用翻译模型进行语言检测，消耗少量token。（QwenMT不支持进行语言检测，会自动回退到默认助手模型）"
+          "tip": "使用快速模型进行语言检测，消耗少量token。"
         },
         "placeholder": "选择自动检测方法",
         "tip": "自动检测输入语言时使用的方法"
@@ -3993,7 +4051,8 @@
     "error": {
       "detect": {
         "qwen_mt": "QwenMT模型不能用于语言检测",
-        "unknown": "检测到未知语言"
+        "unknown": "检测到未知语言",
+        "update_setting": "设置失败"
       },
       "empty": "翻译结果为空内容",
       "failed": "翻译失败",
@@ -4005,13 +4064,26 @@
     "exchange": {
       "label": "交换源语言与目标语言"
     },
+    "files": {
+      "drag_text": "拖放到此处",
+      "error": {
+        "multiple": "不允许上传多个文件",
+        "too_large": "文件过大",
+        "unknown": "读取文件内容失败"
+      },
+      "reading": "读取文件内容中..."
+    },
     "history": {
       "clear": "清空历史",
       "clear_description": "清空历史将删除所有翻译历史记录，是否继续？",
-      "delete": "删除",
+      "delete": "删除翻译历史",
       "empty": "暂无翻译历史",
       "error": {
+        "delete": "删除失败",
         "save": "保存翻译历史失败"
+      },
+      "search": {
+        "placeholder": "搜索翻译历史"
       },
       "title": "翻译历史"
     },

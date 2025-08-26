@@ -3,6 +3,7 @@ import { nanoid } from '@reduxjs/toolkit'
 import { DEFAULT_CONTEXTCOUNT, DEFAULT_TEMPERATURE, isMac } from '@renderer/config/constant'
 import { DEFAULT_MIN_APPS } from '@renderer/config/minapps'
 import { isFunctionCallingModel, isNotSupportedTextDelta, SYSTEM_MODELS } from '@renderer/config/models'
+import { BUILTIN_OCR_PROVIDERS, DEFAULT_OCR_PROVIDER } from '@renderer/config/ocr'
 import { TRANSLATE_PROMPT } from '@renderer/config/prompts'
 import {
   isSupportArrayContentProvider,
@@ -10,8 +11,10 @@ import {
   isSupportStreamOptionsProvider,
   SYSTEM_PROVIDERS
 } from '@renderer/config/providers'
+import { DEFAULT_SIDEBAR_ICONS } from '@renderer/config/sidebar'
 import db from '@renderer/databases'
 import i18n from '@renderer/i18n'
+import { DEFAULT_ASSISTANT_SETTINGS } from '@renderer/services/AssistantService'
 import {
   Assistant,
   isSystemProvider,
@@ -33,7 +36,7 @@ import { initialState as llmInitialState, moveProvider } from './llm'
 import { mcpSlice } from './mcp'
 import { initialState as notesInitialState } from './note'
 import { defaultActionItems } from './selectionStore'
-import { DEFAULT_SIDEBAR_ICONS, initialState as settingsInitialState } from './settings'
+import { initialState as settingsInitialState } from './settings'
 import { initialState as shortcutsInitialState } from './shortcuts'
 import { defaultWebSearchProviders } from './websearch'
 
@@ -2148,19 +2151,60 @@ const migrateConfig = {
     }
   },
   '135': (state: RootState) => {
-    if (state.settings && state.settings.sidebarIcons) {
-      // Check if 'notes' is not already in visible icons
-      if (!state.settings.sidebarIcons.visible.includes('notes')) {
-        state.settings.sidebarIcons.visible = [...state.settings.sidebarIcons.visible, 'notes']
+    try {
+      if (!state.assistants.defaultAssistant.settings) {
+        state.assistants.defaultAssistant.settings = DEFAULT_ASSISTANT_SETTINGS
+      } else if (!state.assistants.defaultAssistant.settings.toolUseMode) {
+        state.assistants.defaultAssistant.settings.toolUseMode = 'prompt'
       }
+      return state
+    } catch (error) {
+      logger.error('migrate 135 error', error as Error)
+      return state
     }
-
-    if (state.settings && state.settings.showWorkspace === undefined) {
-      state.settings.showWorkspace = true
-    }
-    return state
   },
   '136': (state: RootState) => {
+    try {
+      state.settings.sidebarIcons.visible = [...new Set(state.settings.sidebarIcons.visible)].filter((icon) =>
+        DEFAULT_SIDEBAR_ICONS.includes(icon)
+      )
+      state.settings.sidebarIcons.disabled = [...new Set(state.settings.sidebarIcons.disabled)].filter((icon) =>
+        DEFAULT_SIDEBAR_ICONS.includes(icon)
+      )
+      return state
+    } catch (error) {
+      logger.error('migrate 136 error', error as Error)
+      return state
+    }
+  },
+  '137': (state: RootState) => {
+    try {
+      state.ocr = {
+        providers: BUILTIN_OCR_PROVIDERS,
+        imageProvider: DEFAULT_OCR_PROVIDER.image
+      }
+      state.translate.translateInput = ''
+      return state
+    } catch (error) {
+      logger.error('migrate 137 error', error as Error)
+      return state
+    }
+  },
+  '138': (state: RootState) => {
+    try {
+      if (state.settings && state.settings.sidebarIcons) {
+        // Check if 'notes' is not already in visible icons
+        if (!state.settings.sidebarIcons.visible.includes('notes')) {
+          state.settings.sidebarIcons.visible = [...state.settings.sidebarIcons.visible, 'notes']
+        }
+      }
+      return state
+    } catch (error) {
+      logger.error('migrate 138 error', error as Error)
+      return state
+    }
+  },
+  '139': (state: RootState) => {
     try {
       // Initialize notes settings if not present
       if (!state.note) {
@@ -2168,7 +2212,7 @@ const migrateConfig = {
       }
       return state
     } catch (error) {
-      logger.error('migrate 132 error', error as Error)
+      logger.error('migrate 139 error', error as Error)
       return state
     }
   }

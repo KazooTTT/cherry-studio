@@ -68,7 +68,7 @@ db.version(6).stores({
 // --- NEW VERSION 7 ---
 db.version(7)
   .stores({
-    // Re-declare all tables for the new version
+    // Redeclare all tables for the new version
     files: 'id, name, origin_name, path, size, ext, type, created_at, count',
     topics: '&id', // Correct index for topics
     settings: '&id, value',
@@ -81,7 +81,7 @@ db.version(7)
 
 db.version(8)
   .stores({
-    // Re-declare all tables for the new version
+    // Redeclare all tables for the new version
     files: 'id, name, origin_name, path, size, ext, type, created_at, count',
     topics: '&id', // Correct index for topics
     settings: '&id, value',
@@ -93,7 +93,7 @@ db.version(8)
   .upgrade((tx) => upgradeToV8(tx))
 
 db.version(9).stores({
-  // Re-declare all tables for the new version
+  // Redeclare all tables for the new version
   files: 'id, name, origin_name, path, size, ext, type, created_at, count',
   topics: '&id', // Correct index for topics
   settings: '&id, value',

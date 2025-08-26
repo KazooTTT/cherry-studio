@@ -18,9 +18,12 @@ import {
   MemoryConfig,
   MemoryListOptions,
   MemorySearchOptions,
+  OcrProvider,
+  OcrResult,
   Provider,
   S3Config,
   Shortcut,
+  SupportedOcrFile,
   ThemeMode,
   WebDavConfig
 } from '@types'
@@ -134,7 +137,8 @@ const api = {
     checkS3Connection: (s3Config: S3Config) => ipcRenderer.invoke(IpcChannel.Backup_CheckS3Connection, s3Config)
   },
   file: {
-    select: (options?: OpenDialogOptions) => ipcRenderer.invoke(IpcChannel.File_Select, options),
+    select: (options?: OpenDialogOptions): Promise<FileMetadata[] | null> =>
+      ipcRenderer.invoke(IpcChannel.File_Select, options),
     upload: (file: FileMetadata) => ipcRenderer.invoke(IpcChannel.File_Upload, file),
     delete: (fileId: string) => ipcRenderer.invoke(IpcChannel.File_Delete, fileId),
     deleteDir: (dirPath: string) => ipcRenderer.invoke(IpcChannel.File_DeleteDir, dirPath),
@@ -149,7 +153,7 @@ const api = {
     readExternal: (filePath: string, detectEncoding?: boolean) =>
       ipcRenderer.invoke(IpcChannel.File_ReadExternal, filePath, detectEncoding),
     clear: (spanContext?: SpanContext) => ipcRenderer.invoke(IpcChannel.File_Clear, spanContext),
-    get: (filePath: string) => ipcRenderer.invoke(IpcChannel.File_Get, filePath),
+    get: (filePath: string): Promise<FileMetadata | null> => ipcRenderer.invoke(IpcChannel.File_Get, filePath),
     createTempFile: (fileName: string): Promise<string> => ipcRenderer.invoke(IpcChannel.File_CreateTempFile, fileName),
     mkdir: (dirPath: string) => ipcRenderer.invoke(IpcChannel.File_Mkdir, dirPath),
     write: (filePath: string, data: Uint8Array | string) => ipcRenderer.invoke(IpcChannel.File_Write, filePath, data),
@@ -190,7 +194,8 @@ const api = {
     }
   },
   fs: {
-    read: (pathOrUrl: string, encoding?: BufferEncoding) => ipcRenderer.invoke(IpcChannel.Fs_Read, pathOrUrl, encoding)
+    read: (pathOrUrl: string, encoding?: BufferEncoding) => ipcRenderer.invoke(IpcChannel.Fs_Read, pathOrUrl, encoding),
+    readText: (pathOrUrl: string): Promise<string> => ipcRenderer.invoke(IpcChannel.Fs_ReadText, pathOrUrl)
   },
   export: {
     toWord: (markdown: string, fileName: string) => ipcRenderer.invoke(IpcChannel.Export_Word, markdown, fileName)
@@ -422,6 +427,10 @@ const api = {
       env: Record<string, string>,
       options?: { autoUpdateToLatest?: boolean }
     ) => ipcRenderer.invoke(IpcChannel.CodeTools_Run, cliTool, model, directory, env, options)
+  },
+  ocr: {
+    ocr: (file: SupportedOcrFile, provider: OcrProvider): Promise<OcrResult> =>
+      ipcRenderer.invoke(IpcChannel.OCR_ocr, file, provider)
   }
 }
 

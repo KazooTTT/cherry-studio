@@ -225,9 +225,19 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic,
         key: 'rename',
         icon: <EditIcon size={14} />,
         disabled: isRenaming(topic.id),
-        onClick() {
-          setEditingTopicId(topic.id)
-          topicEdit.startEdit(topic.name)
+        async onClick() {
+          const name = await PromptPopup.show({
+            title: t('chat.topics.edit.title'),
+            message: '',
+            defaultValue: topic?.name || '',
+            extraNode: (
+              <div style={{ color: 'var(--color-text-3)', marginTop: 8 }}>{t('chat.topics.edit.title_tip')}</div>
+            )
+          })
+          if (name && topic?.name !== name) {
+            const updatedTopic = { ...topic, name, isNameManuallyEdited: true }
+            updateTopic(updatedTopic)
+          }
         }
       },
       {
@@ -459,7 +469,6 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic,
     notesPath,
     assistant,
     updateTopic,
-    topicEdit,
     activeTopic.id,
     setActiveTopic,
     onPinTopic,
@@ -530,7 +539,13 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic,
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <TopicName className={getTopicNameClassName()} title={topicName}>
+                  <TopicName
+                    className={getTopicNameClassName()}
+                    title={topicName}
+                    onDoubleClick={() => {
+                      setEditingTopicId(topic.id)
+                      topicEdit.startEdit(topic.name)
+                    }}>
                     {topicName}
                   </TopicName>
                 )}
@@ -538,11 +553,10 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic,
                   <Tooltip
                     placement="bottom"
                     mouseEnterDelay={0.7}
+                    mouseLeaveDelay={0}
                     title={
-                      <div>
-                        <div style={{ fontSize: '12px', opacity: 0.8, fontStyle: 'italic' }}>
-                          {t('chat.topics.delete.shortcut', { key: isMac ? '⌘' : 'Ctrl' })}
-                        </div>
+                      <div style={{ fontSize: '12px', opacity: 0.8, fontStyle: 'italic' }}>
+                        {t('chat.topics.delete.shortcut', { key: isMac ? '⌘' : 'Ctrl' })}
                       </div>
                     }>
                     <MenuButton
@@ -557,9 +571,9 @@ const Topics: FC<Props> = ({ assistant: _assistant, activeTopic, setActiveTopic,
                         }
                       }}>
                       {deletingTopicId === topic.id ? (
-                        <DeleteIcon size={14} color="var(--color-error)" />
+                        <DeleteIcon size={14} color="var(--color-error)" style={{ pointerEvents: 'none' }} />
                       ) : (
-                        <XIcon size={14} color="var(--color-text-3)" />
+                        <XIcon size={14} color="var(--color-text-3)" style={{ pointerEvents: 'none' }} />
                       )}
                     </MenuButton>
                   </Tooltip>
@@ -636,6 +650,7 @@ const TopicNameContainer = styled.div`
   flex-direction: row;
   align-items: center;
   gap: 4px;
+  height: 20px;
   justify-content: space-between;
 `
 
@@ -689,19 +704,14 @@ const TopicName = styled.div`
 
 const TopicEditInput = styled.input`
   background: var(--color-background);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border: none;
   color: var(--color-text-1);
   font-size: 13px;
   font-family: inherit;
   padding: 2px 6px;
   width: 100%;
   outline: none;
-
-  &:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-alpha);
-  }
+  padding: 0;
 `
 
 const PendingIndicator = styled.div.attrs({

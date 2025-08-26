@@ -165,7 +165,9 @@ export enum IpcChannel {
   File_Base64File = 'file:base64File',
   File_GetPdfInfo = 'file:getPdfInfo',
   Fs_Read = 'fs:read',
+  Fs_ReadText = 'fs:readText',
   File_OpenWithRelativePath = 'file:openWithRelativePath',
+  File_IsTextFile = 'file:isTextFile',
   File_GetDirectoryStructure = 'file:getDirectoryStructure',
   File_CheckFileName = 'file:checkFileName',
   File_ValidateNotesDirectory = 'file:validateNotesDirectory',
@@ -294,5 +296,8 @@ export enum IpcChannel {
   TRACE_ADD_STREAM_MESSAGE = 'trace:addStreamMessage',
 
   // CodeTools
-  CodeTools_Run = 'code-tools:run'
+  CodeTools_Run = 'code-tools:run',
+
+  // OCR
+  OCR_ocr = 'ocr:ocr'
 }
