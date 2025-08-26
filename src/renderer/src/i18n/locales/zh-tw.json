@@ -1574,6 +1574,9 @@
     "hide_sidebar": "隱藏側邊欄",
     "show_sidebar": "顯示側邊欄"
   },
+  "navigate": {
+    "provider_settings": "跳轉到服務商設置界面"
+  },
   "notes": {
     "characters": "字符",
     "collapse": "收起",
@@ -1655,9 +1658,6 @@
     "untitled_note": "無標題筆記",
     "upload_failed": "筆記上傳失敗",
     "upload_success": "筆記上傳成功"
-  },
-  "navigate": {
-    "provider_settings": "跳轉到服務商設置界面"
   },
   "notification": {
     "assistant": "助手回應",

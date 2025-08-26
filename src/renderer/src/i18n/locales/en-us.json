@@ -1574,6 +1574,9 @@
     "hide_sidebar": "Hide Sidebar",
     "show_sidebar": "Show Sidebar"
   },
+  "navigate": {
+    "provider_settings": "Go to provider settings"
+  },
   "notes": {
     "characters": "Characters",
     "collapse": "Collapse",
@@ -1655,9 +1658,6 @@
     "untitled_note": "Untitled Note",
     "upload_failed": "Note upload failed",
     "upload_success": "Note uploaded success"
-  },
-  "navigate": {
-    "provider_settings": "Go to provider settings"
   },
   "notification": {
     "assistant": "Assistant Response",

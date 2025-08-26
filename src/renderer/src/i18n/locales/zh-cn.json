@@ -1574,6 +1574,9 @@
     "hide_sidebar": "隐藏侧边栏",
     "show_sidebar": "显示侧边栏"
   },
+  "navigate": {
+    "provider_settings": "跳转到服务商设置界面"
+  },
   "notes": {
     "characters": "字符",
     "collapse": "收起",
@@ -1655,9 +1658,6 @@
     "untitled_note": "无标题笔记",
     "upload_failed": "笔记上传失败",
     "upload_success": "笔记上传成功"
-  },
-  "navigate": {
-    "provider_settings": "跳转到服务商设置界面"
   },
   "notification": {
     "assistant": "助手响应",

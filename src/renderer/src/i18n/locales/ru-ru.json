@@ -1574,6 +1574,9 @@
     "hide_sidebar": "Скрыть боковую панель",
     "show_sidebar": "Показать боковую панель"
   },
+  "navigate": {
+    "provider_settings": "Перейти к настройкам поставщика"
+  },
   "notes": {
     "characters": "Символы",
     "collapse": "Свернуть",
@@ -1655,9 +1658,6 @@
     "untitled_note": "Незаглавленная заметка",
     "upload_failed": "Не удалось загрузить заметку",
     "upload_success": "Заметка успешно загружена"
-  },
-  "navigate": {
-    "provider_settings": "Перейти к настройкам поставщика"
   },
   "notification": {
     "assistant": "Ответ ассистента",
