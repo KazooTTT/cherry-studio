@@ -881,7 +881,8 @@ export class OpenAIAPIClient extends OpenAIBaseClient<
                 (typeof choice.delta.content === 'string' && choice.delta.content !== '') ||
                 (typeof (choice.delta as any).reasoning_content === 'string' &&
                   (choice.delta as any).reasoning_content !== '') ||
-                (typeof (choice.delta as any).reasoning === 'string' && (choice.delta as any).reasoning !== ''))
+                (typeof (choice.delta as any).reasoning === 'string' && (choice.delta as any).reasoning !== '') ||
+                (choice.delta as any).images !== null)
             ) {
               contentSource = choice.delta
             } else if ('message' in choice) {
@@ -1008,6 +1009,20 @@ export class OpenAIAPIClient extends OpenAIBaseClient<
                   toolCalls.push(toolCall)
                 }
               }
+            }
+
+            // 处理图片内容
+            if (contentSource.images) {
+              controller.enqueue({
+                type: ChunkType.IMAGE_CREATED
+              })
+              controller.enqueue({
+                type: ChunkType.IMAGE_COMPLETE,
+                image: {
+                  type: 'base64',
+                  images: contentSource.images.map((image) => image.image_url?.url || '')
+                }
+              })
             }
 
             // 处理finish_reason，发送流结束信号
