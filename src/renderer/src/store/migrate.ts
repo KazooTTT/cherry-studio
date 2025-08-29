@@ -2206,7 +2206,7 @@ const migrateConfig = {
       logger.error('migrate 138 error', error as Error)
       return state
     }
-  }
+  },
   '139': (state: RootState) => {
     try {
       if (state.settings && state.settings.sidebarIcons) {
