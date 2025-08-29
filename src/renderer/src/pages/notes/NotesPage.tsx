@@ -1,4 +1,5 @@
 import { loggerService } from '@logger'
+import { Navbar, NavbarCenter } from '@renderer/components/app/Navbar'
 import { RichEditorRef } from '@renderer/components/RichEditor/types'
 import { useActiveNode, useFileContent, useFileContentSync } from '@renderer/hooks/useNotesQuery'
 import { useNotesSettings } from '@renderer/hooks/useNotesSettings'
@@ -211,8 +212,7 @@ const NotesPage: FC = () => {
 
       try {
         await window.api.file.startFileWatcher(notesPath)
-        const removeListener = window.api.file.onFileChange(handleFileChange)
-        watcherRef.current = removeListener
+        watcherRef.current = window.api.file.onFileChange(handleFileChange)
       } catch (error) {
         logger.error('Failed to start file watcher:', error as Error)
       }
@@ -517,6 +517,9 @@ const NotesPage: FC = () => {
 
   return (
     <Container id="notes-page">
+      <Navbar>
+        <NavbarCenter style={{ borderRight: 'none' }}>{t('notes.title')}</NavbarCenter>
+      </Navbar>
       <ContentContainer id="content-container">
         {showWorkspace && (
           <NotesSidebar
