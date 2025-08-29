@@ -46,6 +46,7 @@ import {
   EFFORT_RATIO,
   FileTypes,
   isSystemProvider,
+  isTranslateAssistant,
   MCPCallToolResponse,
   MCPTool,
   MCPToolResponse,
@@ -54,7 +55,6 @@ import {
   Provider,
   SystemProviderIds,
   ToolCallResponse,
-  TranslateAssistant,
   WebSearchSource
 } from '@renderer/types'
 import { ChunkType, TextStartChunk, ThinkingStartChunk } from '@renderer/types/chunk'
@@ -569,13 +569,18 @@ export class OpenAIAPIClient extends OpenAIBaseClient<
         const extra_body: Record<string, any> = {}
 
         if (isQwenMTModel(model)) {
-          const targetLanguage = (assistant as TranslateAssistant).targetLanguage
-          extra_body.translation_options = {
-            source_lang: 'auto',
-            target_lang: mapLanguageToQwenMTModel(targetLanguage!)
-          }
-          if (!extra_body.translation_options.target_lang) {
-            throw new Error(t('translate.error.not_supported', { language: targetLanguage?.value }))
+          if (isTranslateAssistant(assistant)) {
+            const targetLanguage = assistant.targetLanguage
+            const translationOptions = {
+              source_lang: 'auto',
+              target_lang: mapLanguageToQwenMTModel(targetLanguage)
+            } as const
+            if (!translationOptions.target_lang) {
+              throw new Error(t('translate.error.not_supported', { language: targetLanguage.value }))
+            }
+            extra_body.translation_options = translationOptions
+          } else {
+            throw new Error(t('translate.error.chat_qwen_mt'))
           }
         }
 
@@ -881,7 +886,9 @@ export class OpenAIAPIClient extends OpenAIBaseClient<
                 (typeof choice.delta.content === 'string' && choice.delta.content !== '') ||
                 (typeof (choice.delta as any).reasoning_content === 'string' &&
                   (choice.delta as any).reasoning_content !== '') ||
-                (typeof (choice.delta as any).reasoning === 'string' && (choice.delta as any).reasoning !== ''))
+                (typeof (choice.delta as any).reasoning === 'string' && (choice.delta as any).reasoning !== '') ||
+                ((choice.delta as OpenAISdkRawContentSource).images &&
+                  Array.isArray((choice.delta as OpenAISdkRawContentSource).images)))
             ) {
               contentSource = choice.delta
             } else if ('message' in choice) {
@@ -977,6 +984,20 @@ export class OpenAIAPIClient extends OpenAIBaseClient<
               }
             } else {
               accumulatingText = false
+            }
+
+            // 处理图片内容 (e.g. from OpenRouter Gemini image generation models)
+            if (contentSource.images && Array.isArray(contentSource.images)) {
+              controller.enqueue({
+                type: ChunkType.IMAGE_CREATED
+              })
+              controller.enqueue({
+                type: ChunkType.IMAGE_COMPLETE,
+                image: {
+                  type: 'base64',
+                  images: contentSource.images.map((image) => image.image_url?.url || '')
+                }
+              })
             }
 
             // 处理工具调用

@@ -410,6 +410,7 @@ export function getModelLogo(modelId: string) {
     jina: isLight ? JinaModelLogo : JinaModelLogoDark,
     abab: isLight ? MinimaxModelLogo : MinimaxModelLogoDark,
     minimax: isLight ? MinimaxModelLogo : MinimaxModelLogoDark,
+    veo: isLight ? GeminiModelLogo : GeminiModelLogoDark,
     o1: isLight ? ChatGPTo1ModelLogo : ChatGPTo1ModelLogoDark,
     o3: isLight ? ChatGPTo1ModelLogo : ChatGPTo1ModelLogoDark,
     o4: isLight ? ChatGPTo1ModelLogo : ChatGPTo1ModelLogoDark,
@@ -424,7 +425,7 @@ export function getModelLogo(modelId: string) {
     'gpt-oss(?:-[\\w-]+)': isLight ? ChatGptModelLogo : ChatGptModelLogoDark,
     'text-moderation': isLight ? ChatGptModelLogo : ChatGptModelLogoDark,
     'babbage-': isLight ? ChatGptModelLogo : ChatGptModelLogoDark,
-    'sora-': isLight ? ChatGptModelLogo : ChatGptModelLogoDark,
+    '(sora-|sora_)': isLight ? ChatGptModelLogo : ChatGptModelLogoDark,
     '(^|/)omni-': isLight ? ChatGptModelLogo : ChatGptModelLogoDark,
     'Embedding-V1': isLight ? WenxinModelLogo : WenxinModelLogoDark,
     'text-embedding-v': isLight ? QwenModelLogo : QwenModelLogoDark,
@@ -452,6 +453,7 @@ export function getModelLogo(modelId: string) {
     step: isLight ? StepModelLogo : StepModelLogoDark,
     hailuo: isLight ? HailuoModelLogo : HailuoModelLogoDark,
     doubao: isLight ? DoubaoModelLogo : DoubaoModelLogoDark,
+    seedream: isLight ? DoubaoModelLogo : DoubaoModelLogoDark,
     'ep-202': isLight ? DoubaoModelLogo : DoubaoModelLogoDark,
     cohere: isLight ? CohereModelLogo : CohereModelLogoDark,
     command: isLight ? CohereModelLogo : CohereModelLogoDark,
@@ -2471,6 +2473,7 @@ export const SUPPORTED_DISABLE_GENERATION_MODELS = [
 export const GENERATE_IMAGE_MODELS = [
   'gemini-2.0-flash-exp-image-generation',
   'gemini-2.0-flash-preview-image-generation',
+  'gemini-2.5-flash-image-preview',
   'grok-2-image-1212',
   'grok-2-image',
   'grok-2-image-latest',
@@ -3305,6 +3308,11 @@ export const isNotSupportSystemMessageModel = (model: Model): boolean => {
 export const isGPT5SeriesModel = (model: Model) => {
   const modelId = getLowerBaseModelName(model.id)
   return modelId.includes('gpt-5')
+}
+
+export const isGeminiModel = (model: Model) => {
+  const modelId = getLowerBaseModelName(model.id)
+  return modelId.includes('gemini')
 }
 
 export const isOpenAIOpenWeightModel = (model: Model) => {
