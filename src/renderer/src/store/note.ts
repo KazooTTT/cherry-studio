@@ -24,7 +24,7 @@ export const initialState: NoteState = {
     isFullWidth: true,
     fontFamily: 'default',
     defaultViewMode: 'edit',
-    defaultEditMode: 'realtime',
+    defaultEditMode: 'preview',
     showTabStatus: true
   },
   notesPath: ''

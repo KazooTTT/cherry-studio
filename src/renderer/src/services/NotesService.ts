@@ -331,6 +331,7 @@ export async function sortAllLevels(sortType: NotesSortType): Promise<void> {
     const tree = await getNotesTree()
     sortNodesArray(tree, sortType)
     recursiveSortNodes(tree, sortType)
+    await db.notes_tree.put({ id: NOTES_TREE_ID, tree })
     logger.info(`Sorted all levels of notes successfully: ${sortType}`)
   } catch (error) {
     logger.error('Failed to sort all levels of notes:', error as Error)
