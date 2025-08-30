@@ -64,6 +64,7 @@ const NotesEditor: FC<NotesEditorProps> = memo(
               language="markdown"
               onChange={onMarkdownChange}
               height="100%"
+              expanded={false}
               style={{
                 height: '100%'
               }}
