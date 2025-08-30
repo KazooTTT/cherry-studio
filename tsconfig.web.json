@@ -7,6 +7,7 @@
     "packages/shared/**/*",
     "tests/__mocks__/**/*",
     "packages/mcp-trace/**/*",
+    "src/main/integration/cherryin/index.js",
     "packages/extension-table-plus/**/*"
   ],
   "compilerOptions": {
