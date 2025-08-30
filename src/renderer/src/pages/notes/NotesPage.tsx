@@ -52,6 +52,7 @@ const NotesPage: FC = () => {
   const isSyncingTreeRef = useRef(false)
   const isEditorInitialized = useRef(false)
   const lastContentRef = useRef<string>('')
+  const isInitialSortApplied = useRef(false)
 
   useEffect(() => {
     const updateCharCount = () => {
@@ -122,6 +123,22 @@ const NotesPage: FC = () => {
     initialize()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notesPath])
+
+  // 应用初始排序
+  useEffect(() => {
+    async function applyInitialSort() {
+      if (notesTree.length > 0 && !isInitialSortApplied.current) {
+        try {
+          await sortAllLevels('sort_a2z')
+          isInitialSortApplied.current = true
+        } catch (error) {
+          logger.error('Failed to apply initial sorting:', error as Error)
+        }
+      }
+    }
+
+    applyInitialSort()
+  }, [notesTree.length])
 
   // 处理树同步时的状态管理
   useEffect(() => {
