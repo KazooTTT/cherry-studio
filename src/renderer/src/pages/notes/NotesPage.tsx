@@ -172,19 +172,17 @@ const NotesPage: FC = () => {
               if (activeFilePath === filePath) {
                 try {
                   // 读取文件最新内容
-                  const newFileContent = await window.api.file.readExternal(filePath)
-
-                  // 获取当前编辑器/缓存中的内容
-                  const currentEditorContent = editorRef.current?.getMarkdown()
-
-                  // 如果编辑器还未初始化完成，忽略FileWatcher事件
-                  if (!isEditorInitialized.current) {
-                    return
-                  }
-                  // 比较内容是否真正发生变化
-                  if (newFileContent.trim() !== currentEditorContent?.trim()) {
-                    invalidateFileContent(filePath)
-                  }
+                  // const newFileContent = await window.api.file.readExternal(filePath)
+                  // // 获取当前编辑器/缓存中的内容
+                  // const currentEditorContent = editorRef.current?.getMarkdown()
+                  // // 如果编辑器还未初始化完成，忽略FileWatcher事件
+                  // if (!isEditorInitialized.current) {
+                  //   return
+                  // }
+                  // // 比较内容是否真正发生变化
+                  // if (newFileContent.trim() !== currentEditorContent?.trim()) {
+                  //   invalidateFileContent(filePath)
+                  // }
                 } catch (error) {
                   logger.error('Failed to read file for content comparison:', error as Error)
                   // 读取失败时，还是执行原来的逻辑
