@@ -66,7 +66,7 @@ const persistedReducer = persistReducer(
   {
     key: 'cherry-studio',
     storage,
-    version: 140,
+    version: 142,
     blacklist: ['runtime', 'messages', 'messageBlocks', 'tabs'],
     migrate
   },
