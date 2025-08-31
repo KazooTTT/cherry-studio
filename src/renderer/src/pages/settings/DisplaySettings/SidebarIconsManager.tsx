@@ -10,8 +10,10 @@ import {
 import { getSidebarIconLabel } from '@renderer/i18n/label'
 import { useAppDispatch } from '@renderer/store'
 import { setSidebarIcons } from '@renderer/store/settings'
+import { SidebarIcon } from '@renderer/types'
 import { message } from 'antd'
 import {
+  Code,
   FileSearch,
   Folder,
   Languages,
@@ -24,8 +26,6 @@ import {
 import { FC, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
-
-import { SidebarIcon } from '../../../store/settings'
 
 interface SidebarIconsManagerProps {
   visibleIcons: SidebarIcon[]
@@ -126,7 +126,8 @@ const SidebarIconsManager: FC<SidebarIconsManagerProps> = ({
       minapp: <LayoutGrid size={16} />,
       knowledge: <FileSearch size={16} />,
       files: <Folder size={16} />,
-      notes: <NotepadText size={16} />
+      notes: <NotepadText size={16} />,
+      code_tools: <Code size={16} />
     }),
     []
   )
@@ -216,8 +217,8 @@ const IconColumn = styled.div`
 `
 
 const IconList = styled.div`
-  height: 365px;
-  min-height: 365px;
+  height: 400px;
+  min-height: 400px;
   padding: 10px;
   background: var(--color-background-soft);
   border-radius: 8px;

@@ -1,18 +1,17 @@
 import { loggerService } from '@logger'
 import { NavbarCenter, NavbarHeader, NavbarRight } from '@renderer/components/app/Navbar'
 import { HStack } from '@renderer/components/Layout'
+import { useActiveNode } from '@renderer/hooks/useNotesQuery'
+import { useNotesSettings } from '@renderer/hooks/useNotesSettings'
 import { useNavbarPosition } from '@renderer/hooks/useSettings'
 import { useShowWorkspace } from '@renderer/hooks/useStore'
-import { findNodeInTree, getNodePathArray } from '@renderer/services/NotesService'
-import { useAppSelector } from '@renderer/store'
-import { selectActiveNodeId } from '@renderer/store/note'
+import { findNodeInTree } from '@renderer/services/NotesTreeService'
 import { Breadcrumb, BreadcrumbProps, Dropdown, Tooltip } from 'antd'
 import { t } from 'i18next'
 import { MoreHorizontal, PanelLeftClose, PanelRightClose } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { useNotesSettings } from '../../hooks/useNotesSettings'
 import { menuItems } from './MenuConfig'
 
 const logger = loggerService.withContext('HeaderNavbar')
@@ -20,7 +19,7 @@ const logger = loggerService.withContext('HeaderNavbar')
 const HeaderNavbar = ({ notesTree, getCurrentNoteContent }) => {
   const { isTopNavbar } = useNavbarPosition()
   const { showWorkspace, toggleShowWorkspace } = useShowWorkspace()
-  const activeNodeId = useAppSelector(selectActiveNodeId)
+  const { activeNode } = useActiveNode(notesTree)
   const [breadcrumbItems, setBreadcrumbItems] = useState<Required<BreadcrumbProps>['items']>([])
   const { settings, updateSettings } = useNotesSettings()
 
@@ -93,38 +92,23 @@ const HeaderNavbar = ({ notesTree, getCurrentNoteContent }) => {
 
   // 构建面包屑路径
   useEffect(() => {
-    const buildBreadcrumbPath = async () => {
-      const items: Required<BreadcrumbProps>['items'] = []
-
-      if (!activeNodeId) {
-        setBreadcrumbItems(items)
-        return
-      }
-
-      try {
-        const activeNode = findNodeInTree(notesTree, activeNodeId)
-        if (!activeNode) {
-          setBreadcrumbItems(items)
-          return
-        }
-
-        const pathNodes = await getNodePathArray(notesTree, activeNodeId)
-        logger.debug('buildBreadcrumbPath', pathNodes)
-        pathNodes.forEach((node) => {
-          items.push({
-            key: node.id,
-            title: node.name
-          })
-        })
-
-        setBreadcrumbItems(items)
-      } catch (error) {
-        setBreadcrumbItems(items)
-      }
+    if (!activeNode || !notesTree) {
+      setBreadcrumbItems([])
+      return
     }
+    const node = findNodeInTree(notesTree, activeNode.id)
+    if (!node) return
 
-    buildBreadcrumbPath()
-  }, [activeNodeId, notesTree])
+    const pathParts = node.treePath.split('/').filter(Boolean)
+    const items = pathParts.map((part, index) => {
+      return {
+        key: `path-${index}`,
+        title: part
+      }
+    })
+
+    setBreadcrumbItems(items)
+  }, [activeNode, notesTree])
 
   return (
     <NavbarHeader className="home-navbar" style={{ justifyContent: 'flex-start' }}>

@@ -156,7 +156,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
   }, [markdown])
 
   // Get theme and language mapping from CodeStyleProvider
-  const { activeShikiTheme, languageMap } = useCodeStyle()
+  const { activeShikiTheme } = useCodeStyle()
 
   const [tableOfContentsItems, setTableOfContentsItems] = useState<TableOfContentDataItem[]>([])
 
@@ -408,7 +408,7 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
       })
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [placeholder, activeShikiTheme, languageMap, handleLinkHover, handleLinkHoverEnd]
+    [placeholder, activeShikiTheme, handleLinkHover, handleLinkHoverEnd]
   )
 
   const editor = useEditor({
@@ -685,12 +685,6 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
     [editor, onShowTableActionMenu]
   )
 
-  // Setup table action event listeners
-  useEffect(() => {
-    // Temporarily disable to fix infinite recursion
-    return () => {}
-  }, [editor, showTableActionMenu])
-
   useEffect(() => {
     return () => {
       if (editor && !editor.isDestroyed) {
@@ -786,15 +780,16 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         setMarkdownState(content)
         onChange?.(content)
 
-        if (onHtmlChange && content) {
-          const convertedHtml = markdownToSafeHtml(content)
-          onHtmlChange(convertedHtml)
-        }
+        const convertedHtml = markdownToSafeHtml(content)
+
+        editor.commands.setContent(convertedHtml)
+
+        onHtmlChange?.(convertedHtml)
       } catch (error) {
         logger.error('Error setting markdown content:', error as Error)
       }
     },
-    [onChange, onHtmlChange]
+    [editor.commands, onChange, onHtmlChange]
   )
 
   const setHtml = useCallback(
@@ -804,16 +799,14 @@ export const useRichEditor = (options: UseRichEditorOptions = {}): UseRichEditor
         setMarkdownState(convertedMarkdown)
         onChange?.(convertedMarkdown)
 
-        // Trigger HTML change callback with safe HTML
-        if (onHtmlChange) {
-          const safeHtml = sanitizeHtml(htmlContent)
-          onHtmlChange(safeHtml)
-        }
+        editor.commands.setContent(htmlContent)
+
+        onHtmlChange?.(htmlContent)
       } catch (error) {
         logger.error('Error setting HTML content:', error as Error)
       }
     },
-    [onChange, onHtmlChange]
+    [editor.commands, onChange, onHtmlChange]
   )
 
   const clear = useCallback(() => {

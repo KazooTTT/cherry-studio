@@ -176,49 +176,60 @@ export function ShikiPlugin({
 
         async checkUndecoratedBlocks() {
           // If highlighter is not yet initialized, defer processing until it becomes available.
-          if (!this.highlighter) {
-            return
-          }
+          try {
+            if (!this.highlighter) {
+              return
+            }
+            const codeBlocks = findChildren(view.state.doc, (node) => node.type.name === name)
 
-          const codeBlocks = findChildren(view.state.doc, (node) => node.type.name === name)
+            // Only load themes or languages that the highlighter has not seen yet.
+            const tasks: Promise<void>[] = []
+            let didLoadSomething = false
 
-          // Only load themes or languages that the highlighter has not seen yet.
-          const tasks: Promise<void>[] = []
-          let didLoadSomething = false
+            for (const block of codeBlocks) {
+              // Skip completely empty code blocks in loading check too
+              if (!block.node.textContent) continue
 
-          for (const block of codeBlocks) {
-            // Skip completely empty code blocks in loading check too
-            if (!block.node.textContent) continue
+              const { theme: blockTheme, language: blockLanguage } = block.node.attrs
 
-            const { theme: blockTheme, language: blockLanguage } = block.node.attrs
+              // Skip loading for plain text languages
+              if (SKIP_HIGHLIGHTING_LANGUAGES.has(blockLanguage)) {
+                continue
+              }
 
-            // Skip loading for plain text languages
-            if (SKIP_HIGHLIGHTING_LANGUAGES.has(blockLanguage)) {
-              continue
+              if (blockTheme && !this.highlighter.getLoadedThemes().includes(blockTheme)) {
+                tasks.push(
+                  loadThemeIfNeeded(this.highlighter, blockTheme).then((resolvedTheme) => {
+                    // If a fallback occurred (e.g., to 'one-light'), avoid repeatedly trying the unsupported theme
+                    if (resolvedTheme == blockTheme) {
+                      didLoadSomething = true
+                    }
+                  })
+                )
+              }
+
+              if (blockLanguage && !this.highlighter.getLoadedLanguages().includes(blockLanguage)) {
+                tasks.push(
+                  loadLanguageIfNeeded(this.highlighter, blockLanguage).then((resolvedLanguage) => {
+                    // If fallback language differs from requested, mark requested to skip future attempts
+                    if (resolvedLanguage == blockLanguage) {
+                      didLoadSomething = true
+                    } else {
+                      SKIP_HIGHLIGHTING_LANGUAGES.add(blockLanguage)
+                    }
+                  })
+                )
+              }
             }
 
-            if (blockTheme && !this.highlighter.getLoadedThemes().includes(blockTheme)) {
-              tasks.push(
-                loadThemeIfNeeded(this.highlighter, blockTheme).then(() => {
-                  didLoadSomething = true
-                })
-              )
+            await Promise.all(tasks)
+
+            if (didLoadSomething) {
+              const tr = view.state.tr.setMeta('shikiHighlighterReady', true)
+              view.dispatch(tr)
             }
-
-            if (blockLanguage && !this.highlighter.getLoadedLanguages().includes(blockLanguage)) {
-              tasks.push(
-                loadLanguageIfNeeded(this.highlighter, blockLanguage).then(() => {
-                  didLoadSomething = true
-                })
-              )
-            }
-          }
-
-          await Promise.all(tasks)
-
-          if (didLoadSomething) {
-            const tr = view.state.tr.setMeta('shikiHighlighterReady', true)
-            view.dispatch(tr)
+          } catch (error) {
+            logger.error('Error in checkUndecoratedBlocks:', error as Error)
           }
         }
       }

@@ -240,6 +240,7 @@
       "compressing": "圧縮中...",
       "copying_files": "ファイルコピー中... {{progress}}%",
       "preparing": "バックアップ準備中...",
+      "preparing_compression": "圧縮準備中...",
       "title": "バックアップ進捗",
       "writing_data": "データ書き込み中..."
     },
@@ -322,6 +323,7 @@
       "expand": "展開",
       "file_error": "ファイル処理エラー",
       "file_not_supported": "モデルはこのファイルタイプをサポートしません",
+      "file_not_supported_count": "{{count}} 個のファイルはサポートされていません",
       "generate_image": "画像を生成する",
       "generate_image_not_supported": "モデルは画像の生成をサポートしていません。",
       "knowledge_base": "ナレッジベース",
@@ -389,8 +391,10 @@
         "parse_tool_call": "有効なツール呼び出し形式に変換できません：{{toolCall}}"
       },
       "warning": {
+        "gemini_web_search": "Geminiは、ネイティブのネットワーク検索ツールと関数呼び出しを同時に使用することをサポートしていません。",
         "multiple_tools": "複数の一致するMCPツールが存在するため、{{tool}} が選択されました",
-        "no_tool": "必要なMCPツール {{tool}} が見つかりません"
+        "no_tool": "必要なMCPツール {{tool}} が見つかりません",
+        "url_context": "Geminiは、URLコンテキストと関数呼び出しを同時に使用することをサポートしていません。"
       }
     },
     "message": {
@@ -583,7 +587,8 @@
       },
       "edit": {
         "placeholder": "新しい名前を入力",
-        "title": "名前を編集"
+        "title": "名前を編集",
+        "title_tip": "ヒント: トピック名をダブルクリックすると、直接その場で名前を変更できます"
       },
       "export": {
         "image": "画像としてエクスポート",
@@ -746,9 +751,13 @@
     "enabled": "有効",
     "error": "エラー",
     "expand": "展開",
+    "file": {
+      "not_supported": "サポートされていないファイルタイプ {{type}}"
+    },
     "footnote": "引用内容",
     "footnotes": "脚注",
     "fullscreen": "全画面モードに入りました。F11キーで終了します",
+    "go_to_settings": "設定に移動",
     "i_know": "わかりました",
     "inspect": "検査",
     "knowledge_base": "ナレッジベース",
@@ -783,9 +792,11 @@
         "label": "ピンインでソート"
       }
     },
+    "stop": "停止",
     "success": "成功",
     "swap": "交換",
     "topics": "トピック",
+    "upload_files": "ファイルをアップロードする",
     "warning": "警告",
     "you": "あなた"
   },
@@ -804,10 +815,20 @@
     "backup": {
       "file_format": "バックアップファイルの形式エラー"
     },
+    "boundary": {
+      "default": {
+        "devtools": "デバッグパネルを開く",
+        "message": "何か問題が発生したようです...",
+        "reload": "再読み込み"
+      }
+    },
     "chat": {
       "chunk": {
         "non_json": "無効なデータ形式が返されました"
       },
+      "insufficient_balance": "<provider>{{provider}}</provider>でチャージしてください。",
+      "no_api_key": "APIキーが設定されていません。<provider>{{provider}}</provider>でAPIキーを取得してください。",
+      "quota_exceeded": "本日の{{quota}}無料クォータが使い果たされました。<provider>{{provider}}</provider>でAPIキーを取得し、APIキーを設定して使用を続けてください。",
       "response": "エラーが発生しました。APIキーが設定されていない場合は、設定 > プロバイダーでキーを設定してください"
     },
     "http": {
@@ -852,6 +873,8 @@
   "files": {
     "actions": "操作",
     "all": "すべてのファイル",
+    "batch_delete": "一括削除",
+    "batch_operation": "すべて選択",
     "count": "ファイル",
     "created_at": "作成日",
     "delete": {
@@ -884,6 +907,9 @@
   },
   "history": {
     "continue_chat": "チャットを続ける",
+    "error": {
+      "topic_not_found": "トピックが見つかりません"
+    },
     "locate": {
       "message": "メッセージを探す"
     },
@@ -897,6 +923,11 @@
     "title": "トピック検索"
   },
   "html_artifacts": {
+    "capture": {
+      "label": "ページをキャプチャ",
+      "to_clipboard": "クリップボードにコピー",
+      "to_file": "画像として保存"
+    },
     "code": "コード",
     "empty_preview": "表示するコンテンツがありません",
     "generating": "生成中",
@@ -1510,6 +1541,10 @@
     "embedding_model": "埋め込み模型",
     "embedding_model_tooltip": "設定->モデルサービス->管理で追加",
     "enable_tool_use": "ツール呼び出し",
+    "filter": {
+      "by_tag": "タグでフィルター",
+      "selected": "選択済みのタグ"
+    },
     "function_calling": "関数呼び出し",
     "no_matches": "利用可能なモデルがありません",
     "parameter_name": "パラメータ名",
@@ -1536,7 +1571,10 @@
     "rerank_model_not_support_provider": "現在、並べ替えモデルはこのプロバイダー ({{provider}}) をサポートしていません。",
     "rerank_model_support_provider": "現在の再順序付けモデルは、{{provider}} のみサポートしています",
     "rerank_model_tooltip": "設定->モデルサービスに移動し、管理ボタンをクリックして追加します。",
-    "search": "モデルを検索...",
+    "search": {
+      "placeholder": "モデルを検索...",
+      "tooltip": "モデルを検索"
+    },
     "stream_output": "ストリーム出力",
     "type": {
       "embedding": "埋め込み",
@@ -1554,6 +1592,9 @@
     "expand": "ダイアログを展開",
     "hide_sidebar": "サイドバーを非表示",
     "show_sidebar": "サイドバーを表示"
+  },
+  "navigate": {
+    "provider_settings": "プロバイダー設定に移動"
   },
   "notes": {
     "characters": "文字",
@@ -1575,18 +1616,50 @@
     "new_note": "新規ノート作成",
     "no_content_to_copy": "コピーするコンテンツはありません",
     "only_markdown": "Markdown ファイルのみをアップロードできます",
+    "open_folder": "外部フォルダーを開きます",
     "rename": "名前の変更",
     "save": "メモに保存する",
     "settings": {
-      "defaultFont": "デフォルトフォント",
-      "editorMode": "編集モード",
-      "fontFamily": "フォントシリーズ",
-      "fullWidth": "全幅モード",
-      "previewMode": "プレビューモード",
-      "serifFont": "セリフフォント",
-      "sourceMode": "ソースコードモード",
-      "title": "その他のオプション",
-      "viewMode": "ビューモード"
+      "data": {
+        "apply": "応用",
+        "apply_path_failed": "アプリケーションパスが失敗しました",
+        "current_work_directory": "現在の作業ディレクトリ",
+        "invalid_directory": "選択したディレクトリは無効であるか、権限がありません",
+        "path_required": "ワーキングディレクトリを選択してください",
+        "path_updated": "ワーキングディレクトリの更新は正常に更新されます",
+        "reset_failed": "リセットに失敗しました",
+        "reset_to_default": "デフォルトにリセットします",
+        "select": "選ぶ",
+        "select_directory_failed": "ディレクトリの選択に失敗しました",
+        "title": "データ設定",
+        "work_directory_description": "作業ディレクトリは、すべてのメモが保存される場所です。ワーキングディレクトリを変更しても、既存のファイルは移動しません。ファイルを手動で移行してください。",
+        "work_directory_placeholder": "ノートワークディレクトリを選択します"
+      },
+      "display": {
+        "compress_content": "バーの幅を減らします",
+        "compress_content_description": "有効にすると、1行あたりの単語数が制限され、画面に表示されるコンテンツが減少します。",
+        "default_font": "デフォルトフォント",
+        "font_title": "フォント設定",
+        "serif_font": "セリフフォント",
+        "title": "見せる"
+      },
+      "editor": {
+        "edit_mode": {
+          "description": "編集ビューでは、新しいメモのデフォルトの編集モード",
+          "preview_mode": "ライブプレビュー",
+          "source_mode": "ソースコードモード",
+          "title": "デフォルトの編集ビュー"
+        },
+        "title": "エディター設定",
+        "view_mode": {
+          "description": "新しいノートデフォルトビューモード",
+          "edit_mode": "編集モード",
+          "read_mode": "読み取りモード",
+          "title": "デフォルトビュー"
+        },
+        "view_mode_description": "新しいタブページのデフォルトビューモードを設定します。"
+      },
+      "title": "その他のオプション"
     },
     "show_starred": "お気に入りのノートを表示する",
     "sort_a2z": "ファイル名（A-Z）",
@@ -1612,6 +1685,29 @@
       "success": "ナレッジベースに{{type}}を正常に追加しました"
     },
     "tip": "応答が成功した場合、30秒を超えるメッセージのみに通知を行います"
+  },
+  "ocr": {
+    "builtin": {
+      "system": "システム OCR"
+    },
+    "error": {
+      "provider": {
+        "cannot_remove_builtin": "組み込みプロバイダーは削除できません",
+        "existing": "プロバイダーはすでに存在します",
+        "not_found": "OCRプロバイダーが存在しません",
+        "update_failed": "更新構成に失敗しました"
+      },
+      "unknown": "OCR処理中にエラーが発生しました"
+    },
+    "file": {
+      "not_supported": "サポートされていないファイルタイプ {{type}}"
+    },
+    "processing": "OCR処理中...",
+    "warning": {
+      "provider": {
+        "fallback": "{{name}} に戻されました。これにより問題が発生する可能性があります。"
+      }
+    }
   },
   "ollama": {
     "keep_alive_time": {
@@ -1821,6 +1917,7 @@
     "baidu-cloud": "Baidu Cloud",
     "burncloud": "BurnCloud",
     "cephalon": "Cephalon",
+    "cherryin": "CherryIN",
     "copilot": "GitHub Copilot",
     "dashscope": "Alibaba Cloud",
     "deepseek": "DeepSeek",
@@ -1866,7 +1963,7 @@
     "xirang": "天翼クラウド 息壤",
     "yi": "零一万物",
     "zhinao": "360智脳",
-    "zhipu": "智譜AI"
+    "zhipu": "BigModel"
   },
   "restore": {
     "confirm": {
@@ -2935,6 +3032,7 @@
         "title": "自動更新"
       },
       "avatar": {
+        "builtin": "内蔵アバター",
         "reset": "アバターをリセット"
       },
       "backup": {
@@ -3108,7 +3206,8 @@
         "modelscope": "魔搭コミュニティ MCP サーバー",
         "official": "公式 MCP サーバーコレクション",
         "pulsemcp": "Pulse MCP サーバー",
-        "smithery": "Smithery MCP ツール"
+        "smithery": "Smithery MCP ツール",
+        "zhipu": "厳選MCP、高速統合"
       },
       "name": "名前",
       "newServer": "MCP サーバー",
@@ -3153,6 +3252,10 @@
         "size": "サイズ",
         "text": "テキスト",
         "uri": "URI"
+      },
+      "search": {
+        "placeholder": "MCP サーバーを検索...",
+        "tooltip": "MCP サーバーを検索"
       },
       "searchNpx": "MCP を検索",
       "serverPlural": "サーバー",
@@ -3733,6 +3836,33 @@
     },
     "title": "設定",
     "tool": {
+      "ocr": {
+        "common": {
+          "langs": "サポートされている言語"
+        },
+        "error": {
+          "not_system": "システムOCRはWindowsとMacOSのみをサポートしています"
+        },
+        "image": {
+          "error": {
+            "provider_not_found": "該提供者は存在しません"
+          },
+          "system": {
+            "no_need_configure": "MacOS は設定不要"
+          },
+          "title": "画像"
+        },
+        "image_provider": "OCRサービスプロバイダー",
+        "system": {
+          "win": {
+            "langs_tooltip": "Windows が提供するサービスに依存しており、関連する言語をサポートするには、システムで言語パックをダウンロードする必要があります。"
+          }
+        },
+        "tesseract": {
+          "langs_tooltip": "ドキュメントを読んで、どのカスタム言語がサポートされているかを確認してください。"
+        },
+        "title": "OCRサービス"
+      },
       "preprocess": {
         "provider": "プレプロセスプロバイダー",
         "provider_placeholder": "前処理プロバイダーを選択してください",
@@ -3948,7 +4078,7 @@
         },
         "label": "自動検出方法",
         "llm": {
-          "tip": "翻訳モデルを使用して言語検出を行うと、少量のトークンを消費します。（QwenMTは言語検出をサポートしておらず、自動的にデフォルトのアシスタントモデルにフォールバックします）"
+          "tip": "高速モデルを使用して言語検出を行い、少量のトークンを消費します。"
         },
         "placeholder": "自動検出方法を選択してください",
         "tip": "入力言語を自動検出する際に使用する方法"
@@ -3959,9 +4089,11 @@
     },
     "empty": "翻訳内容が空です",
     "error": {
+      "chat_qwen_mt": "Qwen MT モデルは対話で使用できません。翻訳ページに移動してください",
       "detect": {
         "qwen_mt": "QwenMTモデルは言語検出に使用できません",
-        "unknown": "検出された言語は不明です"
+        "unknown": "検出された言語は不明です",
+        "update_setting": "設定に失敗しました"
       },
       "empty": "翻訳結果が空の内容です",
       "failed": "翻訳に失敗しました",
@@ -3973,18 +4105,35 @@
     "exchange": {
       "label": "入力言語と出力言語を入れ替える"
     },
+    "files": {
+      "drag_text": "ここにドラッグ＆ドロップしてください",
+      "error": {
+        "check_type": "ファイルタイプの確認中にエラーが発生しました",
+        "multiple": "複数のファイルのアップロードは許可されていません",
+        "too_large": "ファイルが大きすぎます",
+        "unknown": "ファイルの内容を読み取るのに失敗しました"
+      },
+      "reading": "ファイルの内容を読み込んでいます..."
+    },
     "history": {
       "clear": "履歴をクリア",
       "clear_description": "履歴をクリアすると、すべての翻訳履歴が削除されます。続行しますか？",
-      "delete": "削除",
+      "delete": "翻訳履歴を削除する",
       "empty": "翻訳履歴がありません",
       "error": {
+        "delete": "削除に失敗しました",
         "save": "保存翻訳履歴に失敗しました"
+      },
+      "search": {
+        "placeholder": "翻訳履歴を検索する"
       },
       "title": "翻訳履歴"
     },
+    "info": {
+      "aborted": "翻訳中止"
+    },
     "input": {
-      "placeholder": "翻訳するテキストを入力"
+      "placeholder": "テキスト、ファイル、画像（OCR対応）を貼り付けたりドラッグアンドドロップしたりできます"
     },
     "language": {
       "not_pair": "ソース言語が設定された言語と異なります",

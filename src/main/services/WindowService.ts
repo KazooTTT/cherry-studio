@@ -5,6 +5,7 @@ import { is } from '@electron-toolkit/utils'
 import { loggerService } from '@logger'
 import { isDev, isLinux, isMac, isWin } from '@main/constant'
 import { getFilesDir } from '@main/utils/file'
+import { MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH } from '@shared/config/constant'
 import { IpcChannel } from '@shared/IpcChannel'
 import { app, BrowserWindow, nativeTheme, screen, shell } from 'electron'
 import windowStateKeeper from 'electron-window-state'
@@ -47,8 +48,8 @@ export class WindowService {
     }
 
     const mainWindowState = windowStateKeeper({
-      defaultWidth: 960,
-      defaultHeight: 600,
+      defaultWidth: MIN_WINDOW_WIDTH,
+      defaultHeight: MIN_WINDOW_HEIGHT,
       fullScreen: false,
       maximize: false
     })
@@ -58,8 +59,8 @@ export class WindowService {
       y: mainWindowState.y,
       width: mainWindowState.width,
       height: mainWindowState.height,
-      minWidth: 960,
-      minHeight: 600,
+      minWidth: MIN_WINDOW_WIDTH,
+      minHeight: MIN_WINDOW_HEIGHT,
       show: false,
       autoHideMenuBar: true,
       transparent: false,
@@ -555,9 +556,9 @@ export class WindowService {
 
       // [Windows] hacky fix
       // the window is minimized only when in Windows platform
-      // because it's a workround for Windows, see `hideMiniWindow()`
+      // because it's a workaround for Windows, see `hideMiniWindow()`
       if (this.miniWindow?.isMinimized()) {
-        // don't let the window being seen before we finish adusting the position across screens
+        // don't let the window being seen before we finish adjusting the position across screens
         this.miniWindow?.setOpacity(0)
         // DO NOT use `restore()` here, Electron has the bug with screens of different scale factor
         // We have to use `show()` here, then set the position and bounds

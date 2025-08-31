@@ -12,14 +12,13 @@ export type NotesSortType =
  */
 export interface NotesTreeNode {
   id: string
-  name: string
+  name: string // 不包含扩展名
   type: 'folder' | 'file'
-  treePath?: string // 对于外部文件，使用相对路径作为treePath
+  treePath: string // 相对路径
+  externalPath: string // 绝对路径
   children?: NotesTreeNode[]
-  is_starred?: boolean
+  isStarred?: boolean
   expanded?: boolean
   createdAt: string
   updatedAt: string
-  isExternal?: boolean
-  externalPath?: string
 }

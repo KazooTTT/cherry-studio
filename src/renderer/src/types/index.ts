@@ -5,9 +5,12 @@ import type { CSSProperties } from 'react'
 import * as z from 'zod/v4'
 
 export * from './file'
+export * from './note'
 
 import type { FileMetadata } from './file'
 import type { Message } from './newMessage'
+
+export * from './ocr'
 
 export type Assistant = {
   id: string
@@ -33,10 +36,19 @@ export type Assistant = {
   regularPhrases?: QuickPhrase[] // Added for regular phrase
   tags?: string[] // 助手标签
   enableMemory?: boolean
+  // for translate. 更好的做法是定义base assistant，把 Assistant 作为多种不同定义 assistant 的联合类型，但重构代价太大
+  content?: string
+  targetLanguage?: TranslateLanguage
 }
 
 export type TranslateAssistant = Assistant & {
-  targetLanguage?: TranslateLanguage
+  model: Model
+  content: string
+  targetLanguage: TranslateLanguage
+}
+
+export const isTranslateAssistant = (assistant: Assistant): assistant is TranslateAssistant => {
+  return (assistant.model && assistant.targetLanguage && typeof assistant.content === 'string') !== undefined
 }
 
 export type AssistantsSortType = 'tags' | 'list'
@@ -65,7 +77,8 @@ const ThinkModelTypes = [
   'doubao_no_auto',
   'hunyuan',
   'zhipu',
-  'perplexity'
+  'perplexity',
+  'deepseek_hybrid'
 ] as const
 
 export type ReasoningEffortOption = NonNullable<OpenAI.ReasoningEffort> | 'auto'
@@ -99,6 +112,13 @@ export type AssistantSettings = {
   defaultModel?: Model
   customParameters?: AssistantSettingCustomParameters[]
   reasoning_effort?: ReasoningEffortOption
+  /** 保留上一次使用思考模型时的 reasoning effort, 在从非思考模型切换到思考模型时恢复.
+   *
+   * TODO: 目前 reasoning_effort === undefined 有两个语义，有的场景是显式关闭思考，有的场景是不传参。
+   * 未来应该重构思考控制，将启用/关闭思考和思考选项分离，这样就不用依赖 cache 了。
+   *
+   */
+  reasoning_effort_cache?: ReasoningEffortOption
   qwenThinkMode?: boolean
   toolUseMode: 'function' | 'prompt'
 }
@@ -240,6 +260,7 @@ export type Provider = {
 }
 
 export const SystemProviderIds = {
+  cherryin: 'cherryin',
   silicon: 'silicon',
   aihubmix: 'aihubmix',
   ocoolai: 'ocoolai',
@@ -328,6 +349,8 @@ export type ProviderType =
 
 export type ModelType = 'text' | 'vision' | 'embedding' | 'reasoning' | 'function_calling' | 'web_search' | 'rerank'
 
+export type ModelTag = Exclude<ModelType, 'text'> | 'free'
+
 export type EndpointType = 'openai' | 'openai-response' | 'anthropic' | 'gemini' | 'image-generation' | 'jina-rerank'
 
 export type ModelPricing = {
@@ -373,7 +396,7 @@ export type PaintingParams = {
   files: FileMetadata[]
 }
 
-export type PaintingProvider = 'aihubmix' | 'silicon' | 'dmxapi' | 'new-api'
+export type PaintingProvider = 'zhipu' | 'aihubmix' | 'silicon' | 'dmxapi' | 'new-api'
 
 export interface Painting extends PaintingParams {
   model?: string
@@ -479,13 +502,20 @@ export type PaintingAction = Partial<
   PaintingParams
 
 export interface PaintingsState {
-  paintings: Painting[]
-  generate: Partial<GeneratePainting> & PaintingParams[]
-  remix: Partial<RemixPainting> & PaintingParams[]
-  edit: Partial<EditPainting> & PaintingParams[]
-  upscale: Partial<ScalePainting> & PaintingParams[]
-  DMXAPIPaintings: DmxapiPainting[]
-  tokenFluxPaintings: TokenFluxPainting[]
+  // SiliconFlow
+  siliconflow_paintings: Painting[]
+  // DMXAPI
+  dmxapi_paintings: DmxapiPainting[]
+  // TokenFlux
+  tokenflux_paintings: TokenFluxPainting[]
+  // Zhipu
+  zhipu_paintings: Painting[]
+  // Aihubmix
+  aihubmix_image_generate: Partial<GeneratePainting> & PaintingParams[]
+  aihubmix_image_remix: Partial<RemixPainting> & PaintingParams[]
+  aihubmix_image_edit: Partial<EditPainting> & PaintingParams[]
+  aihubmix_image_upscale: Partial<ScalePainting> & PaintingParams[]
+  // OpenAI
   openai_image_generate: Partial<GeneratePainting> & PaintingParams[]
   openai_image_edit: Partial<EditPainting> & PaintingParams[]
 }
@@ -646,6 +676,7 @@ export type GenerateImageParams = {
   signal?: AbortSignal
   promptEnhancement?: boolean
   personGeneration?: PersonGeneration
+  quality?: string
 }
 
 export type GenerateImageResponse = {
@@ -654,6 +685,7 @@ export type GenerateImageResponse = {
 }
 
 // 为了支持自定义语言，设置为string别名
+/** zh-cn, en-us, etc. */
 export type TranslateLanguageCode = string
 
 // langCode应当能够唯一确认一种语言
@@ -671,6 +703,8 @@ export interface TranslateHistory {
   sourceLanguage: TranslateLanguageCode
   targetLanguage: TranslateLanguageCode
   createdAt: string
+  /** 收藏状态 */
+  star?: boolean
 }
 
 export type CustomTranslateLanguage = {
@@ -700,6 +734,7 @@ export type SidebarIcon =
   | 'minapp'
   | 'knowledge'
   | 'files'
+  | 'code_tools'
   | 'notes'
 
 export type ExternalToolResult = {
@@ -711,6 +746,7 @@ export type ExternalToolResult = {
 }
 
 export const WebSearchProviderIds = {
+  zhipu: 'zhipu',
   tavily: 'tavily',
   searxng: 'searxng',
   exa: 'exa',
@@ -838,6 +874,34 @@ export interface MCPServer {
   dxtVersion?: string // Version of the DXT package
   dxtPath?: string // Path where the DXT package was extracted
   reference?: string // Reference link for the server, e.g., documentation or homepage
+}
+
+export type BuiltinMCPServer = MCPServer & {
+  type: 'inMemory'
+  name: BuiltinMCPServerName
+}
+
+export const isBuiltinMCPServer = (server: MCPServer): server is BuiltinMCPServer => {
+  return server.type === 'inMemory' && isBuiltinMCPServerName(server.name)
+}
+
+export const BuiltinMCPServerNames = {
+  mcpAutoInstall: '@cherry/mcp-auto-install',
+  memory: '@cherry/memory',
+  sequentialThinking: '@cherry/sequentialthinking',
+  braveSearch: '@cherry/brave-search',
+  fetch: '@cherry/fetch',
+  filesystem: '@cherry/filesystem',
+  difyKnowledge: '@cherry/dify-knowledge',
+  python: '@cherry/python'
+} as const
+
+export type BuiltinMCPServerName = (typeof BuiltinMCPServerNames)[keyof typeof BuiltinMCPServerNames]
+
+export const BuiltinMCPServerNamesArray = Object.values(BuiltinMCPServerNames)
+
+export const isBuiltinMCPServerName = (name: string): name is BuiltinMCPServerName => {
+  return BuiltinMCPServerNamesArray.some((n) => n === name)
 }
 
 export interface MCPToolInputSchema {
@@ -1121,7 +1185,51 @@ export interface MemoryListOptions extends MemoryEntity {
 }
 
 export interface MemoryDeleteAllOptions extends MemoryEntity {}
+
+export type EditorView = 'preview' | 'source' | 'read' // 实时,源码,预览
 // ========================================================================
+
+/**
+ * 获取对象的所有键名，并保持类型安全
+ * @param obj - 要获取键名的对象
+ * @returns 对象的所有键名数组，类型为对象键名的联合类型
+ * @example
+ * ```ts
+ * const obj = { foo: 1, bar: 'hello' };
+ * const keys = objectKeys(obj); // ['foo', 'bar']
+ * ```
+ */
+export function objectKeys<T extends object>(obj: T): (keyof T)[] {
+  return Object.keys(obj) as (keyof T)[]
+}
+
+/**
+ * 将对象转换为键值对数组，保持类型安全
+ * @template T - 对象类型
+ * @param obj - 要转换的对象
+ * @returns 键值对数组，每个元素是一个包含键和值的元组
+ * @example
+ * const obj = { name: 'John', age: 30 };
+ * const entries = objectEntries(obj); // [['name', 'John'], ['age', 30]]
+ */
+export function objectEntries<T extends object>(obj: T): [keyof T, T[keyof T]][] {
+  return Object.entries(obj) as [keyof T, T[keyof T]][]
+}
+
+/**
+ * 将对象转换为键值对数组，提供更严格的类型检查
+ * @template T - 对象类型，键必须是string、number或symbol，值可以是任意类型
+ * @param obj - 要转换的对象
+ * @returns 键值对数组，每个元素是一个包含键和值的元组，类型完全对应原对象的键值类型
+ * @example
+ * const obj = { name: 'John', age: 30 };
+ * const entries = objectEntriesStrict(obj); // [['name', string], ['age', number]]
+ */
+export function objectEntriesStrict<T extends Record<string | number | symbol, unknown>>(
+  obj: T
+): { [K in keyof T]: [K, T[K]] }[keyof T][] {
+  return Object.entries(obj) as { [K in keyof T]: [K, T[K]] }[keyof T][]
+}
 
 /**
  * 表示一个对象类型，该对象至少包含类型T中指定的所有键，这些键的值类型为U
@@ -1138,4 +1246,14 @@ export type AtLeast<T extends string, U> = {
   [K in T]: U
 } & {
   [key: string]: U
+}
+
+export type HexColor = string
+
+/**
+ * 检查字符串是否为有效的十六进制颜色值
+ * @param value 待检查的字符串
+ */
+export const isHexColor = (value: string): value is HexColor => {
+  return /^#([0-9A-F]{3}){1,2}$/i.test(value)
 }

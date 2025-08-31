@@ -1,14 +1,13 @@
-import { CheckOutlined } from '@ant-design/icons'
 import { loggerService } from '@logger'
 import { DeleteIcon } from '@renderer/components/Icons'
 import SaveToKnowledgePopup from '@renderer/components/Popups/SaveToKnowledgePopup'
 import Scrollbar from '@renderer/components/Scrollbar'
 import { useKnowledgeBases } from '@renderer/hooks/useKnowledge'
+import { useActiveNode } from '@renderer/hooks/useNotesQuery'
+import NotesSidebarHeader from '@renderer/pages/notes/NotesSidebarHeader'
 import { NotesSortType, NotesTreeNode } from '@renderer/types/note'
-import { Dropdown, Input, MenuProps, Tooltip } from 'antd'
+import { Dropdown, Input, MenuProps } from 'antd'
 import {
-  ArrowLeft,
-  ArrowUpNarrowWide,
   ChevronDown,
   ChevronRight,
   Edit3,
@@ -16,10 +15,7 @@ import {
   FilePlus,
   FileSearch,
   Folder,
-  FolderInput,
   FolderOpen,
-  FolderPlus,
-  Search,
   Star,
   StarOff
 } from 'lucide-react'
@@ -38,8 +34,8 @@ interface NotesSidebarProps {
   onMoveNode: (sourceNodeId: string, targetNodeId: string, position: 'before' | 'after' | 'inside') => void
   onSortNodes: (sortType: NotesSortType) => void
   onUploadFiles: (files: File[]) => void
-  activeNodeId?: string
   notesTree: NotesTreeNode[]
+  selectedFolderId?: string | null
 }
 
 const logger = loggerService.withContext('NotesSidebar')
@@ -55,11 +51,12 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   onMoveNode,
   onSortNodes,
   onUploadFiles,
-  activeNodeId,
-  notesTree
+  notesTree,
+  selectedFolderId
 }) => {
   const { t } = useTranslation()
   const { bases } = useKnowledgeBases()
+  const { activeNode } = useActiveNode(notesTree)
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
   const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null)
@@ -71,11 +68,6 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
   const [isDragOverSidebar, setIsDragOverSidebar] = useState(false)
   const [sortType, setSortType] = useState<NotesSortType>('sort_a2z')
   const dragNodeRef = useRef<HTMLDivElement | null>(null)
-
-  // FIXME
-  const handleOpenFolder = useCallback(() => {
-    onCreateFolder(t('notes.untitled_folder'))
-  }, [onCreateFolder, t])
 
   const handleCreateFolder = useCallback(() => {
     onCreateFolder(t('notes.untitled_folder'))
@@ -248,7 +240,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
             result.push(node)
           }
         } else if (isShowStarred) {
-          if (node.type === 'file' && node.is_starred) {
+          if (node.type === 'file' && node.isStarred) {
             result.push(node)
           }
         }
@@ -277,9 +269,9 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
       if (node.type !== 'folder') {
         baseMenuItems.push(
           {
-            label: node.is_starred ? t('notes.unstar') : t('notes.star'),
+            label: node.isStarred ? t('notes.unstar') : t('notes.star'),
             key: 'star',
-            icon: node.is_starred ? <StarOff size={14} /> : <Star size={14} />,
+            icon: node.isStarred ? <StarOff size={14} /> : <Star size={14} />,
             onClick: () => {
               onToggleStar(node.id)
             }
@@ -314,7 +306,7 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
 
   const renderTreeNode = useCallback(
     (node: NotesTreeNode, depth: number = 0) => {
-      const isActive = node.id === activeNodeId
+      const isActive = node.id === activeNode?.id || (node.type === 'folder' && node.id === selectedFolderId)
       const isEditing = editingNodeId === node.id
       const hasChildren = node.children && node.children.length > 0
       const isDragging = draggedNodeId === node.id
@@ -396,7 +388,8 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
       )
     },
     [
-      activeNodeId,
+      activeNode,
+      selectedFolderId,
       editingNodeId,
       editingName,
       draggedNodeId,
@@ -430,34 +423,6 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
     [onUploadFiles]
   )
 
-  const sortMenuItems: Required<MenuProps>['items'] = [
-    { label: t('notes.sort_a2z'), key: 'sort_a2z' },
-    { label: t('notes.sort_z2a'), key: 'sort_z2a' },
-    { type: 'divider' },
-    { label: t('notes.sort_updated_desc'), key: 'sort_updated_desc' },
-    { label: t('notes.sort_updated_asc'), key: 'sort_updated_asc' },
-    { type: 'divider' },
-    { label: t('notes.sort_created_desc'), key: 'sort_created_desc' },
-    { label: t('notes.sort_created_asc'), key: 'sort_created_asc' }
-  ]
-
-  const sortMenuWithCheck = sortMenuItems
-    .map((item) => {
-      if (item) {
-        return {
-          ...item,
-          icon: sortType === item.key ? <CheckOutlined /> : undefined,
-          key: item.key
-        }
-      }
-      return null
-    })
-    .filter(Boolean) as MenuProps['items']
-
-  const handleSortMenuClick: MenuProps['onClick'] = (e) => {
-    handleSelectSortType(e.key as NotesSortType)
-  }
-
   return (
     <SidebarContainer
       onDragOver={(e) => {
@@ -472,80 +437,18 @@ const NotesSidebar: FC<NotesSidebarProps> = ({
           handleDropFiles(e)
         }
       }}>
-      <SidebarHeader isStarView={isShowStarred} isSearchView={isShowSearch}>
-        <HeaderActions>
-          {!isShowStarred && !isShowSearch && (
-            <>
-              <Tooltip title={t('notes.open_folder')} mouseEnterDelay={0.8}>
-                <ActionButton onClick={handleOpenFolder}>
-                  <FolderInput size={18} />
-                </ActionButton>
-              </Tooltip>
-
-              <Tooltip title={t('notes.new_folder')} mouseEnterDelay={0.8}>
-                <ActionButton onClick={handleCreateFolder}>
-                  <FolderPlus size={18} />
-                </ActionButton>
-              </Tooltip>
-
-              <Tooltip title={t('notes.new_note')} mouseEnterDelay={0.8}>
-                <ActionButton onClick={handleCreateNote}>
-                  <FilePlus size={18} />
-                </ActionButton>
-              </Tooltip>
-
-              <Dropdown
-                menu={{
-                  items: sortMenuWithCheck,
-                  onClick: handleSortMenuClick
-                }}
-                trigger={['click']}>
-                <Tooltip title={t('agents.sorting.title')} mouseEnterDelay={0.8}>
-                  <ActionButton>
-                    <ArrowUpNarrowWide size={18} />
-                  </ActionButton>
-                </Tooltip>
-              </Dropdown>
-
-              <Tooltip title={t('notes.show_starred')} mouseEnterDelay={0.8}>
-                <ActionButton onClick={handleToggleStarredView}>
-                  <Star size={18} />
-                </ActionButton>
-              </Tooltip>
-
-              <Tooltip title={t('common.search')} mouseEnterDelay={0.8}>
-                <ActionButton onClick={handleToggleSearchView}>
-                  <Search size={18} />
-                </ActionButton>
-              </Tooltip>
-            </>
-          )}
-          {isShowStarred && (
-            <Tooltip title={t('common.back')} mouseEnterDelay={0.8}>
-              <ActionButton onClick={handleToggleStarredView}>
-                <ArrowLeft size={18} />
-              </ActionButton>
-            </Tooltip>
-          )}
-          {isShowSearch && (
-            <>
-              <Tooltip title={t('common.back')} mouseEnterDelay={0.8}>
-                <ActionButton onClick={handleToggleSearchView}>
-                  <ArrowLeft size={18} />
-                </ActionButton>
-              </Tooltip>
-              <SearchInput
-                placeholder={t('knowledge.search_placeholder')}
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                allowClear
-                size="small"
-                autoFocus
-              />
-            </>
-          )}
-        </HeaderActions>
-      </SidebarHeader>
+      <NotesSidebarHeader
+        isShowStarred={isShowStarred}
+        isShowSearch={isShowSearch}
+        searchKeyword={searchKeyword}
+        sortType={sortType}
+        onCreateFolder={handleCreateFolder}
+        onCreateNote={handleCreateNote}
+        onToggleStarredView={handleToggleStarredView}
+        onToggleSearchView={handleToggleSearchView}
+        onSetSearchKeyword={setSearchKeyword}
+        onSelectSortType={handleSelectSortType}
+      />
 
       <NotesTreeContainer>
         <StyledScrollbar>
@@ -580,30 +483,6 @@ const SidebarContainer = styled.div`
   display: flex;
   flex-direction: column;
   position: relative;
-`
-
-const SidebarHeader = styled.div<{ isStarView?: boolean; isSearchView?: boolean }>`
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--color-border);
-  display: flex;
-  justify-content: ${(props) => (props.isStarView || props.isSearchView ? 'flex-start' : 'center')};
-`
-
-const SearchInput = styled(Input)`
-  flex: 1;
-  margin-left: 8px;
-  max-width: 180px;
-
-  .ant-input {
-    font-size: 13px;
-    border-radius: 4px;
-  }
-`
-
-const HeaderActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
 `
 
 const NotesTreeContainer = styled.div`
@@ -747,22 +626,6 @@ const EditInput = styled(Input)`
     font-size: 13px;
     padding: 2px 6px;
     border: 1px solid var(--color-primary);
-  }
-`
-
-const ActionButton = styled.div`
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 3px;
-  color: var(--color-text-2);
-  cursor: pointer;
-
-  &:hover {
-    background-color: var(--color-background-soft);
-    color: var(--color-text);
   }
 `
 

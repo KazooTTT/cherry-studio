@@ -140,11 +140,19 @@ export enum IpcChannel {
   File_Upload = 'file:upload',
   File_Clear = 'file:clear',
   File_Read = 'file:read',
+  File_ReadExternal = 'file:readExternal',
   File_Delete = 'file:delete',
   File_DeleteDir = 'file:deleteDir',
+  File_DeleteExternalFile = 'file:deleteExternalFile',
+  File_DeleteExternalDir = 'file:deleteExternalDir',
+  File_Move = 'file:move',
+  File_MoveDir = 'file:moveDir',
+  File_Rename = 'file:rename',
+  File_RenameDir = 'file:renameDir',
   File_Get = 'file:get',
   File_SelectFolder = 'file:selectFolder',
   File_CreateTempFile = 'file:createTempFile',
+  File_Mkdir = 'file:mkdir',
   File_Write = 'file:write',
   File_WriteWithId = 'file:writeWithId',
   File_SaveImage = 'file:saveImage',
@@ -157,8 +165,14 @@ export enum IpcChannel {
   File_Base64File = 'file:base64File',
   File_GetPdfInfo = 'file:getPdfInfo',
   Fs_Read = 'fs:read',
+  Fs_ReadText = 'fs:readText',
   File_OpenWithRelativePath = 'file:openWithRelativePath',
+  File_IsTextFile = 'file:isTextFile',
   File_GetDirectoryStructure = 'file:getDirectoryStructure',
+  File_CheckFileName = 'file:checkFileName',
+  File_ValidateNotesDirectory = 'file:validateNotesDirectory',
+  File_StartWatcher = 'file:startWatcher',
+  File_StopWatcher = 'file:stopWatcher',
 
   // file service
   FileService_Upload = 'file-service:upload',
@@ -282,5 +296,11 @@ export enum IpcChannel {
   TRACE_ADD_STREAM_MESSAGE = 'trace:addStreamMessage',
 
   // CodeTools
-  CodeTools_Run = 'code-tools:run'
+  CodeTools_Run = 'code-tools:run',
+
+  // OCR
+  OCR_ocr = 'ocr:ocr',
+
+  // Cherryin
+  Cherryin_GetSignature = 'cherryin:get-signature'
 }

@@ -1,5 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { isMac } from '@renderer/config/constant'
 import { TRANSLATE_PROMPT } from '@renderer/config/prompts'
+import { DEFAULT_SIDEBAR_ICONS } from '@renderer/config/sidebar'
 import {
   ApiServerConfig,
   AssistantsSortType,
@@ -10,6 +12,7 @@ import {
   OpenAISummaryText,
   PaintingProvider,
   S3Config,
+  SidebarIcon,
   ThemeMode,
   TranslateLanguageCode
 } from '@renderer/types'
@@ -21,27 +24,8 @@ import { RemoteSyncState } from './backup'
 
 export type SendMessageShortcut = 'Enter' | 'Shift+Enter' | 'Ctrl+Enter' | 'Command+Enter' | 'Alt+Enter'
 
-export type SidebarIcon =
-  | 'assistants'
-  | 'agents'
-  | 'paintings'
-  | 'translate'
-  | 'minapp'
-  | 'knowledge'
-  | 'files'
-  | 'code_tools'
-  | 'notes'
-
-export const DEFAULT_SIDEBAR_ICONS: SidebarIcon[] = [
-  'assistants',
-  'agents',
-  'paintings',
-  'translate',
-  'minapp',
-  'knowledge',
-  'files',
-  'notes'
-]
+// Re-export for backward compatibility
+export { DEFAULT_SIDEBAR_ICONS }
 
 export interface NutstoreSyncRuntime extends RemoteSyncState {}
 
@@ -260,7 +244,7 @@ export const initialState: SettingsState = {
   userTheme: {
     colorPrimary: '#00b96b'
   },
-  windowStyle: 'opaque',
+  windowStyle: isMac ? 'transparent' : 'opaque',
   fontSize: 14,
   topicPosition: 'left',
   showTopicTime: false,
@@ -396,7 +380,7 @@ export const initialState: SettingsState = {
   localBackupSyncInterval: 0,
   localBackupMaxBackups: 0,
   localBackupSkipBackupFile: false,
-  defaultPaintingProvider: 'aihubmix',
+  defaultPaintingProvider: 'zhipu',
   s3: {
     endpoint: '',
     region: '',

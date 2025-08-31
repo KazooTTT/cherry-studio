@@ -240,6 +240,7 @@
       "compressing": "壓縮檔案...",
       "copying_files": "複製檔案... {{progress}}%",
       "preparing": "準備備份...",
+      "preparing_compression": "準備壓縮...",
       "title": "備份進度",
       "writing_data": "寫入資料..."
     },
@@ -322,6 +323,7 @@
       "expand": "展開",
       "file_error": "檔案處理錯誤",
       "file_not_supported": "模型不支援此檔案類型",
+      "file_not_supported_count": "{{count}} 個檔案不被支援",
       "generate_image": "生成圖片",
       "generate_image_not_supported": "模型不支援生成圖片",
       "knowledge_base": "知識庫",
@@ -389,8 +391,10 @@
         "parse_tool_call": "無法轉換為有效的工具呼叫格式：{{toolCall}}"
       },
       "warning": {
+        "gemini_web_search": "Gemini 不支援同時使用原生網路搜尋工具與函數呼叫",
         "multiple_tools": "存在多個匹配的MCP工具，已選擇 {{tool}}",
-        "no_tool": "未匹配到所需的MCP工具 {{tool}}"
+        "no_tool": "未匹配到所需的MCP工具 {{tool}}",
+        "url_context": "Gemini 不支援同時使用網頁內容與函數呼叫"
       }
     },
     "message": {
@@ -583,7 +587,8 @@
       },
       "edit": {
         "placeholder": "輸入新名稱",
-        "title": "編輯名稱"
+        "title": "編輯名稱",
+        "title_tip": "提示：雙擊話題名可以直接就地重新命名"
       },
       "export": {
         "image": "匯出為圖片",
@@ -746,9 +751,13 @@
     "enabled": "已啟用",
     "error": "錯誤",
     "expand": "展開",
+    "file": {
+      "not_supported": "不支持的文件類型 {{type}}"
+    },
     "footnote": "引用內容",
     "footnotes": "引用",
     "fullscreen": "已進入全螢幕模式，按 F11 結束",
+    "go_to_settings": "前往設定",
     "i_know": "我知道了",
     "inspect": "檢查",
     "knowledge_base": "知識庫",
@@ -783,9 +792,11 @@
         "label": "按拼音排序"
       }
     },
+    "stop": "停止",
     "success": "成功",
     "swap": "交換",
     "topics": "話題",
+    "upload_files": "上傳檔案",
     "warning": "警告",
     "you": "您"
   },
@@ -804,10 +815,20 @@
     "backup": {
       "file_format": "備份檔案格式錯誤"
     },
+    "boundary": {
+      "default": {
+        "devtools": "打開除錯面板",
+        "message": "似乎出現了一些問題...",
+        "reload": "重新載入"
+      }
+    },
     "chat": {
       "chunk": {
         "non_json": "返回了無效的資料格式"
       },
+      "insufficient_balance": "請前往 <provider>{{provider}}</provider> 充值",
+      "no_api_key": "您未配置 API 密钥，请前往 <provider>{{provider}}</provider> 获取API密钥",
+      "quota_exceeded": "您今日{{quota}}免费配额已用尽，请前往 <provider>{{provider}}</provider> 获取API密钥，配置API密钥后继续使用",
       "response": "出現錯誤。如果尚未設定 API 金鑰，請前往設定 > 模型提供者中設定金鑰"
     },
     "http": {
@@ -852,6 +873,8 @@
   "files": {
     "actions": "操作",
     "all": "所有檔案",
+    "batch_delete": "批次刪除",
+    "batch_operation": "全選",
     "count": "個檔案",
     "created_at": "建立時間",
     "delete": {
@@ -884,6 +907,9 @@
   },
   "history": {
     "continue_chat": "繼續聊天",
+    "error": {
+      "topic_not_found": "話題不存在"
+    },
     "locate": {
       "message": "定位到訊息"
     },
@@ -897,6 +923,11 @@
     "title": "搜尋話題"
   },
   "html_artifacts": {
+    "capture": {
+      "label": "捕獲頁面",
+      "to_clipboard": "複製到剪貼簿",
+      "to_file": "保存為圖片"
+    },
     "code": "程式碼",
     "empty_preview": "無內容可展示",
     "generating": "生成中",
@@ -1510,6 +1541,10 @@
     "embedding_model": "嵌入模型",
     "embedding_model_tooltip": "在設定 -> 模型服務中點選管理按鈕新增",
     "enable_tool_use": "工具調用",
+    "filter": {
+      "by_tag": "按標籤篩選",
+      "selected": "已選標籤"
+    },
     "function_calling": "函數調用",
     "no_matches": "無可用模型",
     "parameter_name": "參數名稱",
@@ -1536,7 +1571,10 @@
     "rerank_model_not_support_provider": "目前，重新排序模型不支援此提供者（{{provider}}）",
     "rerank_model_support_provider": "目前重排序模型僅支持部分服務商 ({{provider}})",
     "rerank_model_tooltip": "在設定 -> 模型服務中點擊管理按鈕添加",
-    "search": "搜尋模型...",
+    "search": {
+      "placeholder": "搜尋模型...",
+      "tooltip": "搜尋模型"
+    },
     "stream_output": "串流輸出",
     "type": {
       "embedding": "嵌入",
@@ -1554,6 +1592,9 @@
     "expand": "伸縮對話框",
     "hide_sidebar": "隱藏側邊欄",
     "show_sidebar": "顯示側邊欄"
+  },
+  "navigate": {
+    "provider_settings": "跳轉到服務商設置界面"
   },
   "notes": {
     "characters": "字符",
@@ -1575,18 +1616,50 @@
     "new_note": "新建筆記",
     "no_content_to_copy": "沒有內容可複制",
     "only_markdown": "僅支援 Markdown 格式",
+    "open_folder": "打開外部文件夾",
     "rename": "重命名",
     "save": "儲存到筆記",
     "settings": {
-      "defaultFont": "默認字體",
-      "editorMode": "編輯模式",
-      "fontFamily": "字體系列",
-      "fullWidth": "全寬模式",
-      "previewMode": "預覽模式",
-      "serifFont": "襯線字體",
-      "sourceMode": "源碼模式",
-      "title": "更多選項",
-      "viewMode": "視圖模式"
+      "data": {
+        "apply": "應用",
+        "apply_path_failed": "應用路徑失敗",
+        "current_work_directory": "當前工作目錄",
+        "invalid_directory": "選擇的目錄無效或無權限",
+        "path_required": "請選擇工作目錄",
+        "path_updated": "工作目錄更新成功",
+        "reset_failed": "重置失敗",
+        "reset_to_default": "重置為默認",
+        "select": "選擇",
+        "select_directory_failed": "選擇目錄失敗",
+        "title": "數據設置",
+        "work_directory_description": "工作目錄是存儲所有筆記文件的位置。\n更改工作目錄不會移動現有文件，請手動遷移文件。",
+        "work_directory_placeholder": "選擇筆記工作目錄"
+      },
+      "display": {
+        "compress_content": "縮減欄寬",
+        "compress_content_description": "開啟後將限制每行字數，使屏幕顯示的內容減少",
+        "default_font": "默認字體",
+        "font_title": "字體設置",
+        "serif_font": "襯線字體",
+        "title": "顯示"
+      },
+      "editor": {
+        "edit_mode": {
+          "description": "在編輯視圖下，新筆記默認採用的編輯模式",
+          "preview_mode": "實時預覽",
+          "source_mode": "源碼模式",
+          "title": "默認編輯視圖"
+        },
+        "title": "編輯器設置",
+        "view_mode": {
+          "description": "新筆記默認的視圖模式",
+          "edit_mode": "編輯模式",
+          "read_mode": "閱讀模式",
+          "title": "默認視圖"
+        },
+        "view_mode_description": "設置新標籤頁的默認視圖模式。"
+      },
+      "title": "更多選項"
     },
     "show_starred": "顯示收藏的筆記",
     "sort_a2z": "文件名（A-Z）",
@@ -1612,6 +1685,29 @@
       "success": "成功將 {{type}} 新增至知識庫"
     },
     "tip": "如果回應成功，則只針對超過30秒的訊息發出提醒"
+  },
+  "ocr": {
+    "builtin": {
+      "system": "系统 OCR"
+    },
+    "error": {
+      "provider": {
+        "cannot_remove_builtin": "不能刪除內建提供者",
+        "existing": "提供商已存在",
+        "not_found": "OCR 提供商不存在",
+        "update_failed": "更新配置失敗"
+      },
+      "unknown": "OCR過程發生錯誤"
+    },
+    "file": {
+      "not_supported": "不支持的文件類型 {{type}}"
+    },
+    "processing": "OCR 處理中...",
+    "warning": {
+      "provider": {
+        "fallback": "已回退到 {{name}}，這可能導致問題"
+      }
+    }
   },
   "ollama": {
     "keep_alive_time": {
@@ -1821,6 +1917,7 @@
     "baidu-cloud": "百度雲千帆",
     "burncloud": "BurnCloud",
     "cephalon": "Cephalon",
+    "cherryin": "CherryIN",
     "copilot": "GitHub Copilot",
     "dashscope": "阿里雲百鍊",
     "deepseek": "深度求索",
@@ -1866,7 +1963,7 @@
     "xirang": "天翼雲息壤",
     "yi": "零一萬物",
     "zhinao": "360 智腦",
-    "zhipu": "智譜 AI"
+    "zhipu": "智譜開放平台"
   },
   "restore": {
     "confirm": {
@@ -2935,6 +3032,7 @@
         "title": "自動更新"
       },
       "avatar": {
+        "builtin": "內置頭像",
         "reset": "重設頭像"
       },
       "backup": {
@@ -3108,7 +3206,8 @@
         "modelscope": "魔搭社區 MCP 伺服器",
         "official": "官方 MCP 伺服器集合",
         "pulsemcp": "Pulse MCP 伺服器",
-        "smithery": "Smithery MCP 工具"
+        "smithery": "Smithery MCP 工具",
+        "zhipu": "精選MCP，極速接入"
       },
       "name": "名稱",
       "newServer": "MCP 伺服器",
@@ -3153,6 +3252,10 @@
         "size": "大小",
         "text": "文字",
         "uri": "URI"
+      },
+      "search": {
+        "placeholder": "搜索 MCP 伺服器...",
+        "tooltip": "搜索 MCP 伺服器"
       },
       "searchNpx": "搜索 MCP",
       "serverPlural": "伺服器",
@@ -3389,11 +3492,11 @@
       "provider_key_add_failed_by_empty_data": "添加提供者 API 密鑰失敗，數據為空",
       "provider_key_add_failed_by_invalid_data": "添加提供者 API 密鑰失敗，數據格式錯誤",
       "provider_key_added": "成功為 {{provider}} 添加 API 密鑰",
-      "provider_key_already_exists": "{{provider}} 已存在相同API 密鑰, 不會重複添加",
+      "provider_key_already_exists": "{{provider}} 已存在相同API 密鑰，不會重複添加",
       "provider_key_confirm_title": "為{{provider}}添加 API 密鑰",
       "provider_key_no_change": "{{provider}} 的 API 密鑰沒有變化",
       "provider_key_overridden": "成功更新 {{provider}} 的 API 密鑰",
-      "provider_key_override_confirm": "{{provider}} 已存在相同 API 金鑰, 是否覆蓋？",
+      "provider_key_override_confirm": "{{provider}} 已存在相同 API 金鑰，是否覆蓋？",
       "provider_name": "提供者名稱",
       "quick_assistant_default_tag": "預設",
       "quick_assistant_model": "快捷助手模型",
@@ -3733,6 +3836,33 @@
     },
     "title": "設定",
     "tool": {
+      "ocr": {
+        "common": {
+          "langs": "支援的語言"
+        },
+        "error": {
+          "not_system": "系統 OCR 僅支援 Windows 與 MacOS"
+        },
+        "image": {
+          "error": {
+            "provider_not_found": "該提供商不存在"
+          },
+          "system": {
+            "no_need_configure": "MacOS 無需配置"
+          },
+          "title": "圖片"
+        },
+        "image_provider": "OCR 服務提供商",
+        "system": {
+          "win": {
+            "langs_tooltip": "依賴 Windows 提供服務，您需要在系統中下載語言包來支援相關語言。"
+          }
+        },
+        "tesseract": {
+          "langs_tooltip": "閱讀文件以了解哪些自訂語言受支援"
+        },
+        "title": "OCR 服務"
+      },
       "preprocess": {
         "provider": "文件處理供應商",
         "provider_placeholder": "選擇一個文件處理供應商",
@@ -3948,7 +4078,7 @@
         },
         "label": "自動檢測方法",
         "llm": {
-          "tip": "使用翻譯模型進行語言檢測，消耗少量token。（QwenMT不支持進行語言檢測，會自動回退到預設助手模型）"
+          "tip": "使用快速模型進行語言檢測，消耗少量token。"
         },
         "placeholder": "選擇自動偵測方法",
         "tip": "自動檢測輸入語言時使用的方法"
@@ -3959,9 +4089,11 @@
     },
     "empty": "翻譯內容為空",
     "error": {
+      "chat_qwen_mt": "Qwen MT 模型不可在对话中使用，請轉至翻譯頁面",
       "detect": {
         "qwen_mt": "QwenMT模型不能用於語言檢測",
-        "unknown": "檢測到未知語言"
+        "unknown": "檢測到未知語言",
+        "update_setting": "設定失敗"
       },
       "empty": "翻译结果为空内容",
       "failed": "翻譯失敗",
@@ -3973,18 +4105,35 @@
     "exchange": {
       "label": "交換源語言與目標語言"
     },
+    "files": {
+      "drag_text": "拖放到此处",
+      "error": {
+        "check_type": "檢查檔案類型時發生錯誤",
+        "multiple": "不允许上传多个文件",
+        "too_large": "文件過大",
+        "unknown": "读取文件内容失败"
+      },
+      "reading": "讀取檔案內容中..."
+    },
     "history": {
       "clear": "清空歷史",
       "clear_description": "清空歷史將刪除所有翻譯歷史記錄，是否繼續？",
-      "delete": "刪除",
+      "delete": "刪除翻譯歷史",
       "empty": "翻譯歷史為空",
       "error": {
+        "delete": "删除失败",
         "save": "保存翻譯歷史失敗"
+      },
+      "search": {
+        "placeholder": "搜索翻譯歷史"
       },
       "title": "翻譯歷史"
     },
+    "info": {
+      "aborted": "翻譯中止"
+    },
     "input": {
-      "placeholder": "輸入文字進行翻譯"
+      "placeholder": "可粘貼或拖入文字、檔案、圖片（支援OCR）"
     },
     "language": {
       "not_pair": "源語言與設定的語言不同",
