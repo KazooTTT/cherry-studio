@@ -3,17 +3,14 @@ import { HStack } from '@renderer/components/Layout'
 import Scrollbar from '@renderer/components/Scrollbar'
 import Selector from '@renderer/components/Selector'
 import { DEFAULT_CONTEXTCOUNT, DEFAULT_MAX_TOKENS, DEFAULT_TEMPERATURE } from '@renderer/config/constant'
-import {
-  isOpenAIModel,
-  isSupportedFlexServiceTier,
-  isSupportedReasoningEffortOpenAIModel
-} from '@renderer/config/models'
-import { translateLanguageOptions } from '@renderer/config/translate'
+import { isOpenAIModel } from '@renderer/config/models'
+import { UNKNOWN } from '@renderer/config/translate'
 import { useCodeStyle } from '@renderer/context/CodeStyleProvider'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useAssistant } from '@renderer/hooks/useAssistant'
 import { useProvider } from '@renderer/hooks/useProvider'
 import { useSettings } from '@renderer/hooks/useSettings'
+import useTranslate from '@renderer/hooks/useTranslate'
 import { SettingDivider, SettingRow, SettingRowTitle } from '@renderer/pages/settings'
 import AssistantSettingsPopup from '@renderer/pages/settings/AssistantSettings'
 import { CollapsibleSettingGroup } from '@renderer/pages/settings/SettingGroup'
@@ -25,12 +22,15 @@ import {
   setCodeCollapsible,
   setCodeEditor,
   setCodeExecution,
-  setCodePreview,
+  setCodeImageTools,
   setCodeShowLineNumbers,
+  setCodeViewer,
   setCodeWrappable,
-  setEnableBackspaceDeleteModel,
+  setConfirmDeleteMessage,
+  setConfirmRegenerateMessage,
   setEnableQuickPanelTriggers,
   setFontSize,
+  setMathEnableSingleDollar,
   setMathEngine,
   setMessageFont,
   setMessageNavigation,
@@ -40,6 +40,7 @@ import {
   setPasteLongTextThreshold,
   setRenderInputMessageAsMarkdown,
   setShowInputEstimatedTokens,
+  setShowMessageOutline,
   setShowPrompt,
   setShowTranslateConfirm,
   setThoughtAutoCollapse
@@ -73,7 +74,9 @@ const SettingsTab: FC<Props> = (props) => {
   const [enableMaxTokens, setEnableMaxTokens] = useState(assistant?.settings?.enableMaxTokens ?? false)
   const [maxTokens, setMaxTokens] = useState(assistant?.settings?.maxTokens ?? 0)
   const [fontSizeValue, setFontSizeValue] = useState(fontSize)
-  const [streamOutput, setStreamOutput] = useState(assistant?.settings?.streamOutput ?? true)
+  const [streamOutput, setStreamOutput] = useState(assistant?.settings?.streamOutput)
+  const { translateLanguages } = useTranslate()
+
   const { t } = useTranslation()
 
   const dispatch = useAppDispatch()
@@ -92,17 +95,21 @@ const SettingsTab: FC<Props> = (props) => {
     codeCollapsible,
     codeWrappable,
     codeEditor,
-    codePreview,
+    codeViewer,
+    codeImageTools,
     codeExecution,
     mathEngine,
+    mathEnableSingleDollar,
     autoTranslateWithSpace,
     pasteLongTextThreshold,
     multiModelMessageStyle,
     thoughtAutoCollapse,
     messageNavigation,
     enableQuickPanelTriggers,
-    enableBackspaceDeleteModel,
-    showTranslateConfirm
+    showTranslateConfirm,
+    showMessageOutline,
+    confirmDeleteMessage,
+    confirmRegenerateMessage
   } = useSettings()
 
   const onUpdateAssistantSettings = (settings: Partial<AssistantSettings>) => {
@@ -133,21 +140,21 @@ const SettingsTab: FC<Props> = (props) => {
         ? codeEditor.themeLight
         : codeEditor.themeDark
       : theme === ThemeMode.light
-        ? codePreview.themeLight
-        : codePreview.themeDark
+        ? codeViewer.themeLight
+        : codeViewer.themeDark
   }, [
     codeEditor.enabled,
     codeEditor.themeLight,
     codeEditor.themeDark,
     theme,
-    codePreview.themeLight,
-    codePreview.themeDark
+    codeViewer.themeLight,
+    codeViewer.themeDark
   ])
 
   const onCodeStyleChange = useCallback(
     (value: CodeStyleVarious) => {
       const field = theme === ThemeMode.light ? 'themeLight' : 'themeDark'
-      const action = codeEditor.enabled ? setCodeEditor : setCodePreview
+      const action = codeEditor.enabled ? setCodeEditor : setCodeViewer
       dispatch(action({ [field]: value }))
     },
     [dispatch, theme, codeEditor.enabled]
@@ -168,11 +175,6 @@ const SettingsTab: FC<Props> = (props) => {
   const model = assistant.model || getDefaultModel()
 
   const isOpenAI = isOpenAIModel(model)
-  const isOpenAIReasoning =
-    isSupportedReasoningEffortOpenAIModel(model) &&
-    !model.id.includes('o1-pro') &&
-    (provider.type === 'openai-response' || provider.id === 'aihubmix')
-  const isOpenAIFlexServiceTier = isSupportedFlexServiceTier(model)
 
   return (
     <Container className="settings-tab">
@@ -300,8 +302,8 @@ const SettingsTab: FC<Props> = (props) => {
       </CollapsibleSettingGroup>
       {isOpenAI && (
         <OpenAISettingsGroup
-          isOpenAIReasoning={isOpenAIReasoning}
-          isSupportedFlexServiceTier={isOpenAIFlexServiceTier}
+          model={model}
+          providerId={provider.id}
           SettingGroup={SettingGroup}
           SettingRowTitleSmall={SettingRowTitleSmall}
         />
@@ -333,6 +335,15 @@ const SettingsTab: FC<Props> = (props) => {
               size="small"
               checked={thoughtAutoCollapse}
               onChange={(checked) => dispatch(setThoughtAutoCollapse(checked))}
+            />
+          </SettingRow>
+          <SettingDivider />
+          <SettingRow>
+            <SettingRowTitleSmall>{t('settings.messages.show_message_outline')}</SettingRowTitleSmall>
+            <Switch
+              size="small"
+              checked={showMessageOutline}
+              onChange={(checked) => dispatch(setShowMessageOutline(checked))}
             />
           </SettingRow>
           <SettingDivider />
@@ -376,19 +387,6 @@ const SettingsTab: FC<Props> = (props) => {
           </SettingRow>
           <SettingDivider />
           <SettingRow>
-            <SettingRowTitleSmall>{t('settings.messages.math_engine.label')}</SettingRowTitleSmall>
-            <Selector
-              value={mathEngine}
-              onChange={(value) => dispatch(setMathEngine(value as MathEngine))}
-              options={[
-                { value: 'KaTeX', label: 'KaTeX' },
-                { value: 'MathJax', label: 'MathJax' },
-                { value: 'none', label: t('settings.messages.math_engine.none') }
-              ]}
-            />
-          </SettingRow>
-          <SettingDivider />
-          <SettingRow>
             <SettingRowTitleSmall>{t('settings.font_size.title')}</SettingRowTitleSmall>
           </SettingRow>
           <Row align="middle" gutter={10}>
@@ -408,6 +406,37 @@ const SettingsTab: FC<Props> = (props) => {
               />
             </Col>
           </Row>
+          <SettingDivider />
+        </SettingGroup>
+      </CollapsibleSettingGroup>
+      <CollapsibleSettingGroup title={t('settings.math.title')} defaultExpanded={true}>
+        <SettingGroup>
+          <SettingRow>
+            <SettingRowTitleSmall>{t('settings.math.engine.label')}</SettingRowTitleSmall>
+            <Selector
+              value={mathEngine}
+              onChange={(value) => dispatch(setMathEngine(value as MathEngine))}
+              options={[
+                { value: 'KaTeX', label: 'KaTeX' },
+                { value: 'MathJax', label: 'MathJax' },
+                { value: 'none', label: t('settings.math.engine.none') }
+              ]}
+            />
+          </SettingRow>
+          <SettingDivider />
+          <SettingRow>
+            <SettingRowTitleSmall>
+              {t('settings.math.single_dollar.label')}{' '}
+              <Tooltip title={t('settings.math.single_dollar.tip')}>
+                <CircleHelp size={14} style={{ marginLeft: 4 }} color="var(--color-text-2)" />
+              </Tooltip>
+            </SettingRowTitleSmall>
+            <Switch
+              size="small"
+              checked={mathEnableSingleDollar}
+              onChange={(checked) => dispatch(setMathEnableSingleDollar(checked))}
+            />
+          </SettingRow>
           <SettingDivider />
         </SettingGroup>
       </CollapsibleSettingGroup>
@@ -532,6 +561,15 @@ const SettingsTab: FC<Props> = (props) => {
             <SettingRowTitleSmall>{t('chat.settings.code_wrappable')}</SettingRowTitleSmall>
             <Switch size="small" checked={codeWrappable} onChange={(checked) => dispatch(setCodeWrappable(checked))} />
           </SettingRow>
+          <SettingDivider />
+          <SettingRow>
+            <SettingRowTitleSmall>{t('chat.settings.code_image_tools')}</SettingRowTitleSmall>
+            <Switch
+              size="small"
+              checked={codeImageTools}
+              onChange={(checked) => dispatch(setCodeImageTools(checked))}
+            />
+          </SettingRow>
         </SettingGroup>
         <SettingDivider />
       </CollapsibleSettingGroup>
@@ -613,11 +651,20 @@ const SettingsTab: FC<Props> = (props) => {
           </SettingRow>
           <SettingDivider />
           <SettingRow>
-            <SettingRowTitleSmall>{t('settings.messages.input.enable_delete_model')}</SettingRowTitleSmall>
+            <SettingRowTitleSmall>{t('settings.messages.input.confirm_delete_message')}</SettingRowTitleSmall>
             <Switch
               size="small"
-              checked={enableBackspaceDeleteModel}
-              onChange={(checked) => dispatch(setEnableBackspaceDeleteModel(checked))}
+              checked={confirmDeleteMessage}
+              onChange={(checked) => dispatch(setConfirmDeleteMessage(checked))}
+            />
+          </SettingRow>
+          <SettingDivider />
+          <SettingRow>
+            <SettingRowTitleSmall>{t('settings.messages.input.confirm_regenerate_message')}</SettingRowTitleSmall>
+            <Switch
+              size="small"
+              checked={confirmRegenerateMessage}
+              onChange={(checked) => dispatch(setConfirmRegenerateMessage(checked))}
             />
           </SettingRow>
           <SettingDivider />
@@ -626,7 +673,8 @@ const SettingsTab: FC<Props> = (props) => {
             <Selector
               value={targetLanguage}
               onChange={(value) => setTargetLanguage(value)}
-              options={translateLanguageOptions.map((item) => {
+              placeholder={UNKNOWN.emoji + ' ' + UNKNOWN.label()}
+              options={translateLanguages.map((item) => {
                 return { value: item.langCode, label: item.emoji + ' ' + item.label() }
               })}
             />

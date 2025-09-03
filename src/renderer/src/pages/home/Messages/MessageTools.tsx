@@ -1,8 +1,9 @@
-import { CheckOutlined, CloseOutlined, ExpandOutlined, LoadingOutlined, WarningOutlined } from '@ant-design/icons'
 import { loggerService } from '@logger'
+import { CopyIcon, LoadingIcon } from '@renderer/components/Icons'
 import { useCodeStyle } from '@renderer/context/CodeStyleProvider'
 import { useMCPServers } from '@renderer/hooks/useMCPServers'
 import { useSettings } from '@renderer/hooks/useSettings'
+import { useTimer } from '@renderer/hooks/useTimer'
 import type { ToolMessageBlock } from '@renderer/types/newMessage'
 import { isToolAutoApproved } from '@renderer/utils/mcp-tools'
 import { cancelToolAction, confirmToolAction } from '@renderer/utils/userConfirmation'
@@ -19,7 +20,18 @@ import {
   Tooltip
 } from 'antd'
 import { message } from 'antd'
-import { ChevronDown, ChevronRight, CirclePlay, CircleX, PauseCircle, ShieldCheck } from 'lucide-react'
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  CirclePlay,
+  CircleX,
+  Maximize,
+  PauseCircle,
+  ShieldCheck,
+  TriangleAlert,
+  X
+} from 'lucide-react'
 import { FC, memo, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -41,6 +53,7 @@ const MessageTools: FC<Props> = ({ block }) => {
   const { mcpServers, updateMCPServer } = useMCPServers()
   const [expandedResponse, setExpandedResponse] = useState<{ content: string; title: string } | null>(null)
   const [progress, setProgress] = useState<number>(0)
+  const { setTimeoutTimer } = useTimer()
 
   const toolResponse = block.metadata?.rawMcpToolResponse
 
@@ -119,7 +132,7 @@ const MessageTools: FC<Props> = ({ block }) => {
     navigator.clipboard.writeText(content)
     antdMessage.success({ content: t('message.copied'), key: 'copy-message' })
     setCopiedMap((prev) => ({ ...prev, [toolId]: true }))
-    setTimeout(() => setCopiedMap((prev) => ({ ...prev, [toolId]: false })), 2000)
+    setTimeoutTimer('copyContent', () => setCopiedMap((prev) => ({ ...prev, [toolId]: false })), 2000)
   }
 
   const handleCollapseChange = (keys: string | string[]) => {
@@ -191,23 +204,23 @@ const MessageTools: FC<Props> = ({ block }) => {
     switch (status) {
       case 'pending':
         label = t('message.tools.pending', 'Awaiting Approval')
-        icon = <LoadingOutlined spin style={{ marginLeft: 6, color: 'var(--status-color-warning)' }} />
+        icon = <LoadingIcon style={{ marginLeft: 6, color: 'var(--status-color-warning)' }} />
         break
       case 'invoking':
         label = t('message.tools.invoking')
-        icon = <LoadingOutlined spin style={{ marginLeft: 6 }} />
+        icon = <LoadingIcon style={{ marginLeft: 6 }} />
         break
       case 'cancelled':
         label = t('message.tools.cancelled')
-        icon = <CloseOutlined style={{ marginLeft: 6 }} />
+        icon = <X size={13} style={{ marginLeft: 6 }} className="lucide-custom" />
         break
       case 'done':
         if (hasError) {
           label = t('message.tools.error')
-          icon = <WarningOutlined style={{ marginLeft: 6 }} />
+          icon = <TriangleAlert size={13} style={{ marginLeft: 6 }} className="lucide-custom" />
         } else {
           label = t('message.tools.completed')
-          icon = <CheckOutlined style={{ marginLeft: 6 }} />
+          icon = <Check size={13} style={{ marginLeft: 6 }} className="lucide-custom" />
         }
         break
       default:
@@ -262,7 +275,7 @@ const MessageTools: FC<Props> = ({ block }) => {
                   })
                 }}
                 aria-label={t('common.expand')}>
-                <ExpandOutlined />
+                <Maximize size={14} />
               </ActionButton>
             </Tooltip>
             {!isPending && !isInvoking && (
@@ -274,8 +287,8 @@ const MessageTools: FC<Props> = ({ block }) => {
                     copyContent(JSON.stringify(result, null, 2), id)
                   }}
                   aria-label={t('common.copy')}>
-                  {!copiedMap[id] && <i className="iconfont icon-copy"></i>}
-                  {copiedMap[id] && <CheckOutlined style={{ color: 'var(--color-primary)' }} />}
+                  {!copiedMap[id] && <CopyIcon size={14} />}
+                  {copiedMap[id] && <Check size={14} color="var(--status-color-success)" />}
                 </ActionButton>
               </Tooltip>
             )}
@@ -394,7 +407,7 @@ const MessageTools: FC<Props> = ({ block }) => {
                         e.stopPropagation()
                         handleAbortTool()
                       }}>
-                      <PauseCircle className="lucide-custom" size={14} />
+                      <PauseCircle size={14} className="lucide-custom" />
                       {t('chat.input.pause')}
                     </Button>
                   ) : (
@@ -572,10 +585,10 @@ const ExpandIcon = styled(ChevronRight)<{ $isActive?: boolean }>`
 `
 
 const CollapseContainer = styled(Collapse)`
-  --status-color-warning: var(--color-warning, #faad14);
+  --status-color-warning: var(--color-status-warning, #faad14);
   --status-color-invoking: var(--color-primary);
-  --status-color-error: var(--color-error, #ff4d4f);
-  --status-color-success: var(--color-success, green);
+  --status-color-error: var(--color-status-error, #ff4d4f);
+  --status-color-success: var(--color-primary, green);
   border-radius: 7px;
   border: none;
   background-color: var(--color-background);
@@ -594,6 +607,11 @@ const CollapseContainer = styled(Collapse)`
 const ToolContainer = styled.div`
   margin-top: 10px;
   margin-bottom: 10px;
+
+  &:first-child {
+    margin-top: 0;
+    padding-top: 0;
+  }
 `
 
 const MarkdownContainer = styled.div`

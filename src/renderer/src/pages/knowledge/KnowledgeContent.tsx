@@ -1,7 +1,7 @@
 import { RedoOutlined } from '@ant-design/icons'
 import { loggerService } from '@logger'
-import CustomTag from '@renderer/components/CustomTag'
 import { HStack } from '@renderer/components/Layout'
+import CustomTag from '@renderer/components/Tags/CustomTag'
 import { useKnowledge } from '@renderer/hooks/useKnowledge'
 import { NavbarIcon } from '@renderer/pages/home/ChatNavbar'
 import { getProviderName } from '@renderer/services/ProviderService'
@@ -34,7 +34,7 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
   const [progressMap, setProgressMap] = useState<Map<string, number>>(new Map())
   const [preprocessMap, setPreprocessMap] = useState<Map<string, boolean>>(new Map())
 
-  const providerName = getProviderName(base?.model.provider || '')
+  const providerName = getProviderName(base?.model)
 
   useEffect(() => {
     const handlers = [
@@ -289,9 +289,12 @@ export const ItemHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   position: absolute;
-  top: calc(var(--navbar-height) + 14px);
   right: 16px;
   z-index: 1000;
+  top: calc(var(--navbar-height) + 12px);
+  [navbar-position='top'] & {
+    top: calc(var(--navbar-height) + 10px);
+  }
 `
 
 export const StatusIconWrapper = styled.div`

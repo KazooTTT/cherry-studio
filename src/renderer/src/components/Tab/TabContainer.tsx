@@ -3,28 +3,33 @@ import { isLinux, isMac, isWin } from '@renderer/config/constant'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useFullscreen } from '@renderer/hooks/useFullscreen'
 import { useMinappPopup } from '@renderer/hooks/useMinappPopup'
-import { getTitleLabel } from '@renderer/i18n/label'
+import { getThemeModeLabel, getTitleLabel } from '@renderer/i18n/label'
 import tabsService from '@renderer/services/TabsService'
 import { useAppDispatch, useAppSelector } from '@renderer/store'
 import type { Tab } from '@renderer/store/tabs'
 import { addTab, removeTab, setActiveTab } from '@renderer/store/tabs'
 import { ThemeMode } from '@renderer/types'
 import { classNames } from '@renderer/utils'
+import { Tooltip } from 'antd'
 import {
   FileSearch,
   Folder,
+  Hammer,
   Home,
   Languages,
   LayoutGrid,
+  Monitor,
   Moon,
+  NotepadText,
   Palette,
   Settings,
   Sparkle,
-  SquareTerminal,
   Sun,
+  Terminal,
   X
 } from 'lucide-react'
 import { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -46,14 +51,18 @@ const getTabIcon = (tabId: string): React.ReactNode | undefined => {
       return <Palette size={14} />
     case 'apps':
       return <LayoutGrid size={14} />
+    case 'notes':
+      return <NotepadText size={14} />
     case 'knowledge':
       return <FileSearch size={14} />
     case 'mcp':
-      return <SquareTerminal size={14} />
+      return <Hammer size={14} />
     case 'files':
       return <Folder size={14} />
     case 'settings':
       return <Settings size={14} />
+    case 'code':
+      return <Terminal size={14} />
     default:
       return null
   }
@@ -69,8 +78,9 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
   const tabs = useAppSelector((state) => state.tabs.tabs)
   const activeTabId = useAppSelector((state) => state.tabs.activeTabId)
   const isFullscreen = useFullscreen()
-  const { theme, setTheme } = useTheme()
+  const { settedTheme, toggleTheme } = useTheme()
   const { hideMinappPopup } = useMinappPopup()
+  const { t } = useTranslation()
 
   const getTabId = (path: string): string => {
     if (path === '/') return 'home'
@@ -162,9 +172,20 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
         </AddTabButton>
         <RightButtonsContainer>
           <TopNavbarOpenedMinappTabs />
-          <ThemeButton onClick={() => setTheme(theme === ThemeMode.dark ? ThemeMode.light : ThemeMode.dark)}>
-            {theme === ThemeMode.dark ? <Moon size={16} /> : <Sun size={16} />}
-          </ThemeButton>
+          <Tooltip
+            title={t('settings.theme.title') + ': ' + getThemeModeLabel(settedTheme)}
+            mouseEnterDelay={0.8}
+            placement="bottom">
+            <ThemeButton onClick={toggleTheme}>
+              {settedTheme === ThemeMode.dark ? (
+                <Moon size={16} />
+              ) : settedTheme === ThemeMode.light ? (
+                <Sun size={16} />
+              ) : (
+                <Monitor size={16} />
+              )}
+            </ThemeButton>
+          </Tooltip>
           <SettingsButton onClick={handleSettingsClick} $active={activeTabId === 'settings'}>
             <Settings size={16} />
           </SettingsButton>
@@ -188,8 +209,16 @@ const TabsBar = styled.div<{ $isFullscreen: boolean }>`
   gap: 5px;
   padding-left: ${({ $isFullscreen }) => (!$isFullscreen && isMac ? '75px' : '15px')};
   padding-right: ${({ $isFullscreen }) => ($isFullscreen ? '12px' : isWin ? '140px' : isLinux ? '120px' : '12px')};
-  -webkit-app-region: drag;
   height: var(--navbar-height);
+  position: relative;
+  -webkit-app-region: drag;
+
+  /* 确保交互元素在拖拽区域之上 */
+  > * {
+    position: relative;
+    z-index: 1;
+    -webkit-app-region: no-drag;
+  }
 `
 
 const Tab = styled.div<{ active?: boolean }>`
@@ -202,7 +231,6 @@ const Tab = styled.div<{ active?: boolean }>`
   border-radius: var(--list-item-border-radius);
   cursor: pointer;
   user-select: none;
-  -webkit-app-region: none;
   height: 30px;
   min-width: 90px;
   transition: background 0.2s;
@@ -255,7 +283,6 @@ const AddTabButton = styled.div`
   height: 30px;
   cursor: pointer;
   color: var(--color-text-2);
-  -webkit-app-region: none;
   border-radius: var(--list-item-border-radius);
   &.active {
     background: var(--color-list-item);
@@ -280,7 +307,6 @@ const ThemeButton = styled.div`
   height: 30px;
   cursor: pointer;
   color: var(--color-text);
-  -webkit-app-region: none;
 
   &:hover {
     background: var(--color-list-item);
@@ -296,7 +322,6 @@ const SettingsButton = styled.div<{ $active: boolean }>`
   height: 30px;
   cursor: pointer;
   color: var(--color-text);
-  -webkit-app-region: none;
   border-radius: 8px;
   background: ${(props) => (props.$active ? 'var(--color-list-item)' : 'transparent')};
   &:hover {

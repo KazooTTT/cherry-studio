@@ -1,17 +1,6 @@
-import {
-  CheckOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  MinusCircleOutlined,
-  PlusOutlined,
-  SaveOutlined,
-  SmileOutlined,
-  SortAscendingOutlined,
-  SortDescendingOutlined
-} from '@ant-design/icons'
 import ModelAvatar from '@renderer/components/Avatar/ModelAvatar'
 import EmojiIcon from '@renderer/components/EmojiIcon'
-import CopyIcon from '@renderer/components/Icons/CopyIcon'
+import { CopyIcon, DeleteIcon, EditIcon } from '@renderer/components/Icons'
 import PromptPopup from '@renderer/components/Popups/PromptPopup'
 import { useAssistant, useAssistants } from '@renderer/hooks/useAssistant'
 import { useSettings } from '@renderer/hooks/useSettings'
@@ -24,7 +13,19 @@ import { getLeadingEmoji, uuid } from '@renderer/utils'
 import { hasTopicPendingRequests } from '@renderer/utils/queue'
 import { Dropdown, MenuProps } from 'antd'
 import { omit } from 'lodash'
-import { AlignJustify, Plus, Settings2, Tag, Tags } from 'lucide-react'
+import {
+  AlignJustify,
+  ArrowDownAZ,
+  ArrowUpAZ,
+  BrushCleaning,
+  Check,
+  Plus,
+  Save,
+  Settings2,
+  Smile,
+  Tag,
+  Tags
+} from 'lucide-react'
 import { FC, memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -136,7 +137,10 @@ const AssistantItem: FC<AssistantItemProps> = ({
   )
 
   return (
-    <Dropdown menu={{ items: menuItems }} trigger={['contextMenu']}>
+    <Dropdown
+      menu={{ items: menuItems }}
+      trigger={['contextMenu']}
+      popupRender={(menu) => <div onPointerDown={(e) => e.stopPropagation()}>{menu}</div>}>
       <Container onClick={handleSwitch} className={isActive ? 'active' : ''}>
         <AssistantNameRow className="name" title={fullAssistantName}>
           {assistantIconType === 'model' ? (
@@ -198,7 +202,7 @@ const createTagMenuItems = (
   const items: MenuProps['items'] = [
     ...allTags.map((tag) => ({
       label: tag,
-      icon: assistant.tags?.includes(tag) ? <CheckOutlined size={14} /> : <Tag size={12} />,
+      icon: assistant.tags?.includes(tag) ? <Check size={14} /> : <Tag size={14} />,
       key: `all-tag-${tag}`,
       onClick: () => handleTagOperation(tag, assistant, assistants, updateAssistants)
     }))
@@ -211,7 +215,7 @@ const createTagMenuItems = (
   items.push({
     label: t('assistants.tags.add'),
     key: 'new-tag',
-    icon: <Plus size={16} />,
+    icon: <Plus size={14} />,
     onClick: async () => {
       const tagName = await PromptPopup.show({
         title: t('assistants.tags.add'),
@@ -228,7 +232,7 @@ const createTagMenuItems = (
     items.push({
       label: t('assistants.tags.manage'),
       key: 'manage-tags',
-      icon: <Settings2 size={16} />,
+      icon: <Settings2 size={14} />,
       onClick: () => {
         AssistantTagsPopup.show({ title: t('assistants.tags.manage') })
       }
@@ -260,13 +264,13 @@ function getMenuItems({
     {
       label: t('assistants.edit.title'),
       key: 'edit',
-      icon: <EditOutlined />,
+      icon: <EditIcon size={14} />,
       onClick: () => AssistantSettingsPopup.show({ assistant })
     },
     {
       label: t('assistants.copy.title'),
       key: 'duplicate',
-      icon: <CopyIcon />,
+      icon: <CopyIcon size={14} />,
       onClick: async () => {
         const _assistant = copyAssistant(assistant)
         if (_assistant) {
@@ -277,7 +281,7 @@ function getMenuItems({
     {
       label: t('assistants.clear.title'),
       key: 'clear',
-      icon: <MinusCircleOutlined />,
+      icon: <BrushCleaning size={14} />,
       onClick: () => {
         window.modal.confirm({
           title: t('assistants.clear.title'),
@@ -291,7 +295,7 @@ function getMenuItems({
     {
       label: t('assistants.save.title'),
       key: 'save-to-agent',
-      icon: <SaveOutlined />,
+      icon: <Save size={14} />,
       onClick: async () => {
         const agent = omit(assistant, ['model', 'emoji'])
         agent.id = uuid()
@@ -306,7 +310,7 @@ function getMenuItems({
     {
       label: t('assistants.icon.type'),
       key: 'icon-type',
-      icon: <SmileOutlined />,
+      icon: <Smile size={14} />,
       children: [
         {
           label: t('settings.assistant.icon.type.model'),
@@ -331,7 +335,7 @@ function getMenuItems({
     {
       label: t('assistants.tags.manage'),
       key: 'all-tags',
-      icon: <PlusOutlined />,
+      icon: <Plus size={14} />,
       children: createTagMenuItems(allTags, assistant, assistants, updateAssistants, t)
     },
     {
@@ -345,13 +349,13 @@ function getMenuItems({
     {
       label: t('common.sort.pinyin.asc'),
       key: 'sort-asc',
-      icon: <SortAscendingOutlined />,
+      icon: <ArrowDownAZ size={14} />,
       onClick: sortByPinyinAsc
     },
     {
       label: t('common.sort.pinyin.desc'),
       key: 'sort-desc',
-      icon: <SortDescendingOutlined />,
+      icon: <ArrowUpAZ size={14} />,
       onClick: sortByPinyinDesc
     },
     {
@@ -360,7 +364,7 @@ function getMenuItems({
     {
       label: t('common.delete'),
       key: 'delete',
-      icon: <DeleteOutlined />,
+      icon: <DeleteIcon size={14} className="lucide-custom" />,
       danger: true,
       onClick: () => {
         window.modal.confirm({
@@ -385,7 +389,6 @@ const Container = styled.div`
   border-radius: var(--list-item-border-radius);
   border: 0.5px solid transparent;
   width: calc(var(--assistants-width) - 20px);
-  cursor: pointer;
   &:hover {
     background-color: var(--color-list-item-hover);
   }

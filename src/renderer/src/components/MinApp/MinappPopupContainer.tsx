@@ -19,6 +19,7 @@ import { useMinapps } from '@renderer/hooks/useMinapps'
 import useNavBackgroundColor from '@renderer/hooks/useNavBackgroundColor'
 import { useRuntime } from '@renderer/hooks/useRuntime'
 import { useNavbarPosition, useSettings } from '@renderer/hooks/useSettings'
+import { useTimer } from '@renderer/hooks/useTimer'
 import { useAppDispatch } from '@renderer/store'
 import { setMinappsOpenLinkExternal } from '@renderer/store/settings'
 import { MinAppType } from '@renderer/types'
@@ -125,6 +126,7 @@ const GoogleLoginTip = ({
       type="warning"
       showIcon
       closable
+      banner
       onClose={handleClose}
       action={
         <Button type="primary" size="small" onClick={openGoogleMinApp}>
@@ -168,6 +170,8 @@ const MinappPopupContainer: React.FC = () => {
   const { isLeftNavbar } = useNavbarPosition()
 
   const isInDevelopment = process.env.NODE_ENV === 'development'
+
+  const { setTimeoutTimer } = useTimer()
 
   useBridge()
 
@@ -294,7 +298,7 @@ const MinappPopupContainer: React.FC = () => {
       window.api.webview.setOpenLinkExternal(webviewId, minappsOpenLinkExternal)
     }
     if (appid == currentMinappId) {
-      setTimeout(() => setIsReady(true), 200)
+      setTimeoutTimer('handleWebviewLoaded', () => setIsReady(true), 200)
     }
   }
 
@@ -498,7 +502,6 @@ const MinappPopupContainer: React.FC = () => {
       placement="bottom"
       onClose={handlePopupMinimize}
       open={isPopupShow}
-      destroyOnClose={false}
       mask={false}
       rootClassName="minapp-drawer"
       maskClassName="minapp-mask"
