@@ -689,7 +689,10 @@ class McpService {
             })
             const mainWindow = windowService.getMainWindow()
             if (mainWindow) {
-              mainWindow.webContents.send('mcp-progress', process.progress / (process.total || 1))
+              mainWindow.webContents.send('mcp-progress', {
+                callId: toolCallId,
+                progress: process.progress / (process.total || 1)
+              })
             }
           },
           timeout: server.timeout ? server.timeout * 1000 : 60000, // Default timeout of 1 minute,

@@ -86,15 +86,18 @@ const MessageMcpTool: FC<Props> = ({ block }) => {
   useEffect(() => {
     const removeListener = window.electron.ipcRenderer.on(
       'mcp-progress',
-      (_event: Electron.IpcRendererEvent, value: number) => {
-        setProgress(value)
+      (_event: Electron.IpcRendererEvent, data: { callId: string; progress: number }) => {
+        // Only update progress if this event is for our specific tool call
+        if (data.callId === id) {
+          setProgress(data.progress)
+        }
       }
     )
     return () => {
       setProgress(0)
       removeListener()
     }
-  }, [])
+  }, [id])
 
   const cancelCountdown = () => {
     if (timer.current) {
