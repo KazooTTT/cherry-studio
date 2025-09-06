@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 export interface UseHorizontalScrollProps {
-  dependencies: any[]
+  dependencies: readonly unknown[]
 }
 
 export const useHorizontalScroll = ({ dependencies }: UseHorizontalScrollProps) => {
