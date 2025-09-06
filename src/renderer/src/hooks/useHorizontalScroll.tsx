@@ -5,14 +5,15 @@ import styled from 'styled-components'
 
 export interface UseHorizontalScrollProps {
   dependencies: readonly unknown[]
+  scrollDistance?: number
 }
 
-export const useHorizontalScroll = ({ dependencies }: UseHorizontalScrollProps) => {
+export const useHorizontalScroll = ({ dependencies, scrollDistance = 200 }: UseHorizontalScrollProps) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScroll, setCanScroll] = useState(false)
 
   const handleScrollRight = () => {
-    scrollRef.current?.scrollBy({ left: 200, behavior: 'smooth' })
+    scrollRef.current?.scrollBy({ left: scrollDistance, behavior: 'smooth' })
   }
 
   const checkScrollability = () => {
