@@ -16,7 +16,8 @@ export type MCPConfigSample = z.infer<typeof MCPConfigSampleSchema>
  * 允许 inMemory 作为合法字段，需要额外校验 name 是否 builtin
  */
 export const McpServerTypeSchema = z
-  .string()
+  .union([z.literal('stdio'), z.literal('sse'), z.literal('streamableHttp'), z.literal('inMemory')])
+  .default('stdio') // 大多数情况下默认使用 stdio
   .transform((type) => {
     if (type.includes('http')) {
       return 'streamableHttp'
@@ -24,9 +25,6 @@ export const McpServerTypeSchema = z
       return type
     }
   })
-  .pipe(
-    z.union([z.literal('stdio'), z.literal('sse'), z.literal('streamableHttp'), z.literal('inMemory')]).default('stdio') // 大多数情况下默认使用 stdio
-  )
 
 /**
  * 定义单个 MCP 服务器的配置。

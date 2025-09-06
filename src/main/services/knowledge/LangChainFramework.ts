@@ -30,7 +30,7 @@ import {
   KnowledgeBaseParams,
   KnowledgeSearchResult
 } from '@types'
-import { uuidv4 } from 'zod/v4'
+import { v4 as uuidv4 } from 'uuid'
 
 import { windowService } from '../WindowService'
 import {
