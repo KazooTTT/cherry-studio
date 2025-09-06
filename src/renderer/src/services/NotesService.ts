@@ -446,7 +446,6 @@ async function processDuplicateRootFolders(markdownFiles: File[], targetFolderPa
 
   // 为每个根文件夹组生成唯一的文件夹名称
   for (const [rootFolderName, files] of filesByRootFolder.entries()) {
-    // 获取安全的文件夹名称
     const { safeName } = await window.api.file.checkFileName(targetFolderPath, rootFolderName, false)
 
     for (const file of files) {
@@ -455,13 +454,11 @@ async function processDuplicateRootFolders(markdownFiles: File[], targetFolderPa
       const relativePath = originalPath.substring(originalPath.indexOf('/') + 1)
       const newPath = `${safeName}/${relativePath}`
 
-      // 创建新的 File 对象，但保持其他属性不变
       const newFile = new File([file], file.name, {
         type: file.type,
         lastModified: file.lastModified
       })
 
-      // 设置新的 webkitRelativePath
       Object.defineProperty(newFile, 'webkitRelativePath', {
         value: newPath,
         writable: false
@@ -530,9 +527,7 @@ async function createFoldersSequentially(
     try {
       const result = await createSingleFolder(folderPath, targetFolderPath, tree, createdFolders)
       if (result) {
-        // 将原始路径映射到实际创建的节点
         createdFolders.set(folderPath, result)
-        // 如果实际路径与原始路径不同，也建立映射关系
         if (result.externalPath !== folderPath) {
           createdFolders.set(result.externalPath, result)
         }
@@ -567,14 +562,12 @@ async function createSingleFolder(
   const originalFolderName = relativePath.split('/').pop()!
   const parentFolderPath = folderPath.substring(0, folderPath.lastIndexOf('/'))
 
-  // 使用 checkFileName 检查并获取安全的文件夹名称
   const { safeName: safeFolderName, exists } = await window.api.file.checkFileName(
     parentFolderPath,
     originalFolderName,
     false
   )
 
-  // 构建实际的文件夹路径
   const actualFolderPath = `${parentFolderPath}/${safeFolderName}`
 
   if (exists) {
@@ -592,13 +585,10 @@ async function createSingleFolder(
     parentNode =
       tree.find((node) => node.externalPath === targetFolderPath) || findNodeByExternalPath(tree, targetFolderPath)
   } else {
-    // Try to find from created folders first
     parentNode = createdFolders.get(parentFolderPath) || null
     if (!parentNode) {
-      // Then try from tree root nodes
       parentNode = tree.find((node) => node.externalPath === parentFolderPath) || null
       if (!parentNode) {
-        // Finally search recursively in the tree
         parentNode = findNodeByExternalPath(tree, parentFolderPath)
       }
     }
@@ -697,7 +687,6 @@ async function uploadSingleFile(
 
   // 如果找不到父节点，尝试通过 createdFolders 找到实际路径
   if (!parentNode && originalDirPath !== targetFolderPath) {
-    // 尝试从已创建的文件夹中查找匹配的节点
     for (const [originalPath, createdNode] of createdFolders.entries()) {
       if (originalPath === originalDirPath) {
         parentNode = createdNode
