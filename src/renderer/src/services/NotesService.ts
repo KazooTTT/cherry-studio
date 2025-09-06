@@ -94,41 +94,176 @@ export async function createNote(name: string, content: string = '', folderPath:
   return note
 }
 
+export interface UploadResult {
+  uploadedNodes: NotesTreeNode[]
+  totalFiles: number
+  skippedFiles: number
+  fileCount: number
+  folderCount: number
+}
+
 /**
- * 上传笔记
+ * 上传文件或文件夹，支持单个或批量上传，保持文件夹结构
  */
-export async function uploadNote(file: File, folderPath: string): Promise<NotesTreeNode> {
+export async function uploadFiles(files: File[], targetFolderPath: string): Promise<UploadResult> {
   const tree = await getNotesTree()
-  const fileName = file.name.toLowerCase()
-  if (!fileName.endsWith(MARKDOWN_EXT)) {
-    throw new Error('Only markdown files are allowed')
+  const uploadedNodes: NotesTreeNode[] = []
+  let skippedFiles = 0
+
+  // 过滤非 markdown 文件
+  const markdownFiles = Array.from(files).filter((file) => {
+    if (file.name.toLowerCase().endsWith(MARKDOWN_EXT)) {
+      return true
+    }
+    skippedFiles++
+    logger.warn(`Skipping non-markdown file: ${file.name}`)
+    return false
+  })
+
+  if (markdownFiles.length === 0) {
+    return {
+      uploadedNodes: [],
+      totalFiles: files.length,
+      skippedFiles,
+      fileCount: 0,
+      folderCount: 0
+    }
   }
 
-  const noteId = uuidv4()
-  const nameWithoutExt = fileName.replace(MARKDOWN_EXT, '')
+  // 按路径分组文件，处理文件夹结构
+  const filesByPath = new Map<string, File[]>()
+  const foldersToCreate = new Set<string>()
 
-  const { safeName, exists } = await window.api.file.checkFileName(folderPath, nameWithoutExt, true)
-  if (exists) {
-    logger.warn(`Note already exists: ${safeName}`)
+  for (const file of markdownFiles) {
+    const filePath = file.webkitRelativePath || file.name
+    const relativeDirPath = filePath.includes('/') ? filePath.substring(0, filePath.lastIndexOf('/')) : ''
+    const fullDirPath = relativeDirPath ? `${targetFolderPath}/${relativeDirPath}` : targetFolderPath
+
+    // 收集需要创建的文件夹路径
+    if (relativeDirPath) {
+      const pathParts = relativeDirPath.split('/')
+      let currentPath = targetFolderPath
+      for (const part of pathParts) {
+        currentPath = `${currentPath}/${part}`
+        foldersToCreate.add(currentPath)
+      }
+    }
+
+    // 按目录分组文件
+    if (!filesByPath.has(fullDirPath)) {
+      filesByPath.set(fullDirPath, [])
+    }
+    filesByPath.get(fullDirPath)!.push(file)
   }
 
-  const notePath = `${folderPath}/${safeName}${MARKDOWN_EXT}`
+  // 先创建所有需要的文件夹
+  const createdFolders = new Map<string, NotesTreeNode>()
+  const sortedFolders = Array.from(foldersToCreate).sort()
 
-  const note: NotesTreeNode = {
-    id: noteId,
-    name: safeName,
-    treePath: `/${safeName}`,
-    externalPath: notePath,
-    type: 'file',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+  for (const folderPath of sortedFolders) {
+    try {
+      const relativePath = folderPath.replace(targetFolderPath + '/', '')
+      const folderName = relativePath.split('/').pop()!
+      const parentFolderPath = folderPath.substring(0, folderPath.lastIndexOf('/'))
+
+      // 创建文件夹（如果不存在）
+      try {
+        await window.api.file.mkdir(folderPath)
+      } catch (error) {
+        logger.debug(`Folder already exists or error creating: ${folderPath}`)
+      }
+
+      // 查找父节点
+      const parentNode =
+        parentFolderPath === targetFolderPath
+          ? tree.find((node) => node.externalPath === parentFolderPath) ||
+            findNodeByExternalPath(tree, parentFolderPath)
+          : createdFolders.get(parentFolderPath)
+
+      // 检查树中是否已存在该文件夹节点
+      const existingNode = findNodeByExternalPath(tree, folderPath)
+      if (existingNode) {
+        createdFolders.set(folderPath, existingNode)
+        continue
+      }
+
+      // 创建文件夹节点
+      const folderId = uuidv4()
+      const folder: NotesTreeNode = {
+        id: folderId,
+        name: folderName,
+        treePath: parentNode ? `${parentNode.treePath}/${folderName}` : `/${folderName}`,
+        externalPath: folderPath,
+        type: 'folder',
+        children: [],
+        expanded: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+
+      insertNodeIntoTree(tree, folder, parentNode?.id)
+      createdFolders.set(folderPath, folder)
+      uploadedNodes.push(folder)
+
+      logger.debug(`Created folder: ${folderPath}`)
+    } catch (error) {
+      logger.error(`Failed to create folder ${folderPath}:`, error as Error)
+    }
   }
 
-  const content = await file.text()
-  await window.api.file.write(notePath, content)
-  insertNodeIntoTree(tree, note)
+  // 然后上传所有文件
+  for (const [dirPath, dirFiles] of filesByPath.entries()) {
+    for (const file of dirFiles) {
+      try {
+        const fileName = (file.webkitRelativePath || file.name).split('/').pop()!
+        const nameWithoutExt = fileName.replace(MARKDOWN_EXT, '')
 
-  return note
+        const { safeName, exists } = await window.api.file.checkFileName(dirPath, nameWithoutExt, true)
+        if (exists) {
+          logger.warn(`Note already exists: ${safeName}`)
+        }
+
+        const notePath = `${dirPath}/${safeName}${MARKDOWN_EXT}`
+
+        // 查找父节点
+        const parentNode =
+          dirPath === targetFolderPath
+            ? tree.find((node) => node.externalPath === dirPath) || findNodeByExternalPath(tree, dirPath)
+            : createdFolders.get(dirPath) || findNodeByExternalPath(tree, dirPath)
+
+        const noteId = uuidv4()
+        const note: NotesTreeNode = {
+          id: noteId,
+          name: safeName,
+          treePath: parentNode ? `${parentNode.treePath}/${safeName}` : `/${safeName}`,
+          externalPath: notePath,
+          type: 'file',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+
+        const content = await file.text()
+        await window.api.file.write(notePath, content)
+        insertNodeIntoTree(tree, note, parentNode?.id)
+        uploadedNodes.push(note)
+
+        logger.debug(`Uploaded file: ${notePath}`)
+      } catch (error) {
+        logger.error(`Failed to upload file ${file.name}:`, error as Error)
+      }
+    }
+  }
+
+  const fileCount = uploadedNodes.filter((node) => node.type === 'file').length
+  const folderCount = uploadedNodes.filter((node) => node.type === 'folder').length
+
+  return {
+    uploadedNodes,
+    totalFiles: files.length,
+    skippedFiles,
+    fileCount,
+    folderCount
+  }
 }
 
 /**
