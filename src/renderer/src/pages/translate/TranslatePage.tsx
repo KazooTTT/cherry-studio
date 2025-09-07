@@ -191,10 +191,16 @@ const TranslatePage: FC = () => {
   }, [bidirectionalPair, isBidirectional, isProcessing, sourceLanguage, targetLanguage.langCode, text])
 
   // 控制复制按钮
-  const onCopy = useCallback(() => {
-    navigator.clipboard.writeText(translatedContent)
-    setCopied(true)
-  }, [setCopied, translatedContent])
+  const onCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(translatedContent)
+      setCopied(true)
+    } catch (error) {
+      logger.error('Failed to copy text to clipboard:', error as Error)
+      // TODO: use toast
+      window.message.error(t('common.copy_failed'))
+    }
+  }, [setCopied, t, translatedContent])
 
   // 控制翻译按钮，翻译前进行校验
   const onTranslate = useCallback(async () => {
