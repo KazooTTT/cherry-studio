@@ -7,7 +7,7 @@ import { message, Modal } from 'antd'
 import React, { PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react'
 
 import { Box } from '../Layout'
-import { error, info, success, warning } from './toast'
+import { error, info, loading, success, warning } from './toast'
 
 let onPop = () => {}
 let onShow = ({ element, id }: { element: React.FC | React.ReactNode; id: string }) => {
@@ -54,7 +54,8 @@ const TopViewContainer: React.FC<Props> = ({ children }) => {
       error,
       success,
       warning,
-      info
+      info,
+      loading
     }
   }, [messageApi, modal])
 
