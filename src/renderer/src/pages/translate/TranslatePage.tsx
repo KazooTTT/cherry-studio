@@ -60,7 +60,8 @@ const TranslatePage: FC = () => {
   // hooks
   const { t } = useTranslation()
   const { translateModel, setTranslateModel } = useDefaultModel()
-  const { prompt, getLanguageByLangcode } = useTranslate()
+  const { prompt, getLanguageByLangcode, settings } = useTranslate()
+  const { autoCopy } = settings
   const { shikiMarkdownIt } = useCodeStyle()
   const { onSelectFile, selecting, clearFiles } = useFiles({ extensions: [...imageExts, ...textExts] })
   const { ocr } = useOcr()
@@ -189,6 +190,12 @@ const TranslatePage: FC = () => {
     )
   }, [bidirectionalPair, isBidirectional, isProcessing, sourceLanguage, targetLanguage.langCode, text])
 
+  // 控制复制按钮
+  const onCopy = useCallback(() => {
+    navigator.clipboard.writeText(translatedContent)
+    setCopied(true)
+  }, [setCopied, translatedContent])
+
   // 控制翻译按钮，翻译前进行校验
   const onTranslate = useCallback(async () => {
     if (!couldTranslate) return
@@ -235,6 +242,10 @@ const TranslatePage: FC = () => {
       }
 
       await translate(text, actualSourceLanguage, actualTargetLanguage)
+
+      if (autoCopy) {
+        onCopy()
+      }
     } catch (error) {
       logger.error('Translation error:', error as Error)
       window.message.error({
@@ -246,10 +257,12 @@ const TranslatePage: FC = () => {
       setTranslating(false)
     }
   }, [
+    autoCopy,
     bidirectionalPair,
     couldTranslate,
     getLanguageByLangcode,
     isBidirectional,
+    onCopy,
     setTranslating,
     sourceLanguage,
     t,
@@ -272,12 +285,6 @@ const TranslatePage: FC = () => {
   const toggleBidirectional = (value: boolean) => {
     setIsBidirectional(value)
     db.settings.put({ id: 'translate:bidirectional:enabled', value })
-  }
-
-  // 控制复制按钮
-  const onCopy = () => {
-    navigator.clipboard.writeText(translatedContent)
-    setCopied(true)
   }
 
   // 控制历史记录点击
