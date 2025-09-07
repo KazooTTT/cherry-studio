@@ -29,9 +29,7 @@ const translateSlice = createSlice({
     },
     updateSettings: (state, action: PayloadAction<Partial<TranslateState['settings']>>) => {
       const update = action.payload
-      for (const [key, value] of Object.entries(update)) {
-        state.settings[key] = value
-      }
+      Object.assign(state.settings, update)
     }
   }
 })
