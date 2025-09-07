@@ -1,6 +1,6 @@
 import { loggerService } from '@logger'
 import { nanoid } from '@reduxjs/toolkit'
-import { DEFAULT_CONTEXTCOUNT, DEFAULT_TEMPERATURE, isMac } from '@renderer/config/constant'
+import { isMac } from '@renderer/config/constant'
 import { DEFAULT_MIN_APPS } from '@renderer/config/minapps'
 import {
   glm45FlashModel,
@@ -1684,16 +1684,9 @@ const migrateConfig = {
   '115': (state: RootState) => {
     try {
       state.assistants.assistants.forEach((assistant) => {
+        // I really want to know why we did the migration but didn't modify the type definition
         if (!assistant.settings) {
-          assistant.settings = {
-            temperature: DEFAULT_TEMPERATURE,
-            contextCount: DEFAULT_CONTEXTCOUNT,
-            topP: 1,
-            toolUseMode: 'prompt',
-            customParameters: [],
-            streamOutput: true,
-            enableMaxTokens: false
-          }
+          assistant.settings = DEFAULT_ASSISTANT_SETTINGS
         }
       })
       return state
@@ -2418,6 +2411,31 @@ const migrateConfig = {
       return state
     }
   }
+  // TODO: uncomment it when ready for test
+  // '200': (state: RootState) => {
+  //   try {
+  //     state.assistants.assistants.forEach((assistant) => {
+  //       if (assistant.settings === undefined) {
+  //         assistant.settings = DEFAULT_ASSISTANT_SETTINGS
+  //       }
+  //       if (assistant.settings.reasoning_effort === undefined) {
+  //         assistant.settings.reasoning_effort = null
+  //       }
+  //       if (assistant.model) {
+  //         const reasoningEffort = assistant.settings.reasoning_effort
+  //         assistant.settings.enableThinking = isSupportedThinkingTokenModel(assistant.model)
+  //           ? reasoningEffort !== null
+  //           : null
+  //       } else {
+  //         assistant.settings.enableThinking = null
+  //       }
+  //     })
+  //     return state
+  //   } catch (error) {
+  //     logger.error('migrate 151 error', error as Error)
+  //     return state
+  //   }
+  // }
 }
 
 // 注意：添加新迁移时，记得同时更新 persistReducer

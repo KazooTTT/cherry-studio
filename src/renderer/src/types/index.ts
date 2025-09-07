@@ -30,7 +30,7 @@ export type Assistant = {
   description?: string
   model?: Model
   defaultModel?: Model
-  settings?: Partial<AssistantSettings>
+  settings?: AssistantSettings
   messages?: AssistantMessage[]
   /** enableWebSearch 代表使用模型内置网络搜索功能 */
   enableWebSearch?: boolean
@@ -88,12 +88,13 @@ const ThinkModelTypes = [
   'deepseek_hybrid'
 ] as const
 
-export type ReasoningEffortOption = NonNullable<OpenAI.ReasoningEffort> | 'auto'
+/** `null` means explicitly disable reasoning */
+export type ReasoningEffortOption = OpenAI.ReasoningEffort | 'auto'
 export type ThinkingOption = ReasoningEffortOption | 'off'
 export type ThinkingModelType = (typeof ThinkModelTypes)[number]
 export type ThinkingOptionConfig = Record<ThinkingModelType, ThinkingOption[]>
 export type ReasoningEffortConfig = Record<ThinkingModelType, ReasoningEffortOption[]>
-export type EffortRatio = Record<ReasoningEffortOption, number>
+export type EffortRatio = Record<NonNullable<ReasoningEffortOption>, number>
 
 export function isThinkModelType(type: string): type is ThinkingModelType {
   return ThinkModelTypes.some((t) => t === type)
@@ -118,14 +119,23 @@ export type AssistantSettings = {
   streamOutput: boolean
   defaultModel?: Model
   customParameters?: AssistantSettingCustomParameters[]
-  reasoning_effort?: ReasoningEffortOption
+  /** Reasoning effort level option
+   * - minimal: Minimal effort, suitable for simple questions
+   * - low: Low effort, suitable for relatively simple questions
+   * - medium: Medium effort, suitable for general questions
+   * - high: High effort, suitable for complex questions
+   * - auto: Automatically determine required effort level
+   * - null: Explicitly disable reasoning
+   */
+  reasoning_effort: ReasoningEffortOption
+  /** This field is only valid for turn-based reasoning models that support enabling/disabling reasoning. For non-hybrid reasoning models, this field should be null */
+  enableThinking: boolean | null
   /** 保留上一次使用思考模型时的 reasoning effort, 在从非思考模型切换到思考模型时恢复.
-   *
-   * TODO: 目前 reasoning_effort === undefined 有两个语义，有的场景是显式关闭思考，有的场景是不传参。
-   * 未来应该重构思考控制，将启用/关闭思考和思考选项分离，这样就不用依赖 cache 了。
-   *
+   * @deprecated
    */
   reasoning_effort_cache?: ReasoningEffortOption
+  // TODO: 这个应该可以去掉了
+  /** @deprecated */
   qwenThinkMode?: boolean
   toolUseMode: 'function' | 'prompt'
 }
