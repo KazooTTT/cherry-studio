@@ -1,4 +1,4 @@
-import { addToast } from '@heroui/react'
+import { addToast } from '@heroui/toast'
 import { RequireSome } from '@renderer/types'
 
 type AddToastProps = Parameters<typeof addToast>[0]
