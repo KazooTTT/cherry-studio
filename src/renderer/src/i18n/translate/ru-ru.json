@@ -2232,7 +2232,7 @@
       "changeType": "Изменить тип",
       "deleteProperty": "Удалить атрибут",
       "editValue": "Редактировать значение",
-      "empty": "",
+      "empty": "Пусто",
       "moreActions": "Дополнительные действия",
       "propertyName": "Имя атрибута"
     },
