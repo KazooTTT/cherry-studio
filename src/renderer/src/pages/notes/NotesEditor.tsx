@@ -78,11 +78,12 @@ const NotesEditor: FC<NotesEditorProps> = memo(
               onCommandsReady={handleCommandsReady}
               showToolbar={tmpViewMode === 'preview'}
               editable={tmpViewMode === 'preview'}
-              showTableOfContents
+              showTableOfContents={settings.showTableOfContents}
               enableContentSearch
               className="notes-rich-editor"
               isFullWidth={settings.isFullWidth}
               fontFamily={settings.fontFamily}
+              fontSize={settings.fontSize}
             />
           )}
         </RichEditorContainer>
