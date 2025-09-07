@@ -226,14 +226,17 @@ export class AnthropicAPIClient extends BaseApiClient<
     const { maxTokens } = getAssistantSettings(assistant)
 
     const reasoningEffort = assistant?.settings?.reasoning_effort
+    const enableThinking = assistant.settings?.enableThinking
 
-    if (reasoningEffort === undefined) {
-      return {
-        type: 'disabled'
-      }
+    if (reasoningEffort === undefined || enableThinking === null) {
+      return undefined
     }
 
-    const effortRatio = EFFORT_RATIO[reasoningEffort]
+    if (reasoningEffort === null || enableThinking === false) {
+      return { type: 'disabled' }
+    }
+
+    const effortRatio = reasoningEffort ? EFFORT_RATIO[reasoningEffort] : 0
 
     const budgetTokens = Math.max(
       1024,
