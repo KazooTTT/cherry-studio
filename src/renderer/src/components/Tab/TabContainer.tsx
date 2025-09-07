@@ -1,10 +1,10 @@
 import { PlusOutlined } from '@ant-design/icons'
 import { Sortable, useDndReorder } from '@renderer/components/dnd'
+import HorizontalScrollContainer from '@renderer/components/HorizontalScrollContainer'
 import { isMac } from '@renderer/config/constant'
 import { DEFAULT_MIN_APPS } from '@renderer/config/minapps'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useFullscreen } from '@renderer/hooks/useFullscreen'
-import { useHorizontalScroll } from '@renderer/hooks/useHorizontalScroll'
 import { useMinappPopup } from '@renderer/hooks/useMinappPopup'
 import { useMinapps } from '@renderer/hooks/useMinapps'
 import { getThemeModeLabel, getTitleLabel } from '@renderer/i18n/label'
@@ -97,10 +97,6 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
   const { minapps } = useMinapps()
   const { t } = useTranslation()
 
-  const { scrollRef, ScrollContainer, ScrollContent, renderScrollButton } = useHorizontalScroll({
-    dependencies: [tabs]
-  })
-
   const getTabId = (path: string): string => {
     if (path === '/') return 'home'
     const segments = path.split('/')
@@ -187,42 +183,39 @@ const TabsContainer: React.FC<TabsContainerProps> = ({ children }) => {
   return (
     <Container>
       <TabsBar $isFullscreen={isFullscreen}>
-        <ScrollContainer>
-          <ScrollContent ref={scrollRef}>
-            <Sortable
-              items={visibleTabs}
-              itemKey="id"
-              layout="list"
-              horizontal
-              gap={'6px'}
-              onSortEnd={onSortEnd}
-              className="tabs-sortable"
-              renderItem={(tab) => (
-                <Tab key={tab.id} active={tab.id === activeTabId} onClick={() => handleTabClick(tab)}>
-                  <TabHeader>
-                    {tab.id && <TabIcon>{getTabIcon(tab.id, minapps)}</TabIcon>}
-                    <TabTitle>{getTabTitle(tab.id)}</TabTitle>
-                  </TabHeader>
-                  {tab.id !== 'home' && (
-                    <CloseButton
-                      className="close-button"
-                      data-no-dnd
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        closeTab(tab.id)
-                      }}>
-                      <X size={12} />
-                    </CloseButton>
-                  )}
-                </Tab>
-              )}
-            />
-          </ScrollContent>
-          {renderScrollButton()}
+        <HorizontalScrollContainer dependencies={[tabs]} gap="6px" className="tab-scroll-container">
+          <Sortable
+            items={visibleTabs}
+            itemKey="id"
+            layout="list"
+            horizontal
+            gap={'6px'}
+            onSortEnd={onSortEnd}
+            className="tabs-sortable"
+            renderItem={(tab) => (
+              <Tab key={tab.id} active={tab.id === activeTabId} onClick={() => handleTabClick(tab)}>
+                <TabHeader>
+                  {tab.id && <TabIcon>{getTabIcon(tab.id, minapps)}</TabIcon>}
+                  <TabTitle>{getTabTitle(tab.id)}</TabTitle>
+                </TabHeader>
+                {tab.id !== 'home' && (
+                  <CloseButton
+                    className="close-button"
+                    data-no-dnd
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      closeTab(tab.id)
+                    }}>
+                    <X size={12} />
+                  </CloseButton>
+                )}
+              </Tab>
+            )}
+          />
           <AddTabButton onClick={handleAddTab} className={classNames({ active: activeTabId === 'launchpad' })}>
             <PlusOutlined />
           </AddTabButton>
-        </ScrollContainer>
+        </HorizontalScrollContainer>
         <RightButtonsContainer>
           <Tooltip
             title={t('settings.theme.title') + ': ' + getThemeModeLabel(settedTheme)}
@@ -273,6 +266,14 @@ const TabsBar = styled.div<{ $isFullscreen: boolean }>`
     position: relative;
     z-index: 1;
     -webkit-app-region: no-drag;
+  }
+
+  .tab-scroll-container {
+    -webkit-app-region: drag;
+
+    > * {
+      -webkit-app-region: no-drag;
+    }
   }
 `
 

@@ -1,5 +1,5 @@
+import HorizontalScrollContainer from '@renderer/components/HorizontalScrollContainer'
 import CustomTag from '@renderer/components/Tags/CustomTag'
-import { useHorizontalScroll } from '@renderer/hooks/useHorizontalScroll'
 import { useProviders } from '@renderer/hooks/useProvider'
 import { getModelUniqId } from '@renderer/services/ModelService'
 import { Model } from '@renderer/types'
@@ -12,9 +12,6 @@ const MentionModelsInput: FC<{
   onRemoveModel: (model: Model) => void
 }> = ({ selectedModels, onRemoveModel }) => {
   const { providers } = useProviders()
-  const { scrollRef, ScrollContainer, ScrollContent, renderScrollButton } = useHorizontalScroll({
-    dependencies: [selectedModels]
-  })
 
   const getProviderName = (model: Model) => {
     const provider = providers.find((p) => p.id === model?.provider)
@@ -23,21 +20,18 @@ const MentionModelsInput: FC<{
 
   return (
     <Container>
-      <ScrollContainer>
-        <ScrollContent ref={scrollRef}>
-          {selectedModels.map((model) => (
-            <CustomTag
-              icon={<i className="iconfont icon-at" />}
-              color="#1677ff"
-              key={getModelUniqId(model)}
-              closable
-              onClose={() => onRemoveModel(model)}>
-              {model.name} ({getProviderName(model)})
-            </CustomTag>
-          ))}
-        </ScrollContent>
-        {renderScrollButton()}
-      </ScrollContainer>
+      <HorizontalScrollContainer dependencies={[selectedModels]} expandable>
+        {selectedModels.map((model) => (
+          <CustomTag
+            icon={<i className="iconfont icon-at" />}
+            color="#1677ff"
+            key={getModelUniqId(model)}
+            closable
+            onClose={() => onRemoveModel(model)}>
+            {model.name} ({getProviderName(model)})
+          </CustomTag>
+        ))}
+      </HorizontalScrollContainer>
     </Container>
   )
 }
