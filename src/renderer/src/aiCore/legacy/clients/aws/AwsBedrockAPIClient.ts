@@ -1061,7 +1061,7 @@ export class AwsBedrockAPIClient extends BaseApiClient<
       const { maxTokens } = getAssistantSettings(assistant)
       const reasoningEffort = assistant?.settings?.reasoning_effort
 
-      if (reasoningEffort === undefined) {
+      if (reasoningEffort === undefined || reasoningEffort === null) {
         return undefined
       }
 
