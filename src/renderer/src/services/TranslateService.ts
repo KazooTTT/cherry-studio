@@ -122,14 +122,14 @@ export const translateText = async (
     return trimmedText
   } catch (e) {
     if (isAbortError(e)) {
-      window.message.info(t('translate.info.aborted'))
+      window.toast.info(t('translate.info.aborted'))
       throw e
     } else if (isAbortError(abortError)) {
-      window.message.info(t('translate.info.aborted'))
+      window.toast.info(t('translate.info.aborted'))
       throw abortError
     } else {
       logger.error('Failed to translate', e as Error)
-      window.message.error(t('translate.error.failed' + ': ' + formatErrorMessage(e)))
+      window.toast.error(t('translate.error.failed' + ': ' + formatErrorMessage(e)))
       throw e
     }
   }

@@ -3,7 +3,7 @@ import { addToast, closeAll, closeToast, getToastQueue, isToastClosing } from '@
 import TopViewMinappContainer from '@renderer/components/MinApp/TopViewMinappContainer'
 import { useAppInit } from '@renderer/hooks/useAppInit'
 import { useShortcuts } from '@renderer/hooks/useShortcuts'
-import { message, Modal } from 'antd'
+import { Modal } from 'antd'
 import React, { PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react'
 
 import { Box } from '../Layout'
@@ -35,7 +35,6 @@ const TopViewContainer: React.FC<Props> = ({ children }) => {
   const elementsRef = useRef<ElementItem[]>([])
   elementsRef.current = elements
 
-  const [messageApi, messageContextHolder] = message.useMessage()
   const [modal, modalContextHolder] = Modal.useModal()
   const { shortcuts } = useShortcuts()
   const enableQuitFullScreen = shortcuts.find((item) => item.key === 'exit_fullscreen')?.enabled
@@ -43,7 +42,6 @@ const TopViewContainer: React.FC<Props> = ({ children }) => {
   useAppInit()
 
   useEffect(() => {
-    window.message = messageApi
     window.modal = modal
     window.toast = {
       getToastQueue: getToastQueue,
@@ -57,7 +55,7 @@ const TopViewContainer: React.FC<Props> = ({ children }) => {
       info,
       loading
     }
-  }, [messageApi, modal])
+  }, [modal])
 
   onPop = () => {
     const views = [...elementsRef.current]
@@ -110,7 +108,6 @@ const TopViewContainer: React.FC<Props> = ({ children }) => {
   return (
     <>
       {children}
-      {messageContextHolder}
       {modalContextHolder}
       <TopViewMinappContainer />
       {elements.map(({ element: Element, id }) => (

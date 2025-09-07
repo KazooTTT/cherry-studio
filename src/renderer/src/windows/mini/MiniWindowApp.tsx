@@ -1,9 +1,12 @@
 import '@renderer/databases'
 
+import { HeroUIProvider } from '@heroui/react'
+import { addToast, closeAll, closeToast, getToastQueue, isToastClosing } from '@heroui/toast'
 import { ErrorBoundary } from '@renderer/components/ErrorBoundary'
+import { ToastPortal } from '@renderer/components/ToastPortal'
+import { error, info, loading, success, warning } from '@renderer/components/TopView/toast'
 import { useSettings } from '@renderer/hooks/useSettings'
 import store, { persistor } from '@renderer/store'
-import { message } from 'antd'
 import { useEffect } from 'react'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
@@ -35,24 +38,37 @@ function MiniWindowContent(): React.ReactElement {
 }
 
 function MiniWindow(): React.ReactElement {
-  //miniWindow should register its own message component
-  const [messageApi, messageContextHolder] = message.useMessage()
-  window.message = messageApi
+  useEffect(() => {
+    window.toast = {
+      getToastQueue: getToastQueue,
+      addToast: addToast,
+      closeToast: closeToast,
+      closeAll: closeAll,
+      isToastClosing: isToastClosing,
+      error,
+      success,
+      warning,
+      info,
+      loading
+    }
+  }, [])
 
   return (
     <Provider store={store}>
-      <ThemeProvider>
-        <AntdProvider>
-          <CodeStyleProvider>
-            <PersistGate loading={null} persistor={persistor}>
-              <ErrorBoundary>
-                {messageContextHolder}
-                <MiniWindowContent />
-              </ErrorBoundary>
-            </PersistGate>
-          </CodeStyleProvider>
-        </AntdProvider>
-      </ThemeProvider>
+      <HeroUIProvider>
+        <ThemeProvider>
+          <AntdProvider>
+            <CodeStyleProvider>
+              <PersistGate loading={null} persistor={persistor}>
+                <ErrorBoundary>
+                  <MiniWindowContent />
+                </ErrorBoundary>
+              </PersistGate>
+            </CodeStyleProvider>
+          </AntdProvider>
+        </ThemeProvider>
+        <ToastPortal />
+      </HeroUIProvider>
     </Provider>
   )
 }
