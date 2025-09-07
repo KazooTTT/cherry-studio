@@ -580,7 +580,7 @@ async function createSingleFolder(
     logger.debug(`Error creating folder: ${actualFolderPath}`, error as Error)
   }
 
-  let parentNode: NotesTreeNode | null = null
+  let parentNode: NotesTreeNode | null
   if (parentFolderPath === targetFolderPath) {
     parentNode =
       tree.find((node) => node.externalPath === targetFolderPath) || findNodeByExternalPath(tree, targetFolderPath)
@@ -641,20 +641,33 @@ async function uploadAllFiles(
   createdFolders: Map<string, NotesTreeNode>,
   uploadedNodes: NotesTreeNode[]
 ): Promise<void> {
+  const uploadPromises: Promise<NotesTreeNode | null>[] = []
+
   for (const [dirPath, dirFiles] of filesByPath.entries()) {
     for (const file of dirFiles) {
-      try {
-        const result = await uploadSingleFile(file, dirPath, targetFolderPath, tree, createdFolders)
+      const uploadPromise = uploadSingleFile(file, dirPath, targetFolderPath, tree, createdFolders)
+        .then((result) => {
+          if (result) {
+            logger.debug(`Uploaded file: ${result.externalPath}`)
+          }
+          return result
+        })
+        .catch((error) => {
+          logger.error(`Failed to upload file ${file.name}:`, error as Error)
+          return null
+        })
 
-        if (result) {
-          uploadedNodes.push(result)
-          logger.debug(`Uploaded file: ${result.externalPath}`)
-        }
-      } catch (error) {
-        logger.error(`Failed to upload file ${file.name}:`, error as Error)
-      }
+      uploadPromises.push(uploadPromise)
     }
   }
+
+  const results = await Promise.all(uploadPromises)
+
+  results.forEach((result) => {
+    if (result) {
+      uploadedNodes.push(result)
+    }
+  })
 }
 
 /**
@@ -671,7 +684,7 @@ async function uploadSingleFile(
   const nameWithoutExt = fileName.replace(MARKDOWN_EXT, '')
 
   let actualDirPath = originalDirPath
-  let parentNode: NotesTreeNode | null = null
+  let parentNode: NotesTreeNode | null
   if (originalDirPath === targetFolderPath) {
     parentNode =
       tree.find((node) => node.externalPath === targetFolderPath) || findNodeByExternalPath(tree, targetFolderPath)
