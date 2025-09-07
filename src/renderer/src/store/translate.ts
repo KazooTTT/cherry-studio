@@ -4,6 +4,7 @@ import { objectEntriesStrict } from '@renderer/types'
 export interface TranslateState {
   translateInput: string
   translatedContent: string
+  // TODO: #9749
   settings: {
     autoCopy: boolean
   }
