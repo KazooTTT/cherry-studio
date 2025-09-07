@@ -50,5 +50,9 @@ export const info = createToast('default')
  * @returns Toast ID or null
  */
 export const loading = (args: RequireSome<AddToastProps, 'promise'>) => {
+  // Disappear immediately by default
+  if (args.timeout === undefined) {
+    args.timeout = 1
+  }
   return addToast(args)
 }
