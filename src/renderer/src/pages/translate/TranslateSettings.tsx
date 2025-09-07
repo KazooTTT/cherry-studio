@@ -82,6 +82,7 @@ const TranslateSettings: FC<{
             <div style={{ fontWeight: 500 }}>{t('translate.settings.autoCopy')}</div>
             <Switch
               isSelected={autoCopy}
+              color="primary"
               onValueChange={(isSelected) => {
                 updateSettings({ autoCopy: isSelected })
               }}
@@ -94,6 +95,7 @@ const TranslateSettings: FC<{
             <div style={{ fontWeight: 500 }}>{t('translate.settings.scroll_sync')}</div>
             <Switch
               isSelected={isScrollSyncEnabled}
+              color="primary"
               onValueChange={(isSelected) => {
                 setIsScrollSyncEnabled(isSelected)
                 db.settings.put({ id: 'translate:scroll:sync', value: isSelected })
@@ -147,6 +149,7 @@ const TranslateSettings: FC<{
             </div>
             <Switch
               isSelected={isBidirectional}
+              color="primary"
               onValueChange={(isSelected) => {
                 setIsBidirectional(isSelected)
                 // 双向翻译设置不需要持久化，它只是界面状态
