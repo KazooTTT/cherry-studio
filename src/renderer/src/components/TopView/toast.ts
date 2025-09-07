@@ -1,6 +1,6 @@
-import { addToast, ToastProps } from '@heroui/react'
+import { addToast } from '@heroui/react'
 
-type ToastPropsColored = Omit<ToastProps, 'color'>
+type ToastPropsColored = Omit<Parameters<typeof addToast>[0], 'color'>
 
 const createToast = (color: 'danger' | 'success' | 'warning' | 'default') => {
   return (arg: ToastPropsColored | string): string | null => {
