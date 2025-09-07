@@ -6,6 +6,7 @@ import { TranslateLanguage } from '@renderer/types'
 import { runAsyncFunction } from '@renderer/utils'
 import { getTranslateOptions } from '@renderer/utils/translate'
 import { useCallback, useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
 
 const logger = loggerService.withContext('useTranslate')
 
@@ -21,6 +22,8 @@ export default function useTranslate() {
   const settings = useAppSelector((state) => state.translate.settings)
   const [translateLanguages, setTranslateLanguages] = useState<TranslateLanguage[]>(builtinLanguages)
   const [isLoaded, setIsLoaded] = useState(false)
+
+  const dispatch = useDispatch()
 
   useEffect(() => {
     runAsyncFunction(async () => {
@@ -49,7 +52,7 @@ export default function useTranslate() {
   )
 
   const _updateSettings = useCallback((update: Partial<TranslateState['settings']>) => {
-    updateSettings(update)
+    dispatch(updateSettings(update))
   }, [])
 
   return {
