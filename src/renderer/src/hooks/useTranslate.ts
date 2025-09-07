@@ -51,15 +51,18 @@ export default function useTranslate() {
     [isLoaded, translateLanguages]
   )
 
-  const _updateSettings = useCallback((update: Partial<TranslateState['settings']>) => {
-    dispatch(updateSettings(update))
-  }, [])
+  const handleUpdateSettings = useCallback(
+    (update: Partial<TranslateState['settings']>) => {
+      dispatch(updateSettings(update))
+    },
+    [dispatch]
+  )
 
   return {
     prompt,
     settings,
     translateLanguages,
     getLanguageByLangcode,
-    updateSettings: _updateSettings
+    updateSettings: handleUpdateSettings
   }
 }
