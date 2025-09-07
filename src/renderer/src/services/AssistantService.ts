@@ -6,7 +6,7 @@ import {
   MAX_CONTEXT_COUNT,
   UNLIMITED_CONTEXT_COUNT
 } from '@renderer/config/constant'
-import { isQwenMTModel } from '@renderer/config/models'
+import { isQwenMTModel, isSupportedThinkingTokenModel } from '@renderer/config/models'
 import { UNKNOWN } from '@renderer/config/translate'
 import i18n from '@renderer/i18n'
 import store from '@renderer/store'
@@ -35,7 +35,9 @@ export const DEFAULT_ASSISTANT_SETTINGS: AssistantSettings = {
   topP: 1,
   enableTopP: true,
   toolUseMode: 'prompt',
-  customParameters: []
+  customParameters: [],
+  reasoning_effort: null,
+  enableThinking: false
 }
 
 export function getDefaultAssistant(): Assistant {
@@ -66,9 +68,18 @@ export function getDefaultTranslateAssistant(targetLanguage: TranslateLanguage, 
     throw new Error('Unknown target language')
   }
 
+  const reasoning = isSupportedThinkingTokenModel(model)
+
+  // TODO: make it configurable for user
   const settings = {
-    temperature: 0.7
-  }
+    temperature: 0.7,
+    topP: 0,
+    contextCount: 0,
+    streamOutput: false,
+    reasoning_effort: null,
+    enableThinking: reasoning ? false : null,
+    toolUseMode: 'function'
+  } satisfies AssistantSettings
 
   let prompt: string
   let content: string
@@ -148,9 +159,12 @@ export function getProviderByModel(model?: Model): Provider {
 export function getProviderByModelId(modelId?: string) {
   const providers = store.getState().llm.providers
   const _modelId = modelId || getDefaultModel().id
+  // FIXME: as Provider is not type safe
   return providers.find((p) => p.models.find((m) => m.id === _modelId)) as Provider
 }
 
+// TODO: Due to the type definition being set as partial, this function requires additional processing.
+// In the future, we should completely eliminate this function and directly use the fields defined on the object.
 export const getAssistantSettings = (assistant: Assistant): AssistantSettings => {
   const contextCount = assistant?.settings?.contextCount ?? DEFAULT_CONTEXTCOUNT
   const getAssistantMaxTokens = () => {
@@ -175,9 +189,10 @@ export const getAssistantSettings = (assistant: Assistant): AssistantSettings =>
     streamOutput: assistant?.settings?.streamOutput ?? true,
     toolUseMode: assistant?.settings?.toolUseMode ?? 'prompt',
     defaultModel: assistant?.defaultModel ?? undefined,
-    reasoning_effort: assistant?.settings?.reasoning_effort ?? undefined,
-    customParameters: assistant?.settings?.customParameters ?? []
-  }
+    reasoning_effort: assistant?.settings?.reasoning_effort ?? null,
+    customParameters: assistant?.settings?.customParameters ?? [],
+    enableThinking: assistant?.settings?.enableThinking ?? null
+  } satisfies AssistantSettings
 }
 
 export function getAssistantById(id: string) {
