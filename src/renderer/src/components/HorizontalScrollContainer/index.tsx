@@ -10,7 +10,6 @@ import styled from 'styled-components'
  * @param scrollDistance 滚动距离
  * @param className 类名
  * @param gap 间距
- * @param paddingRight 右侧内边距
  * @param expandable 是否可展开
  */
 export interface HorizontalScrollContainerProps {
@@ -19,7 +18,6 @@ export interface HorizontalScrollContainerProps {
   scrollDistance?: number
   className?: string
   gap?: string
-  paddingRight?: string
   expandable?: boolean
 }
 
@@ -29,15 +27,15 @@ const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps> = ({
   scrollDistance = 200,
   className,
   gap = '8px',
-  paddingRight = '2rem',
   expandable = false
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScroll, setCanScroll] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const handleScrollRight = () => {
+  const handleScrollRight = (event: React.MouseEvent) => {
     scrollRef.current?.scrollBy({ left: scrollDistance, behavior: 'smooth' })
+    event.stopPropagation()
   }
 
   const handleContainerClick = (e: React.MouseEvent) => {
@@ -76,11 +74,7 @@ const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps> = ({
   }, dependencies)
 
   return (
-    <Container
-      className={className}
-      $paddingRight={paddingRight}
-      $expandable={expandable}
-      onClick={expandable ? handleContainerClick : undefined}>
+    <Container className={className} $expandable={expandable} onClick={expandable ? handleContainerClick : undefined}>
       <ScrollContent ref={scrollRef} $gap={gap} $isExpanded={isExpanded} $expandable={expandable}>
         {children}
       </ScrollContent>
@@ -93,12 +87,11 @@ const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps> = ({
   )
 }
 
-const Container = styled.div<{ $paddingRight: string; $expandable?: boolean }>`
+const Container = styled.div<{ $expandable?: boolean }>`
   display: flex;
   align-items: center;
   flex: 1 1 auto;
   min-width: 0;
-  padding-right: ${(props) => props.$paddingRight};
   position: relative;
   cursor: ${(props) => (props.$expandable ? 'pointer' : 'default')};
 
