@@ -1,7 +1,6 @@
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { DEFAULT_CONTEXTCOUNT, DEFAULT_TEMPERATURE } from '@renderer/config/constant'
 import { TopicManager } from '@renderer/hooks/useTopic'
-import { getDefaultAssistant, getDefaultTopic } from '@renderer/services/AssistantService'
+import { DEFAULT_ASSISTANT_SETTINGS, getDefaultAssistant, getDefaultTopic } from '@renderer/services/AssistantService'
 import { Assistant, AssistantSettings, Model, Topic } from '@renderer/types'
 import { isEmpty, uniqBy } from 'lodash'
 
@@ -58,13 +57,7 @@ const assistantsSlice = createSlice({
         if (assistant.id === action.payload.assistantId) {
           for (const key in settings) {
             if (!assistant.settings) {
-              assistant.settings = {
-                temperature: DEFAULT_TEMPERATURE,
-                contextCount: DEFAULT_CONTEXTCOUNT,
-                enableMaxTokens: false,
-                maxTokens: 0,
-                streamOutput: true
-              }
+              assistant.settings = DEFAULT_ASSISTANT_SETTINGS
             }
             assistant.settings[key] = settings[key]
           }
