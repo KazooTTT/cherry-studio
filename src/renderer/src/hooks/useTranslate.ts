@@ -1,6 +1,7 @@
 import { loggerService } from '@logger'
 import { builtinLanguages, UNKNOWN } from '@renderer/config/translate'
 import { useAppSelector } from '@renderer/store'
+import { TranslateState, updateSettings } from '@renderer/store/translate'
 import { TranslateLanguage } from '@renderer/types'
 import { runAsyncFunction } from '@renderer/utils'
 import { getTranslateOptions } from '@renderer/utils/translate'
@@ -17,6 +18,7 @@ const logger = loggerService.withContext('useTranslate')
  */
 export default function useTranslate() {
   const prompt = useAppSelector((state) => state.settings.translateModelPrompt)
+  const settings = useAppSelector((state) => state.translate.settings)
   const [translateLanguages, setTranslateLanguages] = useState<TranslateLanguage[]>(builtinLanguages)
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -46,9 +48,15 @@ export default function useTranslate() {
     [isLoaded, translateLanguages]
   )
 
+  const _updateSettings = useCallback((update: Partial<TranslateState['settings']>) => {
+    updateSettings(update)
+  }, [])
+
   return {
     prompt,
+    settings,
     translateLanguages,
-    getLanguageByLangcode
+    getLanguageByLangcode,
+    updateSettings: _updateSettings
   }
 }

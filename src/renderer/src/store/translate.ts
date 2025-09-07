@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { objectEntriesStrict } from '@renderer/types'
 
 export interface TranslateState {
   translateInput: string
@@ -28,14 +27,15 @@ const translateSlice = createSlice({
     setTranslatedContent: (state, action: PayloadAction<string>) => {
       state.translatedContent = action.payload
     },
-    updateSettings: (state, action: PayloadAction<TranslateState['settings']>) => {
-      for (const [key, value] of objectEntriesStrict(action.payload)) {
+    updateSettings: (state, action: PayloadAction<Partial<TranslateState['settings']>>) => {
+      const update = action.payload
+      for (const [key, value] of Object.entries(update)) {
         state.settings[key] = value
       }
     }
   }
 })
 
-export const { setTranslateInput, setTranslatedContent } = translateSlice.actions
+export const { setTranslateInput, setTranslatedContent, updateSettings } = translateSlice.actions
 
 export default translateSlice.reducer
