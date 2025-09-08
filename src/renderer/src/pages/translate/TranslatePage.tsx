@@ -132,6 +132,18 @@ const TranslatePage: FC = () => {
     [dispatch]
   )
 
+  // 控制复制行为
+  const onCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(translatedContent)
+      setCopied(true)
+    } catch (error) {
+      logger.error('Failed to copy text to clipboard:', error as Error)
+      // TODO: use toast
+      window.message.error(t('common.copy_failed'))
+    }
+  }, [setCopied, t, translatedContent])
+
   /**
    * 翻译文本并保存历史记录，包含完整的异常处理，不会抛出异常
    * @param text - 需要翻译的文本
@@ -165,6 +177,15 @@ const TranslatePage: FC = () => {
         }
 
         window.message.success(t('translate.complete'))
+        if (autoCopy) {
+          setTimeoutTimer(
+            'auto-copy',
+            async () => {
+              await onCopy()
+            },
+            100
+          )
+        }
 
         try {
           await saveTranslateHistory(text, translated, actualSourceLanguage.langCode, actualTargetLanguage.langCode)
@@ -177,7 +198,7 @@ const TranslatePage: FC = () => {
         window.message.error(t('translate.error.unknown') + ': ' + formatErrorMessage(e))
       }
     },
-    [dispatch, setTranslatedContent, setTranslating, t, translating]
+    [autoCopy, dispatch, onCopy, setTimeoutTimer, setTranslatedContent, setTranslating, t, translating]
   )
 
   // 控制翻译按钮是否可用
@@ -191,18 +212,6 @@ const TranslatePage: FC = () => {
       isProcessing
     )
   }, [bidirectionalPair, isBidirectional, isProcessing, sourceLanguage, targetLanguage.langCode, text])
-
-  // 控制复制按钮
-  const onCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(translatedContent)
-      setCopied(true)
-    } catch (error) {
-      logger.error('Failed to copy text to clipboard:', error as Error)
-      // TODO: use toast
-      window.message.error(t('common.copy_failed'))
-    }
-  }, [setCopied, t, translatedContent])
 
   // 控制翻译按钮，翻译前进行校验
   const onTranslate = useCallback(async () => {
@@ -250,18 +259,6 @@ const TranslatePage: FC = () => {
       }
 
       await translate(text, actualSourceLanguage, actualTargetLanguage)
-
-      if (autoCopy) {
-        setTimeoutTimer(
-          'auto-copy',
-          async () => {
-            await onCopy()
-            // TODO: use toast
-            window.message.success(t('common.copied'))
-          },
-          100
-        )
-      }
     } catch (error) {
       logger.error('Translation error:', error as Error)
       window.message.error({
@@ -273,13 +270,10 @@ const TranslatePage: FC = () => {
       setTranslating(false)
     }
   }, [
-    autoCopy,
     bidirectionalPair,
     couldTranslate,
     getLanguageByLangcode,
     isBidirectional,
-    onCopy,
-    setTimeoutTimer,
     setTranslating,
     sourceLanguage,
     t,
