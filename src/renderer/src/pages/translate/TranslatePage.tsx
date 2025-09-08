@@ -13,6 +13,7 @@ import { useDrag } from '@renderer/hooks/useDrag'
 import { useFiles } from '@renderer/hooks/useFiles'
 import { useOcr } from '@renderer/hooks/useOcr'
 import { useTemporaryValue } from '@renderer/hooks/useTemporaryValue'
+import { useTimer } from '@renderer/hooks/useTimer'
 import useTranslate from '@renderer/hooks/useTranslate'
 import { estimateTextTokens } from '@renderer/services/TokenService'
 import { saveTranslateHistory, translateText } from '@renderer/services/TranslateService'
@@ -65,6 +66,7 @@ const TranslatePage: FC = () => {
   const { shikiMarkdownIt } = useCodeStyle()
   const { onSelectFile, selecting, clearFiles } = useFiles({ extensions: [...imageExts, ...textExts] })
   const { ocr } = useOcr()
+  const { setTimeoutTimer } = useTimer()
 
   // states
   // const [text, setText] = useState(_text)
@@ -250,9 +252,15 @@ const TranslatePage: FC = () => {
       await translate(text, actualSourceLanguage, actualTargetLanguage)
 
       if (autoCopy) {
-        await onCopy()
-        // TODO: use toast
-        window.message.success(t('common.copied'))
+        setTimeoutTimer(
+          'auto-copy',
+          async () => {
+            await onCopy()
+            // TODO: use toast
+            window.message.success(t('common.copied'))
+          },
+          100
+        )
       }
     } catch (error) {
       logger.error('Translation error:', error as Error)
@@ -271,6 +279,7 @@ const TranslatePage: FC = () => {
     getLanguageByLangcode,
     isBidirectional,
     onCopy,
+    setTimeoutTimer,
     setTranslating,
     sourceLanguage,
     t,
