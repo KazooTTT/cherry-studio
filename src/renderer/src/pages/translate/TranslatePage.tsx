@@ -263,6 +263,7 @@ const TranslatePage: FC = () => {
       await translate(text, actualSourceLanguage, actualTargetLanguage)
     } catch (error) {
       logger.error('Translation error:', error as Error)
+      window.message.error(t('translate.error.failed') + ': ' + formatErrorMessage(error))
       return
     } finally {
       setTranslating(false)
