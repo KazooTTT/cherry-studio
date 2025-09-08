@@ -250,7 +250,9 @@ const TranslatePage: FC = () => {
       await translate(text, actualSourceLanguage, actualTargetLanguage)
 
       if (autoCopy) {
-        onCopy()
+        await onCopy()
+        // TODO: use toast
+        window.message.success(t('common.copied'))
       }
     } catch (error) {
       logger.error('Translation error:', error as Error)
