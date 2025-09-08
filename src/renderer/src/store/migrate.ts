@@ -2420,10 +2420,8 @@ const migrateConfig = {
   },
   '151': (state: RootState) => {
     try {
-      if (!state.note.settings.fontSize) {
+      if (state.note.settings) {
         state.note.settings.fontSize = notesInitialState.settings.fontSize
-      }
-      if (!state.note.settings.showTableOfContents) {
         state.note.settings.showTableOfContents = notesInitialState.settings.showTableOfContents
       }
       return state
