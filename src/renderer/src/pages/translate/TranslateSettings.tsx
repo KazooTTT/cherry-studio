@@ -61,7 +61,7 @@ const TranslateSettings: FC<{
       onCancel={onClose}
       centered={true}
       footer={null}
-      width={420}
+      width={520}
       transitionName="animation-move-down">
       <Flex vertical gap={16} style={{ marginTop: 16, paddingBottom: 20 }}>
         <div>
