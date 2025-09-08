@@ -7,9 +7,9 @@ export interface MenuItem {
   type?: 'divider' | 'component'
   labelKey: string
   icon?: React.ComponentType<any>
-  action?: (settings: NotesSettings, updateSettings: (newSettings: Partial<NotesSettings>) => void, extra?: any) => void
+  action?: (settings: NotesSettings, updateSettings: (newSettings: Partial<NotesSettings>) => void) => void
   children?: MenuItem[]
-  isActive?: (settings: NotesSettings, extra?: any) => boolean
+  isActive?: (settings: NotesSettings) => boolean
   component?: (settings: NotesSettings, updateSettings: (newSettings: Partial<NotesSettings>) => void) => ReactNode
   copyAction?: boolean
 }
