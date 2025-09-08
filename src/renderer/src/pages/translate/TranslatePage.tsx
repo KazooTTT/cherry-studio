@@ -168,7 +168,9 @@ const TranslatePage: FC = () => {
         try {
           translated = await translateText(text, actualTargetLanguage, throttle(setTranslatedContent, 100), abortKey)
         } catch (e) {
-          if (!isAbortError(e)) {
+          if (isAbortError(e)) {
+            window.message.info(t('translate.info.aborted'))
+          } else {
             logger.error('Failed to translate text', e as Error)
             window.message.error(t('translate.error.failed') + ': ' + formatErrorMessage(e))
           }
