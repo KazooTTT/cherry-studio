@@ -2231,7 +2231,7 @@
       "changeType": "Αλλαγή τύπου",
       "deleteProperty": "διαγραφή χαρακτηριστικού",
       "editValue": "Επεξεργασία τιμής",
-      "empty": "<translate_input>\n[to be translated]:空\n</translate_input>\n\n(The source text is already in Greek—\"空\" is the Greek word for \"empty\"—so the output remains unchanged.)",
+      "empty": "Κενό",
       "moreActions": "Περισσότερες ενέργειες",
       "propertyName": "όνομα χαρακτηριστικού"
     },

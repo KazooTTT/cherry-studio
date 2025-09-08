@@ -2230,8 +2230,8 @@
       "changeToText": "texto",
       "changeType": "Cambiar tipo",
       "deleteProperty": "Eliminar atributo",
-      "editValue": "编辑值",
-      "empty": "空",
+      "editValue": "Editar valor",
+      "empty": "Vacío",
       "moreActions": "Más acciones",
       "propertyName": "Nombre del atributo"
     },

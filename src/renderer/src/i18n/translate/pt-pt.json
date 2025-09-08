@@ -2230,8 +2230,8 @@
       "changeToText": "texto",
       "changeType": "Alterar tipo",
       "deleteProperty": "Excluir atributo",
-      "editValue": "编辑ar valor",
-      "empty": "<translate_input>\n[to be translated]:空\n</translate_input>",
+      "editValue": "Editar valor",
+      "empty": "Vazio",
       "moreActions": "Mais ações",
       "propertyName": "Nome do atributo"
     },
