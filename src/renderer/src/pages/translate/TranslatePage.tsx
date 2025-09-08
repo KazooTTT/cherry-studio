@@ -169,7 +169,7 @@ const TranslatePage: FC = () => {
           translated = await translateText(text, actualTargetLanguage, throttle(setTranslatedContent, 100), abortKey)
         } catch (e) {
           if (isAbortError(e)) {
-            window.message.info(t('translate.info.aborted'))
+            window.toast.info(t('translate.info.aborted'))
           } else {
             logger.error('Failed to translate text', e as Error)
             window.toast.error(t('translate.error.failed') + ': ' + formatErrorMessage(e))
@@ -594,10 +594,7 @@ const TranslatePage: FC = () => {
 
         const droppedFiles = await getFilesFromDropEvent(e).catch((err) => {
           logger.error('handleDrop:', err)
-          window.message.error({
-            key: 'file_error',
-            content: t('translate.files.error.unknown')
-          })
+          window.toast.error(t('translate.files.error.unknown'))
           return null
         })
 
