@@ -2420,6 +2420,17 @@ const migrateConfig = {
   },
   '151': (state: RootState) => {
     try {
+      if (state.settings) {
+        state.settings.codeFancyBlock = true
+      }
+      return state
+    } catch (error) {
+      logger.error('migrate 151 error', error as Error)
+      return state
+    }
+  },
+  '152': (state: RootState) => {
+    try {
       state.translate.settings = {
         autoCopy: false
       }
