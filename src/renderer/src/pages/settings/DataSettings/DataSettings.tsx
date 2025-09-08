@@ -569,7 +569,9 @@ const DataSettings: FC = () => {
     }
 
     handleDataMigration()
-  }, [setTimeoutTimer, t])
+    // dont add others to deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const onSkipBackupFilesChange = (value: boolean) => {
     setSkipBackupFile(value)
