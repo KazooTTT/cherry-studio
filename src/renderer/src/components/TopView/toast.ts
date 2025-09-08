@@ -1,4 +1,4 @@
-import { addToast } from '@heroui/toast'
+import { addToast, closeAll, closeToast, getToastQueue, isToastClosing } from '@heroui/toast'
 import { RequireSome } from '@renderer/types'
 
 type AddToastProps = Parameters<typeof addToast>[0]
@@ -56,3 +56,17 @@ export const loading = (args: RequireSome<AddToastProps, 'promise'>) => {
   }
   return addToast(args)
 }
+
+export const getToastUtilities = () =>
+  ({
+    getToastQueue,
+    addToast,
+    closeToast,
+    closeAll,
+    isToastClosing,
+    error,
+    success,
+    warning,
+    info,
+    loading
+  }) as const
