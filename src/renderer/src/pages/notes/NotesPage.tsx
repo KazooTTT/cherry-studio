@@ -539,7 +539,7 @@ const NotesPage: FC = () => {
 
         // 检查上传结果
         if (result.fileCount === 0) {
-          window.message.warning(t('notes.only_markdown'))
+          window.message.warning(t('notes.no_valid_files'))
           return
         }
 
