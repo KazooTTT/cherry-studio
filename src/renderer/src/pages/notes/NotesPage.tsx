@@ -20,8 +20,8 @@ import { selectActiveFilePath, selectSortType, setActiveFilePath, setSortType } 
 import { NotesSortType, NotesTreeNode } from '@renderer/types/note'
 import { FileChangeEvent } from '@shared/config/types'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { AnimatePresence, motion } from 'framer-motion'
 import { debounce } from 'lodash'
+import { AnimatePresence, motion } from 'motion/react'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -563,8 +563,10 @@ const NotesPage: FC = () => {
   const handleMoveNode = useCallback(
     async (sourceNodeId: string, targetNodeId: string, position: 'before' | 'after' | 'inside') => {
       try {
-        await moveNode(sourceNodeId, targetNodeId, position)
-        await sortAllLevels(sortType)
+        const result = await moveNode(sourceNodeId, targetNodeId, position)
+        if (result.success && result.type !== 'manual_reorder') {
+          await sortAllLevels(sortType)
+        }
       } catch (error) {
         logger.error('Failed to move nodes:', error as Error)
       }
@@ -627,7 +629,11 @@ const NotesPage: FC = () => {
           )}
         </AnimatePresence>
         <EditorWrapper>
-          <HeaderNavbar notesTree={notesTree} getCurrentNoteContent={getCurrentNoteContent} />
+          <HeaderNavbar
+            notesTree={notesTree}
+            getCurrentNoteContent={getCurrentNoteContent}
+            onToggleStar={handleToggleStar}
+          />
           <NotesEditor
             activeNodeId={activeNode?.id}
             currentContent={currentContent}

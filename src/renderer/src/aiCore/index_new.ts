@@ -21,6 +21,7 @@ import LegacyAiProvider from './legacy/index'
 import { CompletionsParams, CompletionsResult } from './legacy/middleware/schemas'
 import { AiSdkMiddlewareConfig, buildAiSdkMiddlewares } from './middleware/AiSdkMiddlewareBuilder'
 import { buildPlugins } from './plugins/PluginBuilder'
+import { buildClaudeCodeSystemMessage } from './provider/config/anthropic'
 import { createAiSdkProvider } from './provider/factory'
 import {
   getActualProvider,
@@ -117,6 +118,16 @@ export default class ModernAiProvider {
       // 如果有中间件，应用到语言模型上
       if (middlewares.length > 0 && typeof model === 'object') {
         model = wrapLanguageModel({ model, middleware: middlewares })
+      }
+    }
+
+    if (this.actualProvider.id === 'anthropic' && this.actualProvider.authType === 'oauth') {
+      const claudeCodeSystemMessage = buildClaudeCodeSystemMessage(params.system)
+      params.system = undefined // 清除原有system，避免重复
+      if (Array.isArray(params.messages)) {
+        params.messages = [...claudeCodeSystemMessage, ...params.messages]
+      } else {
+        params.messages = claudeCodeSystemMessage
       }
     }
 
@@ -254,15 +265,15 @@ export default class ModernAiProvider {
     params: StreamTextParams,
     config: ModernAiProviderConfig
   ): Promise<CompletionsResult> {
-    const modelId = this.model!.id
-    logger.info('Starting modernCompletions', {
-      modelId,
-      providerId: this.config!.providerId,
-      topicId: config.topicId,
-      hasOnChunk: !!config.onChunk,
-      hasTools: !!params.tools && Object.keys(params.tools).length > 0,
-      toolCount: params.tools ? Object.keys(params.tools).length : 0
-    })
+    // const modelId = this.model!.id
+    // logger.info('Starting modernCompletions', {
+    //   modelId,
+    //   providerId: this.config!.providerId,
+    //   topicId: config.topicId,
+    //   hasOnChunk: !!config.onChunk,
+    //   hasTools: !!params.tools && Object.keys(params.tools).length > 0,
+    //   toolCount: params.tools ? Object.keys(params.tools).length : 0
+    // })
 
     // 根据条件构建插件数组
     const plugins = buildPlugins(config)
