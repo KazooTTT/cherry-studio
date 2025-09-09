@@ -302,7 +302,6 @@ export function processKnowledgeReferences(
   references: KnowledgeReference[] | undefined,
   onChunkReceived: (chunk: Chunk) => void
 ) {
-  console.log('processKnowledgeReferences', references)
   if (!references || references.length === 0) {
     return
   }

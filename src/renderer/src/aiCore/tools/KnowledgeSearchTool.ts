@@ -101,19 +101,6 @@ Call this tool to execute the search. You can optionally provide additional cont
 
       // 返回结果
       return knowledgeReferencesData
-      // {
-      //   // summary: `Found ${knowledgeReferencesData.length} relevant sources. Use [number] format to cite specific information.`,
-      //   knowledgeReferences: knowledgeReferencesData,
-      //   // instructions: fullInstructions
-      // }
-      // } catch (error) {
-      //   // 返回空对象而不是抛出错误，避免中断对话流程
-      //   return {
-      //     summary: `Search failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      //     knowledgeReferences: [],
-      //     instructions: ''
-      //   }
-      // }
     },
     toModelOutput: (results) => {
       let summary = 'No search needed based on the query analysis.'

@@ -59,7 +59,6 @@ Call this tool to execute the search. You can optionally provide additional cont
         return searchResults
       }
 
-      // try {
       // 构建 ExtractResults 结构用于 processWebsearch
       const extractResults: ExtractResults = {
         websearch: {
@@ -68,33 +67,6 @@ Call this tool to execute the search. You can optionally provide additional cont
         }
       }
       searchResults = await WebSearchService.processWebsearch(webSearchProvider!, extractResults, requestId)
-      // } catch (error) {
-      //   return {
-      //     summary: `Search failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      //     sources: [],
-      //     instructions: ''
-      //   }
-      // }
-      // if (searchResults.results.length === 0) {
-      //   return {
-      //     summary: 'No search results found for the given query.',
-      //     sources: [],
-      //     instructions: ''
-      //   }
-      // }
-
-      // const results = searchResults.results
-      // const citationData = results.map((result, index) => ({
-      //   number: index + 1,
-      //   title: result.title,
-      //   content: result.content,
-      //   url: result.url
-      // }))
-
-      // // 🔑 返回引用友好的格式，复用 REFERENCE_PROMPT 逻辑
-      // const referenceContent = `\`\`\`json\n${JSON.stringify(citationData, null, 2)}\n\`\`\``
-
-      // 构建完整的引用指导文本
 
       return searchResults
     },
