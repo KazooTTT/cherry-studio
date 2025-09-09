@@ -943,6 +943,9 @@
     "image": "Image",
     "name": "Nom du fichier",
     "open": "Ouvrir",
+    "preview": {
+      "error": "Échec de l’ouverture du fichier"
+    },
     "size": "Taille",
     "text": "Texte",
     "title": "Fichier",
@@ -2224,14 +2227,14 @@
       "addProperty": "Ajouter un attribut",
       "addTag": "Ajouter une étiquette",
       "changeToBoolean": "Case à cocher",
-      "changeToDate": "Date du jour",
-      "changeToNumber": "chiffre",
+      "changeToDate": "fecha",
+      "changeToNumber": "numérique",
       "changeToTags": "étiquette",
       "changeToText": "texte",
       "changeType": "Modifier le type",
       "deleteProperty": "Supprimer l'attribut",
-      "editValue": "Valeur d'édition",
-      "empty": "Vide",
+      "editValue": "valeur d'édition",
+      "empty": "vacío",
       "moreActions": "Plus d'actions",
       "propertyName": "Nom de l'attribut"
     },
@@ -3706,8 +3709,8 @@
         "description_detail": "Vous devez souscrire à Claude Pro ou à une version supérieure pour pouvoir utiliser cette méthode d'authentification.",
         "enter_auth_code": "code d'autorisation",
         "logout": "Déconnexion",
-        "logout_failed": "La déconnexion a échoué, veuillez réessayer",
-        "logout_success": "成功退出 Anthropic 登录",
+        "logout_failed": "Échec de la déconnexion, veuillez réessayer",
+        "logout_success": "Déconnexion réussie d'Anthropic",
         "oauth": "Authentification OAuth web",
         "start_auth": "Commencer l'autorisation",
         "submit_code": "Terminer la connexion"
@@ -4296,6 +4299,7 @@
     },
     "processing": "en cours de traduction...",
     "settings": {
+      "autoCopy": "Copié automatiquement après la traduction",
       "bidirectional": "Paramètres de traduction bidirectionnelle",
       "bidirectional_tip": "Une fois activé, seul la traduction bidirectionnelle entre la langue source et la langue cible est prise en charge",
       "model": "Paramètres du modèle",

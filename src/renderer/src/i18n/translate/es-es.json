@@ -943,6 +943,9 @@
     "image": "Imagen",
     "name": "Nombre del archivo",
     "open": "Abrir",
+    "preview": {
+      "error": "No se pudo abrir el archivo"
+    },
     "size": "Tamaño",
     "text": "Texto",
     "title": "Archivo",
@@ -2222,17 +2225,17 @@
     "dragHandle": "bloque de arrastre",
     "frontMatter": {
       "addProperty": "Agregar atributo",
-      "addTag": "Agregar etiqueta",
+      "addTag": "Añadir etiqueta",
       "changeToBoolean": "Casilla de verificación",
       "changeToDate": "Fecha",
       "changeToNumber": "número",
       "changeToTags": "etiqueta",
       "changeToText": "texto",
-      "changeType": "Cambiar tipo",
-      "deleteProperty": "Eliminar atributo",
-      "editValue": "Editar valor",
-      "empty": "Vacío",
-      "moreActions": "Más acciones",
+      "changeType": "cambiar tipo",
+      "deleteProperty": "eliminar atributo",
+      "editValue": "editar valor",
+      "empty": "vacío",
+      "moreActions": "Más operaciones",
       "propertyName": "Nombre del atributo"
     },
     "image": {
@@ -4296,6 +4299,7 @@
     },
     "processing": "Traduciendo...",
     "settings": {
+      "autoCopy": "Copiar automáticamente después de completar la traducción",
       "bidirectional": "Configuración de traducción bidireccional",
       "bidirectional_tip": "Una vez activada, solo se admitirá la traducción bidireccional entre el idioma de origen y el idioma de destino",
       "model": "Configuración del modelo",

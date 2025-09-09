@@ -943,6 +943,9 @@
     "image": "Imagem",
     "name": "Nome do Arquivo",
     "open": "Abrir",
+    "preview": {
+      "error": "Falha ao abrir o arquivo"
+    },
     "size": "Tamanho",
     "text": "Texto",
     "title": "Arquivo",
@@ -2231,9 +2234,9 @@
       "changeType": "Alterar tipo",
       "deleteProperty": "Excluir atributo",
       "editValue": "Editar valor",
-      "empty": "Vazio",
+      "empty": "vazio",
       "moreActions": "Mais ações",
-      "propertyName": "Nome do atributo"
+      "propertyName": "nome do atributo"
     },
     "image": {
       "placeholder": "adicionar imagem"
@@ -3695,7 +3698,7 @@
         "apikey": "Chave da API",
         "auth_failed": "Falha na autenticação da Anthropic",
         "auth_method": "Método de autenticação",
-        "auth_success": "Autenticação OAuth Anthropic bem-sucedida",
+        "auth_success": "Autenticação OAuth da Anthropic bem-sucedida",
         "authenticated": "[retranslating]: Verificado",
         "authenticating": "A autenticar",
         "cancel": "Cancelar",
@@ -4296,6 +4299,7 @@
     },
     "processing": "Traduzindo...",
     "settings": {
+      "autoCopy": "Cópia automática após a tradução",
       "bidirectional": "Configuração de Tradução Bidirecional",
       "bidirectional_tip": "Quando ativado, suporta apenas tradução bidirecional entre o idioma de origem e o idioma de destino",
       "model": "Configuração de Modelo",
