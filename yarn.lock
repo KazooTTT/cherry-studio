@@ -90,6 +90,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ai-sdk/anthropic@npm:2.0.15":
+  version: 2.0.15
+  resolution: "@ai-sdk/anthropic@npm:2.0.15"
+  dependencies:
+    "@ai-sdk/provider": "npm:2.0.0"
+    "@ai-sdk/provider-utils": "npm:3.0.8"
+  peerDependencies:
+    zod: ^3.25.76 || ^4
+  checksum: 10c0/9597b32be8b83dab67b23f162ca66cde385213fb1665f54091d59430789becf73e2b4fcd2be66ceb13020409f59cd8f9da7dae23adf183bc9eb7ce94f55bde96
+  languageName: node
+  linkType: hard
+
 "@ai-sdk/anthropic@npm:2.0.4":
   version: 2.0.4
   resolution: "@ai-sdk/anthropic@npm:2.0.4"
@@ -152,34 +164,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ai-sdk/google-vertex@npm:^3.0.0":
-  version: 3.0.9
-  resolution: "@ai-sdk/google-vertex@npm:3.0.9"
+"@ai-sdk/google-vertex@npm:^3.0.25":
+  version: 3.0.25
+  resolution: "@ai-sdk/google-vertex@npm:3.0.25"
   dependencies:
-    "@ai-sdk/anthropic": "npm:2.0.4"
-    "@ai-sdk/google": "npm:2.0.6"
+    "@ai-sdk/anthropic": "npm:2.0.15"
+    "@ai-sdk/google": "npm:2.0.13"
     "@ai-sdk/provider": "npm:2.0.0"
-    "@ai-sdk/provider-utils": "npm:3.0.3"
+    "@ai-sdk/provider-utils": "npm:3.0.8"
     google-auth-library: "npm:^9.15.0"
   peerDependencies:
     zod: ^3.25.76 || ^4
-  checksum: 10c0/c6584b877f9e20a10dd7d92fc4cb1b4a9838510aa89734cf1ff2faa74ba820b976d3359d4eadcb6035c8911973300efb157931fa0d1105abc8db36f94544cc88
+  checksum: 10c0/ed67a439fc4a446aa7353d258c61497198aecdf0de55500d2abbea86109bbf1ff4570fffdfcf58508db1c887a2095a71322777634f76326a45e259d28ef0b801
   languageName: node
   linkType: hard
 
-"@ai-sdk/google@npm:2.0.6":
-  version: 2.0.6
-  resolution: "@ai-sdk/google@npm:2.0.6"
-  dependencies:
-    "@ai-sdk/provider": "npm:2.0.0"
-    "@ai-sdk/provider-utils": "npm:3.0.3"
-  peerDependencies:
-    zod: ^3.25.76 || ^4
-  checksum: 10c0/ad54dd4168df62851646bec3ac2e5cf9e39f3def3e9017579aef5c8e8ecdf57c150c67a80cad4d092c3df69cd8539bc1792adb6c311ed095f8261673b7812e98
-  languageName: node
-  linkType: hard
-
-"@ai-sdk/google@npm:^2.0.13":
+"@ai-sdk/google@npm:2.0.13, @ai-sdk/google@npm:^2.0.13":
   version: 2.0.13
   resolution: "@ai-sdk/google@npm:2.0.13"
   dependencies:
@@ -12816,7 +12816,7 @@ __metadata:
     "@agentic/searxng": "npm:^7.3.3"
     "@agentic/tavily": "npm:^7.3.3"
     "@ai-sdk/amazon-bedrock": "npm:^3.0.0"
-    "@ai-sdk/google-vertex": "npm:^3.0.0"
+    "@ai-sdk/google-vertex": "npm:^3.0.25"
     "@ai-sdk/mistral": "npm:^2.0.0"
     "@ant-design/v5-patch-for-react-19": "npm:^1.0.3"
     "@anthropic-ai/sdk": "npm:^0.41.0"

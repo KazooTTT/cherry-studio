@@ -91,7 +91,7 @@
     "@agentic/searxng": "^7.3.3",
     "@agentic/tavily": "^7.3.3",
     "@ai-sdk/amazon-bedrock": "^3.0.0",
-    "@ai-sdk/google-vertex": "^3.0.0",
+    "@ai-sdk/google-vertex": "^3.0.25",
     "@ai-sdk/mistral": "^2.0.0",
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@anthropic-ai/sdk": "^0.41.0",
